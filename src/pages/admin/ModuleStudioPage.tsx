@@ -61,7 +61,8 @@ import {
   ModuleRollbackPanel,
   ModuleABTestingPanel,
   ModuleExportImportPanel,
-  ModuleTemplatesPanel
+  ModuleTemplatesPanel,
+  ModuleStudioHelpButton
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -214,6 +215,7 @@ export default function ModuleStudioPage() {
 
   const headerRightSlot = (
     <div className="flex items-center gap-1.5">
+      <ModuleStudioHelpButton />
       <Button variant="outline" size="sm" onClick={handleRefreshAll} className="h-8">
         <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
         Refrescar

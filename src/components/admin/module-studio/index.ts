@@ -37,3 +37,4 @@ export { ModuleDashboardPanel } from './ModuleDashboardPanel';
 export { ModuleNotificationsPanel } from './ModuleNotificationsPanel';
 export { ModuleMonitoringPanel } from './ModuleMonitoringPanel';
 export { ModulePerformancePanel } from './ModulePerformancePanel';
+export { ModuleStudioHelpButton } from './ModuleStudioHelpButton';

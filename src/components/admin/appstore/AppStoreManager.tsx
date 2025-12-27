@@ -21,6 +21,9 @@ import { GeneratedModules } from './GeneratedModules';
 import { ModuleDetails } from './ModuleDetails';
 import { ModulePublisherPanel } from './ModulePublisherPanel';
 import { ModulePublishStatusDashboard } from './ModulePublishStatusDashboard';
+import { ModuleCoverageAnalyzer } from './ModuleCoverageAnalyzer';
+import { VerticalModuleGenerator } from './VerticalModuleGenerator';
+import { AppStoreHelpButton } from './AppStoreHelpButton';
 
 export interface AppModule {
   id: string;
@@ -223,10 +226,13 @@ export const AppStoreManager: React.FC = () => {
             </p>
           </div>
         </div>
-        <Button onClick={fetchAllData} variant="outline" size="sm">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Actualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <AppStoreHelpButton />
+          <Button onClick={fetchAllData} variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -279,7 +285,7 @@ export const AppStoreManager: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="catalog" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Catálogo
@@ -292,6 +298,10 @@ export const AppStoreManager: React.FC = () => {
             <BarChart3 className="h-4 w-4" />
             Estado
           </TabsTrigger>
+          <TabsTrigger value="coverage" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Cobertura
+          </TabsTrigger>
           <TabsTrigger value="publish" className="flex items-center gap-2">
             <Rocket className="h-4 w-4" />
             Publicar
@@ -299,6 +309,10 @@ export const AppStoreManager: React.FC = () => {
           <TabsTrigger value="generate" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Generar CNAE
+          </TabsTrigger>
+          <TabsTrigger value="verticals" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Verticales
           </TabsTrigger>
           <TabsTrigger value="generated" className="flex items-center gap-2">
             <Puzzle className="h-4 w-4" />
@@ -334,12 +348,20 @@ export const AppStoreManager: React.FC = () => {
           <ModulePublishStatusDashboard />
         </TabsContent>
 
+        <TabsContent value="coverage" className="space-y-4">
+          <ModuleCoverageAnalyzer />
+        </TabsContent>
+
         <TabsContent value="publish" className="space-y-4">
           <ModulePublisherPanel />
         </TabsContent>
 
         <TabsContent value="generate" className="space-y-4">
           <CNAEModuleGenerator onModuleGenerated={fetchGeneratedModules} />
+        </TabsContent>
+
+        <TabsContent value="verticals" className="space-y-4">
+          <VerticalModuleGenerator />
         </TabsContent>
 
         <TabsContent value="generated" className="space-y-4">
