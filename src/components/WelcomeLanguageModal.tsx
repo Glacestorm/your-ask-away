@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Check, Sparkles, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
+import { RegionalFlag, hasRegionalFlag } from '@/components/ui/RegionalFlag';
 
 const STORAGE_KEY = 'obelixia_welcome_language_shown';
 const REMEMBER_KEY = 'obelixia_language_remembered';
@@ -456,7 +457,9 @@ function LanguageButton({
         </motion.div>
       )}
 
-      <span className={compact ? 'text-lg' : 'text-xl mb-0.5'}>{lang.flag}</span>
+      <div className={compact ? 'mb-0.5' : 'mb-1'}>
+        <RegionalFlag code={lang.code} size={compact ? 'sm' : 'md'} />
+      </div>
       <span
         className={cn(
           'font-medium text-foreground truncate w-full text-center leading-tight',

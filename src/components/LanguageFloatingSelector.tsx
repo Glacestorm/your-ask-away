@@ -4,33 +4,39 @@ import { Button } from "@/components/ui/button";
 import { WelcomeLanguageModal } from "@/components/WelcomeLanguageModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RegionalFlag, hasRegionalFlag } from "@/components/ui/RegionalFlag";
 
-const LANGUAGE_DATA: Record<string, { flag: string; name: string }> = {
-  es: { flag: '🇪🇸', name: 'Español' },
-  en: { flag: '🇬🇧', name: 'English' },
-  ca: { flag: '🏴󠁥󠁳󠁣󠁴󠁿', name: 'Català' },
-  fr: { flag: '🇫🇷', name: 'Français' },
-  de: { flag: '🇩🇪', name: 'Deutsch' },
-  pt: { flag: '🇵🇹', name: 'Português' },
-  it: { flag: '🇮🇹', name: 'Italiano' },
-  'zh-CN': { flag: '🇨🇳', name: '简体中文' },
-  'zh-TW': { flag: '🇹🇼', name: '繁體中文' },
-  ja: { flag: '🇯🇵', name: '日本語' },
-  ko: { flag: '🇰🇷', name: '한국어' },
-  ar: { flag: '🇸🇦', name: 'العربية' },
-  ru: { flag: '🇷🇺', name: 'Русский' },
-  nl: { flag: '🇳🇱', name: 'Nederlands' },
-  pl: { flag: '🇵🇱', name: 'Polski' },
-  'pt-BR': { flag: '🇧🇷', name: 'Português (BR)' },
-  'es-MX': { flag: '🇲🇽', name: 'Español (MX)' },
-  'en-US': { flag: '🇺🇸', name: 'English (US)' },
+const LANGUAGE_DATA: Record<string, { name: string }> = {
+  es: { name: 'Español' },
+  en: { name: 'English' },
+  ca: { name: 'Català' },
+  eu: { name: 'Euskara' },
+  gl: { name: 'Galego' },
+  oc: { name: 'Occitan' },
+  ast: { name: 'Asturianu' },
+  an: { name: 'Aragonés' },
+  fr: { name: 'Français' },
+  de: { name: 'Deutsch' },
+  pt: { name: 'Português' },
+  it: { name: 'Italiano' },
+  'zh-CN': { name: '简体中文' },
+  'zh-TW': { name: '繁體中文' },
+  ja: { name: '日本語' },
+  ko: { name: '한국어' },
+  ar: { name: 'العربية' },
+  ru: { name: 'Русский' },
+  nl: { name: 'Nederlands' },
+  pl: { name: 'Polski' },
+  'pt-BR': { name: 'Português (BR)' },
+  'es-MX': { name: 'Español (MX)' },
+  'en-US': { name: 'English (US)' },
 };
 
 export function LanguageFloatingSelector() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { language } = useLanguage();
 
-  const currentLang = LANGUAGE_DATA[language] || { flag: '🌐', name: 'Language' };
+  const currentLang = LANGUAGE_DATA[language] || { name: 'Language' };
 
   return (
     <>
@@ -50,15 +56,15 @@ export function LanguageFloatingSelector() {
                 className="h-11 w-11 rounded-full bg-background/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:border-primary/40 group"
                 aria-label={`Idioma actual: ${currentLang.name}. Clic para cambiar`}
               >
-                <motion.span 
-                  key={language}
-                  initial={{ scale: 0.5, rotate: -20 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                  className="text-xl group-hover:scale-110 transition-transform"
-                >
-                  {currentLang.flag}
-                </motion.span>
+              <motion.div 
+                key={language}
+                initial={{ scale: 0.5, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                className="group-hover:scale-110 transition-transform"
+              >
+                <RegionalFlag code={language} size="md" />
+              </motion.div>
               </Button>
             </motion.div>
           </TooltipTrigger>
