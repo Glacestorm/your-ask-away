@@ -191,7 +191,7 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
   { path: '/seguridad', component: Seguridad, layout: 'public', priority: 'high', meta: { title: 'Seguridad' } },
   { path: '/precios', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
-  { path: '/paquetes', component: PackagesComparisonPage, layout: 'none', priority: 'high', meta: { title: 'Comparativa de Paquetes CRM/ERP' } },
+  { path: '/paquetes', component: PackagesComparisonPage, layout: 'public', priority: 'high', meta: { title: 'Comparativa de Paquetes CRM/ERP' } },
   { path: '/demo', component: DemoInteractiva, layout: 'public', priority: 'high', meta: { title: 'Demo' } },
   
   // Marketplace & Developer Portal
