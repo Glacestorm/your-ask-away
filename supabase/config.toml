@@ -638,3 +638,6 @@ verify_jwt = true
 
 [functions.workspace-integrations]
 verify_jwt = true
+
+[functions.detect-user-locale]
+verify_jwt = false
