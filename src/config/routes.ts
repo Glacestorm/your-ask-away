@@ -124,6 +124,7 @@ const MarketIntelligencePage = lazy(() => import('@/pages/admin/MarketIntelligen
 const CRMMigrationPage = lazy(() => import('@/pages/admin/CRMMigrationPage'));
 const DemoRequestsPage = lazy(() => import('@/pages/admin/DemoRequestsPage'));
 const ModuleStudioPage = lazy(() => import('@/pages/admin/ModuleStudioPage'));
+const AutomationEnginePage = lazy(() => import('@/pages/admin/AutomationEnginePage'));
 
 // Settings
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
@@ -285,6 +286,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/crm-migration', component: CRMMigrationPage, layout: 'none', priority: 'high', meta: { title: 'Migración de CRM', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/demo-requests', component: DemoRequestsPage, layout: 'none', priority: 'high', meta: { title: 'Solicitudes de Demo', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/module-studio', component: ModuleStudioPage, layout: 'none', priority: 'high', meta: { title: 'Module Studio', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/automation-engine', component: AutomationEnginePage, layout: 'none', priority: 'high', meta: { title: 'Motor de Automatización', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
