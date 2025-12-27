@@ -641,3 +641,6 @@ verify_jwt = true
 
 [functions.detect-user-locale]
 verify_jwt = false
+
+[functions.analyze-module-impact]
+verify_jwt = true
