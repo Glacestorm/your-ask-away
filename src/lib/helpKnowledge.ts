@@ -224,7 +224,7 @@ export const OBELIXIA_MODULES = [
     description: 'Monitorización con auto-remediación IA',
     features: [
       'Diagnósticos automáticos 2x/día',
-      '8 módulos monitorizados',
+      'Todos los módulos del sistema monitorizados',
       'Análisis IA de errores',
       'Auto-remediación con ventana de 5 minutos',
       'Rollback manual disponible'

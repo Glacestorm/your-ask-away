@@ -310,7 +310,7 @@ El sistema permite a los gestores bancarios administrar su cartera de empresas, 
       description: 'Monitorización de salud del sistema con diagnósticos automáticos e intervenciones IA',
       compliance: 96,
       regulations: ['DORA', 'ISO 27001'],
-      features: ['Diagnósticos 8 módulos', 'Checks programados', 'AI auto-remediation', 'Rollback', 'Alertas email'],
+      features: ['Diagnósticos de todos los módulos', 'Checks programados', 'AI auto-remediation', 'Rollback', 'Alertas email'],
       dependencies: ['Edge Functions', 'Notificaciones'],
       menuPath: '/admin → System Health'
     },
