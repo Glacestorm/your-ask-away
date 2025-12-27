@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.module-copilot]
+verify_jwt = true
+
 [functions.web-market-research]
 verify_jwt = true
 
