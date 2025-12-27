@@ -17,7 +17,8 @@ import {
   Crown,
   ArrowRight,
   HelpCircle,
-  Star
+  Star,
+  Layers
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSEOMeta, structuredDataGenerators } from '@/hooks/useSEOMeta';
@@ -390,7 +391,24 @@ export default function PreciosPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center space-y-8">
+          {/* Package Comparison CTA */}
+          <Card className="bg-gradient-to-r from-blue-600 via-primary to-purple-600 text-white p-8 max-w-2xl mx-auto">
+            <CardContent className="space-y-4">
+              <Layers className="h-10 w-10 mx-auto opacity-80" />
+              <h3 className="text-2xl font-bold">¿Solo CRM, Solo ERP o Suite Completa?</h3>
+              <p className="opacity-90">
+                Compara nuestros paquetes modulares y elige la combinación perfecta para tu negocio.
+              </p>
+              <Button variant="secondary" size="lg" asChild>
+                <Link to="/paquetes">
+                  Ver Comparativa de Paquetes
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
           <Card className="bg-primary text-primary-foreground p-8 max-w-2xl mx-auto">
             <CardContent className="space-y-4">
               <h3 className="text-2xl font-bold">¿Necesitas ayuda para elegir?</h3>

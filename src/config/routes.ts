@@ -75,6 +75,7 @@ const EmpresasLanding = lazy(() => import('@/pages/sectors/EmpresasLanding'));
 
 // Marketing
 const PreciosPage = lazy(() => import('@/pages/pricing/PreciosPage'));
+const PackagesComparisonPage = lazy(() => import('@/pages/pricing/PackagesComparisonPage'));
 const ComparativasCRM = lazy(() => import('@/pages/comparativas/ComparativasCRM'));
 const ComparativasPage = lazy(() => import('@/pages/comparativas/index'));
 const CaseStudyDetail = lazy(() => import('@/pages/casos-de-exito/[slug]'));
@@ -190,6 +191,7 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
   { path: '/seguridad', component: Seguridad, layout: 'public', priority: 'high', meta: { title: 'Seguridad' } },
   { path: '/precios', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
+  { path: '/paquetes', component: PackagesComparisonPage, layout: 'none', priority: 'high', meta: { title: 'Comparativa de Paquetes CRM/ERP' } },
   { path: '/demo', component: DemoInteractiva, layout: 'public', priority: 'high', meta: { title: 'Demo' } },
   
   // Marketplace & Developer Portal
