@@ -20,6 +20,7 @@ import { CNAEModuleGenerator } from './CNAEModuleGenerator';
 import { GeneratedModules } from './GeneratedModules';
 import { ModuleDetails } from './ModuleDetails';
 import { ModulePublisherPanel } from './ModulePublisherPanel';
+import { ModulePublishStatusDashboard } from './ModulePublishStatusDashboard';
 
 export interface AppModule {
   id: string;
@@ -278,7 +279,7 @@ export const AppStoreManager: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="catalog" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Catálogo
@@ -286,6 +287,10 @@ export const AppStoreManager: React.FC = () => {
           <TabsTrigger value="installed" className="flex items-center gap-2">
             <Check className="h-4 w-4" />
             Instalados ({stats.installedCount})
+          </TabsTrigger>
+          <TabsTrigger value="status" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Estado
           </TabsTrigger>
           <TabsTrigger value="publish" className="flex items-center gap-2">
             <Rocket className="h-4 w-4" />
@@ -323,6 +328,10 @@ export const AppStoreManager: React.FC = () => {
             onToggleStatus={toggleModuleStatus}
             onViewDetails={(module) => setSelectedModule(module)}
           />
+        </TabsContent>
+
+        <TabsContent value="status" className="space-y-4">
+          <ModulePublishStatusDashboard />
         </TabsContent>
 
         <TabsContent value="publish" className="space-y-4">

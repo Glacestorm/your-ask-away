@@ -1,5 +1,6 @@
 export { AppStoreManager } from './AppStoreManager';
 export { ModuleCatalog } from './ModuleCatalog';
+export { ModulePublishStatusDashboard } from './ModulePublishStatusDashboard';
 export { InstalledModules } from './InstalledModules';
 export { CNAEModuleGenerator } from './CNAEModuleGenerator';
 export { GeneratedModules } from './GeneratedModules';
