@@ -31,3 +31,9 @@ export { ModuleABTestingPanel } from './ModuleABTestingPanel';
 export { ModuleExportImportPanel } from './ModuleExportImportPanel';
 export { ModuleTemplatesPanel } from './ModuleTemplatesPanel';
 export { ModuleDependenciesPanel } from './ModuleDependenciesPanel';
+
+// Phase 10 Components - Dashboard, Notifications, Monitoring & Performance
+export { ModuleDashboardPanel } from './ModuleDashboardPanel';
+export { ModuleNotificationsPanel } from './ModuleNotificationsPanel';
+export { ModuleMonitoringPanel } from './ModuleMonitoringPanel';
+export { ModulePerformancePanel } from './ModulePerformancePanel';
