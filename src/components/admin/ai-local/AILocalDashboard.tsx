@@ -31,12 +31,18 @@ import {
   BarChart3,
   Brain,
   Search,
+  Eye,
+  Network,
+  Gauge,
 } from 'lucide-react';
 import { AIConfigurationPanel } from './AIConfigurationPanel';
 import { AIAssistantLocal } from './AIAssistantLocal';
 import { AIInstallationGuide } from './AIInstallationGuide';
 import { EmotionalAnalysisPanel } from '../ai-modules/EmotionalAnalysisPanel';
 import { NaturalLanguageQueryPanel } from '../ai-modules/NaturalLanguageQueryPanel';
+import { ScreenUnderstandingPanel } from '../ai-modules/ScreenUnderstandingPanel';
+import { GraphRAGPanel } from '../ai-modules/GraphRAGPanel';
+import { PredictiveMaintenancePanel } from '../ai-modules/PredictiveMaintenancePanel';
 import { useLocalAI } from '@/hooks/admin/useLocalAI';
 import { cn } from '@/lib/utils';
 
@@ -126,14 +132,18 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="assistant" className="gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Asistente</span>
           </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">Analytics IA</span>
+            <span className="hidden sm:inline">Analytics</span>
+          </TabsTrigger>
+          <TabsTrigger value="advanced" className="gap-2">
+            <Network className="h-4 w-4" />
+            <span className="hidden sm:inline">Avanzado</span>
           </TabsTrigger>
           <TabsTrigger value="config" className="gap-2">
             <Settings className="h-4 w-4" />
@@ -253,6 +263,96 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
                       <li>• Generación de reportes con texto</li>
                       <li>• Análisis de datos conversacional</li>
                       <li>• Traducción de consultas a SQL</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="advanced" className="mt-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-accent to-primary">
+                <Network className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Capacidades IA Avanzadas - Fase 3</h3>
+                <p className="text-sm text-muted-foreground">
+                  Screen Understanding, GraphRAG y Mantenimiento Predictivo IoT
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <ScreenUnderstandingPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard',
+                  sessionId: 'session-001',
+                  currentScreen: 'admin-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <GraphRAGPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard',
+                  entityType: 'crm'
+                }} 
+                className="h-fit"
+              />
+              <PredictiveMaintenancePanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard',
+                  systemType: 'enterprise'
+                }} 
+                className="h-fit"
+              />
+            </div>
+
+            <Card className="bg-gradient-to-r from-accent/5 via-primary/5 to-secondary/5 border-accent/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  Capacidades IA Avanzadas - Fase 3
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-primary" />
+                      Screen Understanding
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Análisis visual de capturas</li>
+                      <li>• Detección de errores UI</li>
+                      <li>• Anotaciones en tiempo real</li>
+                      <li>• Comparación de pantallas</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Network className="h-4 w-4 text-accent" />
+                      GraphRAG
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Knowledge Graph dinámico</li>
+                      <li>• Contexto de cliente 360°</li>
+                      <li>• Patrones de aprendizaje</li>
+                      <li>• Consultas semánticas</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Gauge className="h-4 w-4 text-secondary" />
+                      Mantenimiento Predictivo
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Monitoreo IoT en tiempo real</li>
+                      <li>• Predicción de fallos</li>
+                      <li>• Detección de anomalías</li>
+                      <li>• Sesiones proactivas</li>
                     </ul>
                   </div>
                 </div>
