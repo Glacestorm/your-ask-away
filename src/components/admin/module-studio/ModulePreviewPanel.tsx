@@ -334,6 +334,7 @@ export function ModulePreviewPanel({
               size="icon"
               className="h-8 w-8"
               onClick={() => setShowSettings(!showSettings)}
+              title="Configuración"
             >
               <Settings2 className={cn('h-4 w-4', showSettings && 'text-primary')} />
             </Button>
@@ -343,15 +344,17 @@ export function ModulePreviewPanel({
               className="h-8 w-8"
               onClick={refresh}
               disabled={isRefreshing}
+              title="Refrescar"
             >
               <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} />
             </Button>
             {onToggleExpand && (
               <Button
-                variant="ghost"
+                variant={isExpanded ? 'secondary' : 'outline'}
                 size="icon"
                 className="h-8 w-8"
                 onClick={onToggleExpand}
+                title={isExpanded ? 'Minimizar' : 'Expandir'}
               >
                 {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
@@ -364,27 +367,25 @@ export function ModulePreviewPanel({
         {/* Controls Bar */}
         <div className="px-3 py-2 border-b bg-muted/30 space-y-2 flex-shrink-0">
           {/* Mode Tabs */}
-          <div className="flex items-center gap-2">
-            <Tabs value={config.mode} onValueChange={v => setMode(v as PreviewMode)} className="flex-1">
-              <TabsList className="h-8 w-full">
-                <TabsTrigger value="form" className="flex-1 text-xs h-7">
-                  <Layout className="h-3 w-3 mr-1" />
-                  Form
-                </TabsTrigger>
-                <TabsTrigger value="dashboard" className="flex-1 text-xs h-7">
-                  <LayoutDashboard className="h-3 w-3 mr-1" />
-                  Dashboard
-                </TabsTrigger>
-                <TabsTrigger value="integration" className="flex-1 text-xs h-7">
-                  <Puzzle className="h-3 w-3 mr-1" />
-                  Integración
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
+          <Tabs value={config.mode} onValueChange={v => setMode(v as PreviewMode)}>
+            <TabsList className="h-8 w-full grid grid-cols-3">
+              <TabsTrigger value="form" className="text-xs h-7 px-2">
+                <Layout className="h-3 w-3 mr-1" />
+                Form
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="text-xs h-7 px-2">
+                <LayoutDashboard className="h-3 w-3 mr-1" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="integration" className="text-xs h-7 px-2">
+                <Puzzle className="h-3 w-3 mr-1" />
+                Integración
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
           
-          {/* Secondary Controls */}
-          <div className="flex items-center justify-between gap-2">
+          {/* Secondary Controls - Reorganized */}
+          <div className="flex flex-wrap items-center gap-2">
             {/* Device Selector */}
             <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
               {(['desktop', 'tablet', 'mobile'] as DeviceType[]).map(device => {
@@ -396,6 +397,7 @@ export function ModulePreviewPanel({
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => setDevice(device)}
+                    title={device}
                   >
                     <Icon className="h-3.5 w-3.5" />
                   </Button>
@@ -405,7 +407,7 @@ export function ModulePreviewPanel({
             
             {/* View As Selector */}
             <Select value={config.viewAs} onValueChange={v => setViewAs(v as ViewAsRole)}>
-              <SelectTrigger className="w-[120px] h-8 text-xs">
+              <SelectTrigger className="w-[100px] h-7 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -430,30 +432,33 @@ export function ModulePreviewPanel({
               </SelectContent>
             </Select>
             
-            {/* Actions */}
-            <div className="flex items-center gap-1">
+            {/* Actions - Flex to end */}
+            <div className="flex items-center gap-1 ml-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs"
+                className="h-7 text-xs px-2"
                 onClick={handleValidate}
+                title="Validar"
               >
                 <Check className="h-3 w-3 mr-1" />
                 Validar
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
                 onClick={resetForm}
+                title="Resetear"
               >
                 <RotateCcw className="h-3 w-3" />
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
                 onClick={handleExport}
+                title="Exportar"
               >
                 <Download className="h-3 w-3" />
               </Button>
