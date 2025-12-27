@@ -253,6 +253,31 @@ serve(async (req) => {
         });
       }
 
+      case 'get_pipeline_status': {
+        const result = await generatePipelineData(`Genera estado actual del pipeline para módulo ${moduleKey}:
+{
+  "status": "idle|running|success|failed",
+  "currentStage": "string",
+  "progress": number (0-100),
+  "lastRun": "ISO date",
+  "nextScheduled": "ISO date or null",
+  "health": "healthy|degraded|critical",
+  "stages": [{
+    "name": "string",
+    "status": "pending|running|success|failed",
+    "duration": number
+  }]
+}`);
+
+        return new Response(JSON.stringify({
+          success: true,
+          ...result,
+          moduleKey
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({
           success: false,
