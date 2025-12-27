@@ -104,6 +104,16 @@ export const headerNavigation: NavItem[] = [
         descriptionKey: 'nav.pricing.desc',
       },
       {
+        id: 'paquetes',
+        label: 'Paquetes CRM/ERP',
+        labelKey: 'nav.packages',
+        href: '/paquetes',
+        icon: Boxes,
+        description: 'Solo CRM, Solo ERP o Suite Completa',
+        descriptionKey: 'nav.packages.desc',
+        badge: 'Nuevo',
+      },
+      {
         id: 'demo',
         label: 'Demo',
         labelKey: 'nav.demo',
@@ -274,6 +284,7 @@ export const footerNavigation: NavGroup[] = [
     items: [
       { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
       { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
+      { id: 'paquetes', label: 'Paquetes CRM/ERP', href: '/paquetes', icon: Boxes },
       { id: 'precios', label: 'Precios', href: '/precios', icon: DollarSign },
       { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store },
       { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare },
