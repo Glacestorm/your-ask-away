@@ -28,7 +28,10 @@ import {
   Bot,
   Shield,
   FileText,
-  Users
+  Users,
+  BarChart3,
+  Rocket,
+  Store
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,7 +48,10 @@ import {
   ModuleTestingPanel,
   ModuleSecurityPanel,
   ModuleDocumentationPanel,
-  ModuleCollaborationPanel
+  ModuleCollaborationPanel,
+  ModuleAnalyticsPanel,
+  ModuleDeploymentPanel,
+  ModuleMarketplacePanel
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -348,6 +354,18 @@ export default function ModuleStudioPage() {
                       <Users className="h-4 w-4 mr-1" />
                       Equipo
                     </TabsTrigger>
+                    <TabsTrigger value="analytics">
+                      <BarChart3 className="h-4 w-4 mr-1" />
+                      Analytics
+                    </TabsTrigger>
+                    <TabsTrigger value="deployment">
+                      <Rocket className="h-4 w-4 mr-1" />
+                      Deploy
+                    </TabsTrigger>
+                    <TabsTrigger value="marketplace">
+                      <Store className="h-4 w-4 mr-1" />
+                      Market
+                    </TabsTrigger>
                   </TabsList>
                   
                   <div className="flex gap-2">
@@ -525,6 +543,18 @@ export default function ModuleStudioPage() {
                   <ModuleCollaborationPanel 
                     context={selectedModuleData ? { moduleKey: selectedModule, moduleName: selectedModuleData.module_name } : null}
                   />
+                </TabsContent>
+
+                <TabsContent value="analytics" className="mt-0">
+                  <ModuleAnalyticsPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="deployment" className="mt-0">
+                  <ModuleDeploymentPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="marketplace" className="mt-0">
+                  <ModuleMarketplacePanel />
                 </TabsContent>
               </Tabs>
             ) : (
