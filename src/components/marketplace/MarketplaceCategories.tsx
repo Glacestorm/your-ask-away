@@ -82,25 +82,25 @@ export function MarketplaceCategories({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-semibold">Categorías</h3>
+      <h3 className="text-lg font-semibold text-white">Categorías</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {/* All category */}
         <Card
           role="button"
           tabIndex={0}
-          className={`cursor-pointer transition-all duration-200 ${
-            selectedCategory === null ? 'ring-2 ring-primary bg-primary/10' : 'hover:bg-muted/50'
+          className={`cursor-pointer transition-all duration-200 bg-white/5 backdrop-blur-sm border-white/10 ${
+            selectedCategory === null ? 'ring-2 ring-primary bg-primary/20' : 'hover:bg-white/10'
           }`}
           onClick={() => handleSelect(null)}
           onKeyDown={handleKeyDown(null)}
         >
           <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
               <Layers className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-sm font-medium">Todas</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-white">Todas</p>
+              <p className="text-xs text-gray-400">
                 {Object.values(counts).reduce((a, b) => a + b, 0)} apps
               </p>
             </div>
@@ -112,7 +112,7 @@ export function MarketplaceCategories({
             key={key}
             role="button"
             tabIndex={0}
-            className={`cursor-pointer transition-all duration-200 ${
+            className={`cursor-pointer transition-all duration-200 bg-white/5 backdrop-blur-sm border-white/10 ${
               selectedCategory === key
                 ? `ring-2 ring-primary bg-gradient-to-br ${CATEGORY_COLORS[key]}`
                 : `hover:bg-gradient-to-br ${CATEGORY_COLORS[key]}`
@@ -127,8 +127,8 @@ export function MarketplaceCategories({
                 {CATEGORY_ICONS[key]}
               </div>
               <div>
-                <p className="text-sm font-medium">{label}</p>
-                <p className="text-xs text-muted-foreground">{counts[key] || 0} apps</p>
+                <p className="text-sm font-medium text-white">{label}</p>
+                <p className="text-xs text-gray-400">{counts[key] || 0} apps</p>
               </div>
             </CardContent>
           </Card>
