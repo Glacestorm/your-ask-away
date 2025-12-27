@@ -21,3 +21,8 @@ export { ModuleCollaborationPanel } from './ModuleCollaborationPanel';
 export { ModuleAnalyticsPanel } from './ModuleAnalyticsPanel';
 export { ModuleDeploymentPanel } from './ModuleDeploymentPanel';
 export { ModuleMarketplacePanel } from './ModuleMarketplacePanel';
+
+// Phase 8 Components
+export { ModuleVersioningPanel } from './ModuleVersioningPanel';
+export { ModuleRollbackPanel } from './ModuleRollbackPanel';
+export { ModuleABTestingPanel } from './ModuleABTestingPanel';
