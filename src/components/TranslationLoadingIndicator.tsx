@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Languages } from 'lucide-react';
+import { Loader2, Languages, Check } from 'lucide-react';
 import { useGlobalTranslationState } from '@/hooks/useDynamicTranslation';
-import { subscribeToCMSTranslating, getGlobalTranslatingState } from '@/hooks/cms/useCMSTranslation';
+import { subscribeToCMSTranslating, getTranslationProgress } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { RegionalFlag } from '@/components/ui/RegionalFlag';
+import { Progress } from '@/components/ui/progress';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   es: 'Español',
@@ -49,39 +51,60 @@ const LANGUAGE_NAMES: Record<string, string> = {
   'en-US': 'English (US)',
 };
 
+interface TranslationProgress {
+  isTranslating: boolean;
+  total: number;
+  completed: number;
+  percentage: number;
+}
+
 /**
  * Global loading indicator that shows when translations are in progress.
- * Appears as a subtle toast at the bottom of the screen.
+ * Appears as a subtle toast at the bottom of the screen with flag and progress.
  */
 export function TranslationLoadingIndicator() {
   const { isTranslating } = useGlobalTranslationState();
   const { language, loadingDynamic } = useLanguage();
   const [showIndicator, setShowIndicator] = useState(false);
   const [displayLang, setDisplayLang] = useState(language);
-  const [isCMSTranslating, setIsCMSTranslating] = useState(getGlobalTranslatingState());
+  const [cmsProgress, setCmsProgress] = useState<TranslationProgress>(getTranslationProgress());
+  const [showComplete, setShowComplete] = useState(false);
 
-  // Subscribe to CMS translation state
+  // Subscribe to CMS translation state with progress
   useEffect(() => {
-    const unsubscribe = subscribeToCMSTranslating(setIsCMSTranslating);
+    const unsubscribe = subscribeToCMSTranslating((progress) => {
+      setCmsProgress(progress);
+    });
     return () => { unsubscribe(); };
   }, []);
 
   // Show indicator when translating or loading dynamic translations
-  const isLoading = isTranslating || loadingDynamic || isCMSTranslating;
+  const isLoading = isTranslating || loadingDynamic || cmsProgress.isTranslating;
+  const percentage = cmsProgress.percentage;
 
-  // Debounce to avoid flickering
+  // Debounce to avoid flickering and show completion message
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     
     if (isLoading) {
       setDisplayLang(language);
-      timeout = setTimeout(() => setShowIndicator(true), 200);
+      setShowComplete(false);
+      timeout = setTimeout(() => setShowIndicator(true), 100);
     } else {
-      timeout = setTimeout(() => setShowIndicator(false), 300);
+      // Show completion briefly before hiding
+      if (showIndicator && cmsProgress.total > 0) {
+        setShowComplete(true);
+        timeout = setTimeout(() => {
+          setShowComplete(false);
+          setShowIndicator(false);
+        }, 1500);
+      } else {
+        timeout = setTimeout(() => setShowIndicator(false), 300);
+      }
     }
 
     return () => clearTimeout(timeout);
-  }, [isLoading, language]);
+  }, [isLoading, language, showIndicator, cmsProgress.total]);
 
   const langName = LANGUAGE_NAMES[displayLang] || displayLang;
 
@@ -95,23 +118,53 @@ export function TranslationLoadingIndicator() {
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50"
         >
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-background/95 backdrop-blur-lg border border-border/60 shadow-lg shadow-black/10">
-            <div className="relative">
-              <Languages className="w-4 h-4 text-primary" />
-              <motion.div
-                className="absolute inset-0"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              >
-                <div className="w-full h-full rounded-full border-2 border-transparent border-t-primary/30" />
-              </motion.div>
+          <div className="flex flex-col gap-2 px-5 py-3 rounded-2xl bg-background/95 backdrop-blur-lg border border-border/60 shadow-xl shadow-black/15 min-w-[280px]">
+            {/* Header with flag, text, and percentage */}
+            <div className="flex items-center gap-3">
+              {/* Flag */}
+              <RegionalFlag code={displayLang} size="sm" />
+              
+              {/* Text and status */}
+              <div className="flex-1">
+                {showComplete ? (
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-medium text-foreground/90">
+                      ¡Traducción completada!
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-medium text-foreground/90">
+                    Traduciendo a {langName}
+                  </span>
+                )}
+              </div>
+              
+              {/* Percentage or spinner */}
+              {showComplete ? (
+                <span className="text-sm font-bold text-green-500">100%</span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-primary">{percentage}%</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                </div>
+              )}
             </div>
             
-            <span className="text-sm font-medium text-foreground/90">
-              Traduciendo a {langName}
-            </span>
+            {/* Progress bar */}
+            <div className="w-full">
+              <Progress 
+                value={showComplete ? 100 : percentage} 
+                className="h-1.5" 
+              />
+            </div>
             
-            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            {/* Item count */}
+            {cmsProgress.total > 0 && !showComplete && (
+              <div className="text-xs text-muted-foreground text-center">
+                {cmsProgress.completed} / {cmsProgress.total} elementos
+              </div>
+            )}
           </div>
         </motion.div>
       )}
