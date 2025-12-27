@@ -130,25 +130,59 @@ const ALL_LANGUAGES: LanguageOption[] = [
   { code: 'fr-CA', name: 'French (Canada)', nativeName: 'Français', flag: '🇨🇦', region: 'Canada', regionGroup: 'americas' },
 ];
 
-export function WelcomeLanguageModal() {
-  const [isOpen, setIsOpen] = useState(false);
+interface WelcomeLanguageModalProps {
+  mode?: 'welcome' | 'selector';
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function WelcomeLanguageModal({ 
+  mode = 'welcome',
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange
+}: WelcomeLanguageModalProps) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [rememberChoice, setRememberChoice] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRegions, setExpandedRegions] = useState<Set<RegionKey>>(
     new Set(['spain', 'europe'])
   );
-  const { setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
+  // Control de estado: externo para selector, interno para welcome
+  const isOpen = mode === 'selector' ? (externalIsOpen ?? false) : internalIsOpen;
+  const setIsOpen = mode === 'selector' 
+    ? (externalOnOpenChange ?? setInternalIsOpen) 
+    : setInternalIsOpen;
+
+  // Solo mostrar automáticamente en modo welcome
   useEffect(() => {
+    if (mode !== 'welcome') return;
+    
     const wasShown = localStorage.getItem(STORAGE_KEY);
     const wasRemembered = localStorage.getItem(REMEMBER_KEY);
 
     if (!wasShown && !wasRemembered) {
-      const timer = setTimeout(() => setIsOpen(true), 800);
+      const timer = setTimeout(() => setInternalIsOpen(true), 800);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [mode]);
+
+  // Pre-seleccionar idioma actual en modo selector
+  useEffect(() => {
+    if (mode === 'selector' && isOpen && !selectedLanguage) {
+      setSelectedLanguage(language);
+    }
+  }, [mode, isOpen, language, selectedLanguage]);
+
+  // Reset al cerrar
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+      setSelectedLanguage(null);
+    }
+  }, [isOpen]);
 
   const filteredLanguages = useMemo(() => {
     if (!searchQuery.trim()) return ALL_LANGUAGES;
@@ -199,18 +233,29 @@ export function WelcomeLanguageModal() {
   const handleConfirm = () => {
     if (selectedLanguage) {
       setLanguage(selectedLanguage);
-      if (rememberChoice) {
+      if (mode === 'welcome' && rememberChoice) {
         localStorage.setItem(REMEMBER_KEY, 'true');
       }
     }
-    localStorage.setItem(STORAGE_KEY, 'true');
+    if (mode === 'welcome') {
+      localStorage.setItem(STORAGE_KEY, 'true');
+    }
     setIsOpen(false);
   };
 
   const handleSkip = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
+    if (mode === 'welcome') {
+      localStorage.setItem(STORAGE_KEY, 'true');
+    }
     setIsOpen(false);
   };
+
+  // Textos según el modo
+  const title = mode === 'welcome' 
+    ? '¡Bienvenido! Welcome!' 
+    : 'Selecciona tu idioma';
+  const skipText = mode === 'welcome' ? 'Omitir / Skip' : 'Cancelar';
+  const confirmText = mode === 'welcome' ? 'Continuar / Continue' : 'Aplicar';
 
   const isSearching = searchQuery.trim().length > 0;
 
@@ -230,10 +275,13 @@ export function WelcomeLanguageModal() {
           </motion.div>
 
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-            ¡Bienvenido! Welcome!
+            {title}
           </DialogTitle>
           <DialogDescription className="text-base mt-2">
-            Selecciona tu idioma preferido ({ALL_LANGUAGES.length} idiomas disponibles)
+            {mode === 'welcome' 
+              ? `Selecciona tu idioma preferido (${ALL_LANGUAGES.length} idiomas disponibles)`
+              : `${ALL_LANGUAGES.length} idiomas disponibles`
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -331,22 +379,24 @@ export function WelcomeLanguageModal() {
             )}
           </ScrollArea>
 
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-            <Checkbox
-              id="remember"
-              checked={rememberChoice}
-              onCheckedChange={(checked) => setRememberChoice(checked === true)}
-              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-            />
-            <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer select-none">
-              Recordar mi elección / Remember my choice
-            </label>
-          </div>
+          {mode === 'welcome' && (
+            <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
+              <Checkbox
+                id="remember"
+                checked={rememberChoice}
+                onCheckedChange={(checked) => setRememberChoice(checked === true)}
+                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+              />
+              <label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer select-none">
+                Recordar mi elección / Remember my choice
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="relative flex gap-3 p-6 pt-2">
           <Button variant="ghost" onClick={handleSkip} className="flex-1">
-            Omitir / Skip
+            {skipText}
           </Button>
           <Button
             onClick={handleConfirm}
@@ -354,7 +404,7 @@ export function WelcomeLanguageModal() {
             className="flex-1 gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
           >
             <Sparkles className="w-4 h-4" />
-            Continuar / Continue
+            {confirmText}
           </Button>
         </div>
       </DialogContent>
