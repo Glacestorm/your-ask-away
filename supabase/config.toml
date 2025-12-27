@@ -683,3 +683,9 @@ verify_jwt = false
 
 [functions.analyze-module-impact]
 verify_jwt = true
+
+[functions.multi-channel]
+verify_jwt = true
+
+[functions.performance-coach]
+verify_jwt = true
