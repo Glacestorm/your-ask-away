@@ -296,7 +296,7 @@ const StoreNavbar: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div 
-              className="hidden lg:flex items-center justify-center gap-1 h-full"
+              className="hidden lg:flex items-center justify-center gap-1 h-full pt-1"
               onMouseEnter={cancelDesktopClose}
               onMouseLeave={() => scheduleDesktopClose()}
             >
