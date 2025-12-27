@@ -713,3 +713,6 @@ verify_jwt = true
 
 [functions.notification-intelligence]
 verify_jwt = true
+
+[functions.ai-agent-orchestrator]
+verify_jwt = true
