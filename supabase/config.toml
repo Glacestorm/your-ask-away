@@ -30,6 +30,12 @@ verify_jwt = true
 [functions.module-autonomous-agent]
 verify_jwt = true
 
+[functions.module-ab-testing]
+verify_jwt = true
+
+[functions.module-rollback]
+verify_jwt = true
+
 [functions.module-sandbox]
 verify_jwt = true
 
