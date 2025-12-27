@@ -719,3 +719,6 @@ verify_jwt = true
 
 [functions.analytics-intelligence]
 verify_jwt = true
+
+[functions.conversational-ai-hub]
+verify_jwt = true
