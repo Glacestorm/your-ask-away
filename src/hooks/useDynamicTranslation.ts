@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Cache for translated content
+// Cache for translated content - global so it persists across hook instances
 const translationCache: Map<string, string> = new Map();
 const pendingTranslations: Map<string, Promise<string>> = new Map();
+let lastLanguage: string | null = null;
 
 // Debounce delay for batch translations
 const BATCH_DELAY_MS = 100;
@@ -95,6 +96,16 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
       setIsTranslating(false);
     }
   }, [language, sourceLocale, getCacheKey]);
+
+  // Clear cache when language changes to force re-translation
+  useEffect(() => {
+    if (lastLanguage && lastLanguage !== language) {
+      console.log('[useDynamicTranslation] Language changed, clearing cache');
+      translationCache.clear();
+      pendingTranslations.clear();
+    }
+    lastLanguage = language;
+  }, [language]);
 
   // Clear batch timer on unmount
   useEffect(() => {

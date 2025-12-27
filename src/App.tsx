@@ -15,7 +15,7 @@ import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performan
 import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
 import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoTour } from "@/components/demo/DemoTour";
-import { FloatingLanguageSelector } from "@/components/FloatingLanguageSelector";
+import { LanguageFloatingSelector } from "@/components/LanguageFloatingSelector";
 import { GeoLanguageDetector } from "@/components/GeoLanguageDetector";
 import { WelcomeLanguageModal } from "@/components/WelcomeLanguageModal";
 import { AppRoutes } from "@/components/routing";
@@ -93,7 +93,7 @@ const App = () => (
                       <MFAEnforcementDialog />
                       <Toaster />
                       <Sonner />
-                      <FloatingLanguageSelector />
+                      <LanguageFloatingSelector />
                       <GeoLanguageDetector />
                       <WelcomeLanguageModal />
                       <DemoBanner />
