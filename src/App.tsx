@@ -18,6 +18,7 @@ import { DemoTour } from "@/components/demo/DemoTour";
 import { LanguageFloatingSelector } from "@/components/LanguageFloatingSelector";
 import { GeoLanguageDetector } from "@/components/GeoLanguageDetector";
 import { WelcomeLanguageModal } from "@/components/WelcomeLanguageModal";
+import { TranslationLoadingIndicator } from "@/components/TranslationLoadingIndicator";
 import { AppRoutes } from "@/components/routing";
 
 // Lazy load non-critical components for better initial load
@@ -96,6 +97,7 @@ const App = () => (
                       <LanguageFloatingSelector />
                       <GeoLanguageDetector />
                       <WelcomeLanguageModal />
+                      <TranslationLoadingIndicator />
                       <DemoBanner />
                       <DemoTour />
                       

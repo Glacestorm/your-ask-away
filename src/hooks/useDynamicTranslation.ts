@@ -2,10 +2,111 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
-// Cache for translated content - global so it persists across hook instances
-const translationCache: Map<string, string> = new Map();
+// === PERSISTENT CACHE CONFIG ===
+const CACHE_STORAGE_KEY = 'obelixia_translation_cache';
+const CACHE_VERSION = 'v1';
+const CACHE_MAX_ENTRIES = 500; // Limit to prevent localStorage bloat
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+interface CacheEntry {
+  value: string;
+  timestamp: number;
+}
+
+interface StoredCache {
+  version: string;
+  entries: Record<string, CacheEntry>;
+}
+
+// === GLOBAL STATE ===
+let memoryCache: Map<string, string> = new Map();
 const pendingTranslations: Map<string, Promise<string>> = new Map();
 let lastLanguage: string | null = null;
+let cacheLoaded = false;
+
+// Global translation state for UI indicator
+let globalTranslatingCount = 0;
+const translatingListeners: Set<(isTranslating: boolean) => void> = new Set();
+
+const notifyTranslatingChange = () => {
+  const isTranslating = globalTranslatingCount > 0;
+  translatingListeners.forEach(listener => listener(isTranslating));
+};
+
+// === LOCALSTORAGE HELPERS ===
+const loadCacheFromStorage = (): void => {
+  if (cacheLoaded) return;
+  
+  try {
+    const stored = localStorage.getItem(CACHE_STORAGE_KEY);
+    if (stored) {
+      const parsed: StoredCache = JSON.parse(stored);
+      
+      // Check version
+      if (parsed.version !== CACHE_VERSION) {
+        localStorage.removeItem(CACHE_STORAGE_KEY);
+        cacheLoaded = true;
+        return;
+      }
+      
+      const now = Date.now();
+      let validCount = 0;
+      
+      // Load valid entries into memory cache
+      for (const [key, entry] of Object.entries(parsed.entries)) {
+        if (now - entry.timestamp < CACHE_TTL_MS) {
+          memoryCache.set(key, entry.value);
+          validCount++;
+        }
+      }
+      
+      console.log(`[i18n] Loaded ${validCount} translations from persistent cache`);
+    }
+  } catch (err) {
+    console.warn('[i18n] Failed to load translation cache:', err);
+    localStorage.removeItem(CACHE_STORAGE_KEY);
+  }
+  
+  cacheLoaded = true;
+};
+
+const saveCacheToStorage = (): void => {
+  try {
+    const entries: Record<string, CacheEntry> = {};
+    const now = Date.now();
+    let count = 0;
+    
+    // Only save up to max entries, prioritizing recent ones
+    const sortedEntries = Array.from(memoryCache.entries());
+    const entriesToSave = sortedEntries.slice(-CACHE_MAX_ENTRIES);
+    
+    for (const [key, value] of entriesToSave) {
+      entries[key] = { value, timestamp: now };
+      count++;
+    }
+    
+    const toStore: StoredCache = {
+      version: CACHE_VERSION,
+      entries
+    };
+    
+    localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(toStore));
+    console.log(`[i18n] Saved ${count} translations to persistent cache`);
+  } catch (err) {
+    console.warn('[i18n] Failed to save translation cache:', err);
+    // If storage is full, clear old cache
+    try {
+      localStorage.removeItem(CACHE_STORAGE_KEY);
+    } catch {}
+  }
+};
+
+// Debounce save to avoid excessive writes
+let saveTimeout: NodeJS.Timeout | null = null;
+const debouncedSave = () => {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveCacheToStorage, 2000);
+};
 
 // Debounce delay for batch translations
 const BATCH_DELAY_MS = 100;
@@ -22,7 +123,7 @@ interface UseDynamicTranslationOptions {
 
 /**
  * Hook for translating dynamic content (products, news, etc.) in real-time
- * when the user changes language. Uses batch translation for efficiency.
+ * when the user changes language. Uses batch translation and persistent cache.
  */
 export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}) {
   const { language } = useLanguage();
@@ -32,9 +133,14 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
   const batchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const batchResolversRef = useRef<Map<string, { resolve: (value: string) => void; reject: (error: Error) => void }>>(new Map());
 
-  // Generate cache key
+  // Load cache on first use
+  useEffect(() => {
+    loadCacheFromStorage();
+  }, []);
+
+  // Generate cache key with language prefix
   const getCacheKey = useCallback((text: string, targetLocale: string) => {
-    return `${sourceLocale}|${targetLocale}|${text}`;
+    return `${sourceLocale}|${targetLocale}|${text.substring(0, 100)}`; // Limit key length
   }, [sourceLocale]);
 
   // Process batch translations
@@ -48,6 +154,8 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
     batchResolversRef.current.clear();
 
     setIsTranslating(true);
+    globalTranslatingCount++;
+    notifyTranslatingChange();
 
     try {
       const { data, error } = await supabase.functions.invoke('cms-batch-translate', {
@@ -66,7 +174,7 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
         const originalItem = batch.find(item => item.key === result.key);
         if (originalItem) {
           const cacheKey = getCacheKey(originalItem.text, language);
-          translationCache.set(cacheKey, result.translation);
+          memoryCache.set(cacheKey, result.translation);
           
           const resolver = resolvers.get(result.key);
           if (resolver) {
@@ -83,6 +191,9 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
         }
       });
 
+      // Save to persistent storage
+      debouncedSave();
+
     } catch (err) {
       console.error('[useDynamicTranslation] Batch translation error:', err);
       // Fallback to original text
@@ -94,14 +205,23 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
       });
     } finally {
       setIsTranslating(false);
+      globalTranslatingCount = Math.max(0, globalTranslatingCount - 1);
+      notifyTranslatingChange();
     }
   }, [language, sourceLocale, getCacheKey]);
 
-  // Clear cache when language changes to force re-translation
+  // Clear memory cache when language changes (keep localStorage for other languages)
   useEffect(() => {
     if (lastLanguage && lastLanguage !== language) {
-      console.log('[useDynamicTranslation] Language changed, clearing cache');
-      translationCache.clear();
+      console.log('[useDynamicTranslation] Language changed, clearing memory cache');
+      // Only clear entries for the old language from memory
+      const keysToRemove: string[] = [];
+      memoryCache.forEach((_, key) => {
+        if (key.includes(`|${lastLanguage}|`)) {
+          keysToRemove.push(key);
+        }
+      });
+      keysToRemove.forEach(key => memoryCache.delete(key));
       pendingTranslations.clear();
     }
     lastLanguage = language;
@@ -118,17 +238,17 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
 
   /**
    * Translate a single text. If same source language, returns original.
-   * Uses batch processing for efficiency.
+   * Uses batch processing and persistent caching for efficiency.
    */
   const translate = useCallback(async (text: string, id?: string): Promise<string> => {
     if (!enabled || !text || language === sourceLocale) {
       return text;
     }
 
-    // Check cache first
+    // Check memory cache first
     const cacheKey = getCacheKey(text, language);
-    if (translationCache.has(cacheKey)) {
-      return translationCache.get(cacheKey)!;
+    if (memoryCache.has(cacheKey)) {
+      return memoryCache.get(cacheKey)!;
     }
 
     // Check if already pending
@@ -179,8 +299,8 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
       }
       
       const cacheKey = getCacheKey(text, language);
-      if (translationCache.has(cacheKey)) {
-        results[index] = translationCache.get(cacheKey)!;
+      if (memoryCache.has(cacheKey)) {
+        results[index] = memoryCache.get(cacheKey)!;
       } else {
         toTranslate.push({ index, text });
       }
@@ -192,6 +312,8 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
     }
 
     setIsTranslating(true);
+    globalTranslatingCount++;
+    notifyTranslatingChange();
 
     try {
       const items = toTranslate.map((item, idx) => ({
@@ -215,7 +337,7 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
         const originalItem = toTranslate[idx];
         if (originalItem) {
           const cacheKey = getCacheKey(originalItem.text, language);
-          translationCache.set(cacheKey, result.translation);
+          memoryCache.set(cacheKey, result.translation);
           results[originalItem.index] = result.translation;
         }
       });
@@ -227,6 +349,9 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
         }
       });
 
+      // Save to persistent storage
+      debouncedSave();
+
       return results;
     } catch (err) {
       console.error('[useDynamicTranslation] Batch translation error:', err);
@@ -237,14 +362,21 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
       return results;
     } finally {
       setIsTranslating(false);
+      globalTranslatingCount = Math.max(0, globalTranslatingCount - 1);
+      notifyTranslatingChange();
     }
   }, [enabled, language, sourceLocale, getCacheKey]);
 
   /**
-   * Clear translation cache
+   * Clear all translation caches (memory and localStorage)
    */
   const clearCache = useCallback(() => {
-    translationCache.clear();
+    memoryCache.clear();
+    pendingTranslations.clear();
+    try {
+      localStorage.removeItem(CACHE_STORAGE_KEY);
+    } catch {}
+    console.log('[useDynamicTranslation] All caches cleared');
   }, []);
 
   return {
@@ -255,6 +387,24 @@ export function useDynamicTranslation(options: UseDynamicTranslationOptions = {}
     isSourceLanguage: language === sourceLocale,
     clearCache,
   };
+}
+
+/**
+ * Hook to subscribe to global translation state
+ * Useful for showing loading indicators
+ */
+export function useGlobalTranslationState() {
+  const [isTranslating, setIsTranslating] = useState(globalTranslatingCount > 0);
+
+  useEffect(() => {
+    const listener = (translating: boolean) => setIsTranslating(translating);
+    translatingListeners.add(listener);
+    return () => {
+      translatingListeners.delete(listener);
+    };
+  }, []);
+
+  return { isTranslating };
 }
 
 export default useDynamicTranslation;
