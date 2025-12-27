@@ -4,6 +4,7 @@ import { HeartPulse, Calendar, Shield, Users, FileText, Bell, Clock, Lock } from
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import { SectorModulesSection } from '@/components/sectors/SectorModulesSection';
 
 const SaludLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
@@ -102,6 +103,9 @@ const SaludLanding: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Módulos Recomendados */}
+      <SectorModulesSection sectorSlug="salud" accentColor="rose" />
 
       {/* CTA */}
       <section className="py-20 px-6">

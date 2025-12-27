@@ -5,6 +5,7 @@ import { ArrowLeft, ShoppingCart, CheckCircle2, TrendingUp, Package, Users, BarC
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import { SectorModulesSection } from '@/components/sectors/SectorModulesSection';
 
 const RetailLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
@@ -90,6 +91,9 @@ const RetailLanding: React.FC = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Módulos Recomendados */}
+        <SectorModulesSection sectorSlug="retail" accentColor="orange" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
