@@ -412,13 +412,13 @@ const StoreNavbar: React.FC = () => {
 
               <button
                 onClick={() => setIsCartOpen(true)}
-                className={`relative p-3 rounded-xl transition-all duration-200 ${
+                className={`relative p-3.5 rounded-xl transition-all duration-200 ${
                   useDarkTheme
                     ? 'text-white/95 hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
                     : 'text-slate-700 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
                 }`}
               >
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="w-6 h-6" />
                 {itemCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 w-5 h-5 flex items-center justify-center bg-primary text-white text-xs font-bold rounded-full shadow-lg">
                     {itemCount}
@@ -431,9 +431,9 @@ const StoreNavbar: React.FC = () => {
             <div className="flex lg:hidden items-center gap-2">
               <button
                 onClick={() => setIsCartOpen(true)}
-                className={`relative p-2 ${useDarkTheme ? 'text-white' : 'text-slate-700'}`}
+                className={`relative p-2.5 ${useDarkTheme ? 'text-white' : 'text-slate-700'}`}
               >
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="w-6 h-6" />
                 {itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center bg-primary text-white text-[10px] font-bold rounded-full">
                     {itemCount}
