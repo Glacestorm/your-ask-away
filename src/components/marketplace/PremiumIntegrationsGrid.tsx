@@ -23,23 +23,25 @@ function PremiumIntegrationCard({ integration }: PremiumIntegrationCardProps) {
     : [];
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
+    <Card className="group hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Logo */}
-          <div className="h-16 w-16 rounded-xl bg-white dark:bg-slate-800 border border-border/50 flex items-center justify-center flex-shrink-0 p-2">
+          <div className="h-20 w-20 rounded-xl bg-card border border-border/60 flex items-center justify-center flex-shrink-0 p-2 overflow-hidden">
             {integration.logo_url ? (
               <img 
                 src={integration.logo_url} 
                 alt={integration.integration_name} 
-                className="h-12 w-12 object-contain"
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-contain transition-transform duration-200 will-change-transform group-hover:scale-[1.08]"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove('hidden');
                 }}
               />
             ) : null}
-            <span className={`text-2xl font-bold text-primary ${integration.logo_url ? 'hidden' : ''}`}>
+            <span className={`text-3xl font-bold text-primary ${integration.logo_url ? 'hidden' : ''}`}>
               {integration.integration_name.charAt(0)}
             </span>
           </div>
