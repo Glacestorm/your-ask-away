@@ -6,7 +6,8 @@ import {
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
   Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles,
   Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes, Cpu,
-  Gauge, Bell, MonitorCheck, Zap
+  Gauge, Bell, MonitorCheck, Zap, Users, TrendingUp, ShieldCheck, 
+  AlertTriangle, LineChart, Key, Workflow, BarChart3, Target
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -44,9 +45,11 @@ const categories: NavCategory[] = [
     color: 'blue',
     items: [
       { id: 'quotes', label: 'Presupuestos', icon: FileText },
+      { id: 'service-quotes', label: 'Cotizaciones Servicio', icon: Receipt },
       { id: 'invoices', label: 'Facturas', icon: Receipt },
       { id: 'pricing', label: 'Precios', icon: Euro },
       { id: 'demo-requests', label: 'Solicitudes Demo', icon: ClipboardList },
+      { id: 'crm-migration', label: 'CRM Migration', icon: Users },
     ]
   },
   {
@@ -82,6 +85,7 @@ const categories: NavCategory[] = [
       { id: 'module-studio', label: 'Module Studio', icon: Boxes },
       { id: 'whitelabel', label: 'White Label', icon: Palette },
       { id: 'verticals', label: 'Verticales', icon: Briefcase },
+      { id: 'marketplace', label: 'Marketplace', icon: Store },
     ]
   },
   {
@@ -103,6 +107,8 @@ const categories: NavCategory[] = [
       { id: 'api', label: 'API', icon: Code },
       { id: 'security', label: 'Seguridad', icon: Shield },
       { id: 'ai-local', label: 'IA Local', icon: Cpu },
+      { id: 'system-health', label: 'System Health', icon: Activity },
+      { id: 'error-dashboard', label: 'Errors Dashboard', icon: AlertTriangle },
     ]
   },
   {
@@ -115,6 +121,8 @@ const categories: NavCategory[] = [
       { id: 'module-notifications', label: 'Notificaciones', icon: Bell },
       { id: 'module-monitoring', label: 'Monitoreo', icon: MonitorCheck },
       { id: 'module-performance', label: 'Performance', icon: Zap },
+      { id: 'metrics-explorer', label: 'Metrics Explorer', icon: BarChart3 },
+      { id: 'automation-engine', label: 'Automation Engine', icon: Workflow },
     ]
   },
   {
@@ -129,6 +137,20 @@ const categories: NavCategory[] = [
       { id: 'enterprise-dashboard', label: 'Enterprise', icon: Building2 },
       { id: 'cs-metrics', label: 'CS Metrics', icon: HeartPulse },
       { id: 'remote-support', label: 'Soporte Remoto', icon: Headphones },
+      { id: 'rfm-dashboard', label: 'RFM Analysis', icon: Target },
+      { id: 'predictive-analytics', label: 'Predictive Analytics', icon: TrendingUp },
+    ]
+  },
+  {
+    id: 'compliance',
+    label: 'Compliance & ML',
+    icon: ShieldCheck,
+    color: 'indigo',
+    items: [
+      { id: 'iso27001', label: 'ISO 27001', icon: ShieldCheck },
+      { id: 'dora-compliance', label: 'DORA Compliance', icon: Shield },
+      { id: 'adaptive-auth', label: 'Adaptive Auth', icon: Key },
+      { id: 'advanced-ml', label: 'Advanced ML', icon: Brain },
     ]
   }
 ];
@@ -181,6 +203,12 @@ const colorMap: Record<string, { bg: string; text: string; border: string; hover
     text: 'text-cyan-400', 
     border: 'border-cyan-500/30',
     hover: 'hover:bg-cyan-500/20'
+  },
+  indigo: { 
+    bg: 'bg-indigo-500/10', 
+    text: 'text-indigo-400', 
+    border: 'border-indigo-500/30',
+    hover: 'hover:bg-indigo-500/20'
   }
 };
 
