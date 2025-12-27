@@ -13,7 +13,7 @@ export const HeroExplosive: React.FC = () => {
   const { t } = useLanguage();
   return (
     <>
-      <section className="relative min-h-[85vh] flex items-start justify-center overflow-hidden">
+      <section id="hero-section" className="relative min-h-[88vh] flex items-start justify-center overflow-hidden">
         {/* Premium Dark Background with Blue/Violet Gradient */}
         <div className="absolute inset-0 bg-[#0a0f1a]">
           {/* Main gradient overlay */}
@@ -72,7 +72,7 @@ export const HeroExplosive: React.FC = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 pt-4 pb-8">
+        <div className="container mx-auto px-4 sm:px-6 relative z-10 pt-8 sm:pt-12 pb-6 sm:pb-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <motion.div
@@ -81,14 +81,14 @@ export const HeroExplosive: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="mb-8"
             >
-              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-500/20 to-violet-500/20 border border-blue-400/30 text-sm font-medium text-blue-300">
+              <span className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-blue-500/20 to-violet-500/20 border border-blue-400/30 text-xs sm:text-sm font-medium text-blue-300">
                 <Sparkles className="w-4 h-4" />
                 {t('landing.hero.badge')}
               </span>
             </motion.div>
 
             {/* Main Headline Container */}
-            <div className="flex flex-col items-center gap-3 md:gap-5 mb-6">
+            <div className="flex flex-col items-center gap-2 sm:gap-3 md:gap-5 mb-4 sm:mb-6">
               {/* First Line - Typing Effect from Left */}
               <motion.div
                 initial={{ opacity: 0, x: -60 }}
@@ -97,7 +97,7 @@ export const HeroExplosive: React.FC = () => {
                 className="overflow-hidden"
               >
                 <motion.h1 
-                  className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[1.05] tracking-tight"
+                  className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1] tracking-tight"
                 >
                   {/* Typing effect for first line */}
                   <motion.span
@@ -138,8 +138,8 @@ export const HeroExplosive: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight">
-                  <span className="relative inline-flex items-center justify-center gap-4 md:gap-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-[1.1] tracking-tight">
+                  <span className="relative inline-flex items-center justify-center gap-2 sm:gap-4 md:gap-6">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
                       {t('landing.hero.line2')}
                     </span>
@@ -293,7 +293,7 @@ export const HeroExplosive: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl md:text-2xl text-slate-400 font-light mb-4 max-w-3xl mx-auto"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-400 font-light mb-3 sm:mb-4 max-w-3xl mx-auto px-2"
             >
               {t('landing.hero.tagline')}{' '}
               <span className="text-white font-medium">{t('landing.hero.taglineHighlight')}</span>
@@ -304,7 +304,7 @@ export const HeroExplosive: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed"
+              className="text-sm sm:text-base md:text-lg text-slate-500 max-w-2xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed px-2"
             >
               {t('landing.hero.description')}
             </motion.p>
@@ -314,12 +314,12 @@ export const HeroExplosive: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-6"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-4 sm:mb-6 px-4"
             >
               <Link to="/precios">
                 <Button 
                   size="lg"
-                  className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full shadow-2xl shadow-blue-500/30 transition-all duration-300 hover:shadow-blue-500/50 hover:scale-105"
+                  className="h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full shadow-2xl shadow-blue-500/30 transition-all duration-300 hover:shadow-blue-500/50 hover:scale-105 w-full sm:w-auto"
                 >
                   {t('landing.hero.cta1')}
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -337,7 +337,7 @@ export const HeroExplosive: React.FC = () => {
                   size="lg"
                   variant="outline"
                   onClick={() => setIsDemoModalOpen(true)}
-                  className="relative h-14 px-8 text-base font-semibold bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 rounded-full transition-all duration-300 backdrop-blur-sm z-10"
+                  className="relative h-12 sm:h-14 px-6 sm:px-8 text-sm sm:text-base font-semibold bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 rounded-full transition-all duration-300 backdrop-blur-sm z-10 w-full sm:w-auto"
                 >
                   <Play className="mr-2 w-5 h-5" />
                   {t('landing.hero.cta2')}
@@ -348,25 +348,32 @@ export const HeroExplosive: React.FC = () => {
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <motion.div
+        {/* Scroll indicator with smooth scroll */}
+        <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2"
+          onClick={() => {
+            const nextSection = document.getElementById('hero-section')?.nextElementSibling;
+            if (nextSection) {
+              nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
+          className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 cursor-pointer group"
+          aria-label="Scroll hacia abajo"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-2"
+            className="w-5 h-8 sm:w-6 sm:h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5 sm:p-2 group-hover:border-white/40 transition-colors"
           >
             <motion.div 
               animate={{ opacity: [0.4, 1, 0.4] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="w-1 h-2 rounded-full bg-white/60" 
+              className="w-1 h-1.5 sm:h-2 rounded-full bg-white/60 group-hover:bg-white/80 transition-colors" 
             />
           </motion.div>
-        </motion.div>
+        </motion.button>
       </section>
 
       <DemoRequestModal 
