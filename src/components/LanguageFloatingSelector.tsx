@@ -53,7 +53,7 @@ export function LanguageFloatingSelector() {
                 variant="secondary"
                 size="icon"
                 onClick={() => setIsModalOpen(true)}
-                className="w-14 h-14 rounded-full bg-secondary text-secondary-foreground shadow-lg hover:shadow-xl transition-shadow"
+                className="w-14 h-14 rounded-full bg-slate-800 hover:bg-slate-700 text-white shadow-lg hover:shadow-xl transition-shadow"
                 aria-label={`Idioma actual: ${currentLang.name}. Clic para cambiar`}
               >
               <motion.div 
