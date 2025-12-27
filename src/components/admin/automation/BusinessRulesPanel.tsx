@@ -71,8 +71,8 @@ export default function BusinessRulesPanel({ className, expanded = false }: Busi
     setIsGenerating(true);
     try {
       const result = await createRule({ 
-        description: newRuleDesc,
-        generateWithAI: true 
+        name: newRuleDesc.slice(0, 50),
+        description: newRuleDesc
       });
       if (result) {
         toast.success('Regla creada con IA');
@@ -103,7 +103,7 @@ export default function BusinessRulesPanel({ className, expanded = false }: Busi
   });
 
   const activeRules = rules.filter(r => r.is_active).length;
-  const totalTriggers = rules.reduce((acc, r) => acc + (r.trigger_count || 0), 0);
+  const totalRules = rules.length;
   const avgPriority = rules.length 
     ? Math.round(rules.reduce((acc, r) => acc + (r.priority || 0), 0) / rules.length)
     : 0;
@@ -206,9 +206,9 @@ export default function BusinessRulesPanel({ className, expanded = false }: Busi
           <div className="p-3 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <Zap className="h-3.5 w-3.5" />
-              Disparos
+              Total
             </div>
-            <p className="text-2xl font-bold">{totalTriggers}</p>
+            <p className="text-2xl font-bold">{totalRules}</p>
           </div>
           <div className="p-3 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -297,12 +297,6 @@ export default function BusinessRulesPanel({ className, expanded = false }: Busi
                         <span className="text-xs text-muted-foreground">
                           {rule.actions?.length || 0} acciones
                         </span>
-                        {rule.trigger_count > 0 && (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Zap className="h-3 w-3" />
-                            {rule.trigger_count}
-                          </span>
-                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -343,8 +337,8 @@ export default function BusinessRulesPanel({ className, expanded = false }: Busi
               {evaluations.slice(0, 3).map((ev, idx) => (
                 <div key={idx} className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">{ev.rule_name}</span>
-                  <Badge variant={ev.triggered ? 'default' : 'outline'} className="text-xs">
-                    {ev.triggered ? 'Disparada' : 'No aplicó'}
+                  <Badge variant="outline" className="text-xs">
+                    Evaluada
                   </Badge>
                 </div>
               ))}

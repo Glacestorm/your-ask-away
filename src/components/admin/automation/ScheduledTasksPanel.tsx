@@ -169,13 +169,10 @@ export default function ScheduledTasksPanel({ className, expanded = false }: Sch
           <div className="p-3 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <Timer className="h-3.5 w-3.5" />
-              Próxima
+              Hoy
             </div>
             <p className="text-lg font-bold truncate">
-              {stats?.next_execution 
-                ? format(new Date(stats.next_execution), 'HH:mm', { locale: es })
-                : '--:--'
-              }
+              {stats?.executions_today || 0}
             </p>
           </div>
         </div>
@@ -276,16 +273,6 @@ export default function ScheduledTasksPanel({ className, expanded = false }: Sch
                         </div>
                       </div>
                       
-                      {/* Progress for running tasks */}
-                      {task.status === 'running' && (
-                        <div className="mt-3 ml-11">
-                          <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-muted-foreground">Ejecutando...</span>
-                            <span>{task.progress || 0}%</span>
-                          </div>
-                          <Progress value={task.progress || 0} className="h-1" />
-                        </div>
-                      )}
                     </div>
                   ))
                 )}
@@ -308,7 +295,7 @@ export default function ScheduledTasksPanel({ className, expanded = false }: Sch
                         <div className="flex items-center gap-3">
                           {getStatusIcon(exec.status)}
                           <div>
-                            <p className="font-medium text-sm">{exec.task_name || 'Tarea'}</p>
+                            <p className="font-medium text-sm">{exec.task_id || 'Tarea'}</p>
                             <p className="text-xs text-muted-foreground">
                               {exec.started_at && format(new Date(exec.started_at), "dd/MM HH:mm", { locale: es })}
                             </p>
@@ -317,7 +304,7 @@ export default function ScheduledTasksPanel({ className, expanded = false }: Sch
                         <div className="text-right">
                           <Badge 
                             variant={
-                              exec.status === 'success' ? 'default' : 
+                              exec.status === 'completed' ? 'default' : 
                               exec.status === 'failed' ? 'destructive' : 
                               'secondary'
                             }

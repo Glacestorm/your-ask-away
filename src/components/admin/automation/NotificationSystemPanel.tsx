@@ -227,11 +227,6 @@ export default function NotificationSystemPanel({ className, expanded = false }:
                             <Badge variant="outline" className="text-xs">
                               {template.type}
                             </Badge>
-                            {template.category && (
-                              <span className="text-xs text-muted-foreground">
-                                {template.category}
-                              </span>
-                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
@@ -273,12 +268,12 @@ export default function NotificationSystemPanel({ className, expanded = false }:
                             "p-2 rounded-lg",
                             channel.is_active ? "bg-green-500/10" : "bg-muted"
                           )}>
-                            {getChannelIcon(channel.type)}
+                            {getChannelIcon(channel.channel_type)}
                           </div>
                           <div>
                             <p className="font-medium text-sm">{channel.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {channel.type} · {channel.provider || 'Sin proveedor'}
+                              {channel.channel_type}
                             </p>
                           </div>
                         </div>
@@ -314,9 +309,9 @@ export default function NotificationSystemPanel({ className, expanded = false }:
                         <div className="flex items-center gap-3">
                           {getStatusIcon(log.status)}
                           <div>
-                            <p className="font-medium text-sm">{log.template_name || 'Notificación'}</p>
+                            <p className="font-medium text-sm">{log.template_id || 'Notificación'}</p>
                             <p className="text-xs text-muted-foreground">
-                              {log.recipient} · {log.channel}
+                              {log.recipient}
                             </p>
                           </div>
                         </div>
