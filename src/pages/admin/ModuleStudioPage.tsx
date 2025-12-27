@@ -31,7 +31,10 @@ import {
   Users,
   BarChart3,
   Rocket,
-  Store
+  Store,
+  Tags,
+  RotateCcw,
+  FlaskConical
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,7 +54,10 @@ import {
   ModuleCollaborationPanel,
   ModuleAnalyticsPanel,
   ModuleDeploymentPanel,
-  ModuleMarketplacePanel
+  ModuleMarketplacePanel,
+  ModuleVersioningPanel,
+  ModuleRollbackPanel,
+  ModuleABTestingPanel
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -367,6 +373,18 @@ export default function ModuleStudioPage() {
                       <Store className="h-4 w-4 mr-1" />
                       Market
                     </TabsTrigger>
+                    <TabsTrigger value="versioning">
+                      <Tags className="h-4 w-4 mr-1" />
+                      Versiones
+                    </TabsTrigger>
+                    <TabsTrigger value="rollback">
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      Rollback
+                    </TabsTrigger>
+                    <TabsTrigger value="abtesting">
+                      <FlaskConical className="h-4 w-4 mr-1" />
+                      A/B Test
+                    </TabsTrigger>
                   </TabsList>
                   
                   <div className="flex gap-2">
@@ -561,6 +579,18 @@ export default function ModuleStudioPage() {
                       toast.success(`Módulo ${key} instalado correctamente`);
                     }}
                   />
+                </TabsContent>
+
+                <TabsContent value="versioning" className="mt-0">
+                  <ModuleVersioningPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="rollback" className="mt-0">
+                  <ModuleRollbackPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="abtesting" className="mt-0">
+                  <ModuleABTestingPanel moduleKey={selectedModule} />
                 </TabsContent>
               </Tabs>
             ) : (
