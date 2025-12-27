@@ -296,13 +296,14 @@ const StoreNavbar: React.FC = () => {
 
             {/* Desktop Navigation */}
             <div 
-              className="hidden lg:flex items-center gap-1"
+              className="hidden lg:flex items-center justify-center gap-1 h-full"
               onMouseEnter={cancelDesktopClose}
               onMouseLeave={() => scheduleDesktopClose()}
             >
               {navItems.map((item) => (
                 <div
                   key={item.id}
+                  className="flex items-center h-full"
                   onMouseEnter={() => {
                     cancelDesktopClose();
                     if (item.megaMenu) setActiveMenu(item.id);
@@ -312,7 +313,7 @@ const StoreNavbar: React.FC = () => {
                   }}
                 >
                   {item.megaMenu ? (
-                    <div className={`flex items-center rounded-xl transition-all duration-200 ${
+                    <div className={`flex items-center h-full rounded-xl transition-all duration-200 ${
                       useDarkTheme 
                         ? 'hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)]'
                         : 'hover:bg-slate-100 hover:shadow-md'
