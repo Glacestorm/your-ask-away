@@ -34,7 +34,9 @@ import {
   Store,
   Tags,
   RotateCcw,
-  FlaskConical
+  FlaskConical,
+  Download,
+  Layout
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +59,9 @@ import {
   ModuleMarketplacePanel,
   ModuleVersioningPanel,
   ModuleRollbackPanel,
-  ModuleABTestingPanel
+  ModuleABTestingPanel,
+  ModuleExportImportPanel,
+  ModuleTemplatesPanel
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -385,6 +389,14 @@ export default function ModuleStudioPage() {
                       <FlaskConical className="h-4 w-4 mr-1" />
                       A/B Test
                     </TabsTrigger>
+                    <TabsTrigger value="export">
+                      <Download className="h-4 w-4 mr-1" />
+                      Export
+                    </TabsTrigger>
+                    <TabsTrigger value="templates">
+                      <Layout className="h-4 w-4 mr-1" />
+                      Templates
+                    </TabsTrigger>
                   </TabsList>
                   
                   <div className="flex gap-2">
@@ -591,6 +603,17 @@ export default function ModuleStudioPage() {
 
                 <TabsContent value="abtesting" className="mt-0">
                   <ModuleABTestingPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="export" className="mt-0">
+                  <ModuleExportImportPanel moduleKey={selectedModule} />
+                </TabsContent>
+
+                <TabsContent value="templates" className="mt-0">
+                  <ModuleTemplatesPanel onCreateModule={(key) => {
+                    setSelectedModule(key);
+                    refetchModules();
+                  }} />
                 </TabsContent>
               </Tabs>
             ) : (

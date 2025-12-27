@@ -26,3 +26,7 @@ export { ModuleMarketplacePanel } from './ModuleMarketplacePanel';
 export { ModuleVersioningPanel } from './ModuleVersioningPanel';
 export { ModuleRollbackPanel } from './ModuleRollbackPanel';
 export { ModuleABTestingPanel } from './ModuleABTestingPanel';
+
+// Phase 9 Components - Export/Import & Templates
+export { ModuleExportImportPanel } from './ModuleExportImportPanel';
+export { ModuleTemplatesPanel } from './ModuleTemplatesPanel';
