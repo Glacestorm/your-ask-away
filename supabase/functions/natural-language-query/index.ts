@@ -6,8 +6,9 @@ const corsHeaders = {
 };
 
 interface NLQueryRequest {
-  action: 'process_query' | 'get_suggestions' | 'explain_result';
+  action: 'process_query' | 'get_suggestions' | 'explain_result' | 'execute' | 'get_history' | 'explain';
   query?: string;
+  limit?: number;
   context?: {
     availableTables?: string[];
     userRole?: string;
@@ -83,6 +84,56 @@ RESPONDE EN JSON ESTRICTO:
   "potentialConcerns": string[]
 }`;
         userPrompt = `Explica estos resultados: ${JSON.stringify(resultData)}`;
+        break;
+
+      case 'execute':
+        systemPrompt = `Eres un asistente de análisis de datos empresariales que traduce consultas en lenguaje natural.
+
+TABLAS DISPONIBLES: companies, contacts, visits, operations, goals, profiles
+
+Tu trabajo es:
+1. Interpretar la pregunta del usuario
+2. Generar una consulta SQL conceptual (no ejecutable)
+3. Generar datos de ejemplo realistas
+4. Proporcionar explicación y visualización sugerida
+
+RESPONDE EN JSON ESTRICTO:
+{
+  "sql_generated": string,
+  "data": [...],
+  "columns": string[],
+  "row_count": number,
+  "execution_time_ms": number,
+  "explanation": string,
+  "visualization_type": "table" | "bar" | "line" | "pie" | "metric"
+}`;
+        userPrompt = `Consulta del usuario: "${query}"`;
+        break;
+
+      case 'get_history':
+        // Return mock history data without calling AI
+        return new Response(JSON.stringify({
+          success: true,
+          history: [
+            { id: '1', query: '¿Cuántas empresas hay activas?', result_summary: '45 empresas activas', created_at: new Date(Date.now() - 3600000).toISOString() },
+            { id: '2', query: 'Top 10 clientes por facturación', result_summary: 'Lista de 10 principales clientes', created_at: new Date(Date.now() - 7200000).toISOString() },
+            { id: '3', query: 'Tendencia de ventas mensual', result_summary: 'Gráfico de tendencia generado', created_at: new Date(Date.now() - 86400000).toISOString() }
+          ]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'explain':
+        systemPrompt = `Eres un experto en SQL que explica consultas de forma clara.
+Explica qué haría esta consulta y cómo se traduciría a SQL.
+
+RESPONDE EN JSON ESTRICTO:
+{
+  "explanation": string,
+  "sql_concept": string,
+  "tables_involved": string[]
+}`;
+        userPrompt = `Explica esta consulta en lenguaje natural: "${query}"`;
         break;
 
       default:
