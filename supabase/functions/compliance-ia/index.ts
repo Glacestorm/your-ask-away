@@ -6,7 +6,14 @@ const corsHeaders = {
 };
 
 interface ComplianceRequest {
-  action: 'check_compliance' | 'generate_report' | 'assess_risk' | 'get_recommendations' | 'monitor_changes';
+  action: 'run_check' | 'get_summary' | 'get_alerts' | 'analyze_document' | 'generate_remediation' | 'update_check' |
+          'check_compliance' | 'generate_report' | 'assess_risk' | 'get_recommendations' | 'monitor_changes';
+  regulation?: string;
+  documentContent?: string;
+  checkIds?: string[];
+  checkId?: string;
+  status?: string;
+  evidence?: string;
   context?: {
     regulations?: string[];
     industry?: string;
@@ -18,24 +25,140 @@ interface ComplianceRequest {
   entityType?: string;
 }
 
+// Mock data generators
+function generateMockSummary() {
+  return [
+    { regulation: 'GDPR', compliance_score: 87, checks_total: 45, checks_passed: 39, last_audit: '2025-01-15' },
+    { regulation: 'SOX', compliance_score: 92, checks_total: 30, checks_passed: 28, last_audit: '2025-01-10' },
+    { regulation: 'HIPAA', compliance_score: 78, checks_total: 50, checks_passed: 39, last_audit: '2025-01-05' },
+    { regulation: 'PCI-DSS', compliance_score: 95, checks_total: 25, checks_passed: 24, last_audit: '2025-01-20' },
+    { regulation: 'ISO 27001', compliance_score: 88, checks_total: 60, checks_passed: 53, last_audit: '2025-01-12' }
+  ];
+}
+
+function generateMockAlerts() {
+  return [
+    { id: 'alert-1', type: 'deadline' as const, title: 'Renovación certificación ISO', description: 'Certificación ISO 27001 vence en 30 días', regulation: 'ISO 27001', due_date: '2025-02-27', severity: 'high' as const },
+    { id: 'alert-2', type: 'violation' as const, title: 'Política de retención incumplida', description: 'Datos de clientes exceden período de retención', regulation: 'GDPR', severity: 'critical' as const },
+    { id: 'alert-3', type: 'change' as const, title: 'Nueva regulación de IA', description: 'EU AI Act entra en vigor Q2 2025', regulation: 'EU AI Act', due_date: '2025-04-01', severity: 'medium' as const },
+    { id: 'alert-4', type: 'audit' as const, title: 'Auditoría SOX programada', description: 'Auditoría externa programada para marzo', regulation: 'SOX', due_date: '2025-03-15', severity: 'medium' as const }
+  ];
+}
+
+function generateMockReport(regulation: string) {
+  return {
+    id: `report-${Date.now()}`,
+    regulation,
+    overall_score: Math.floor(Math.random() * 20) + 80,
+    checks: [
+      { id: 'chk-1', regulation, requirement: 'Consentimiento explícito', status: 'compliant', evidence: 'Forms actualizados', last_checked: new Date().toISOString(), next_review: '2025-04-01', risk_level: 'low' },
+      { id: 'chk-2', regulation, requirement: 'Derecho al olvido', status: 'partial', evidence: 'Proceso manual', last_checked: new Date().toISOString(), next_review: '2025-03-01', risk_level: 'medium' },
+      { id: 'chk-3', regulation, requirement: 'Portabilidad de datos', status: 'compliant', evidence: 'API implementada', last_checked: new Date().toISOString(), next_review: '2025-04-01', risk_level: 'low' }
+    ],
+    gaps: [
+      { requirement: 'Automatización del derecho al olvido', recommendation: 'Implementar flujo automatizado de eliminación de datos' },
+      { requirement: 'Registro de actividades de procesamiento', recommendation: 'Completar registro de todas las actividades de procesamiento' }
+    ],
+    generated_at: new Date().toISOString()
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const requestBody = await req.json() as ComplianceRequest;
+    const { action } = requestBody;
+    console.log(`[compliance-ia] Processing action: ${action}`);
+
+    // Handle mock data actions (no AI needed)
+    switch (action) {
+      case 'get_summary':
+        return new Response(JSON.stringify({
+          success: true,
+          summary: generateMockSummary(),
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'get_alerts':
+        return new Response(JSON.stringify({
+          success: true,
+          alerts: generateMockAlerts(),
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'run_check':
+        const report = generateMockReport(requestBody.regulation || 'GDPR');
+        return new Response(JSON.stringify({
+          success: true,
+          report,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'update_check':
+        return new Response(JSON.stringify({
+          success: true,
+          checkId: requestBody.checkId,
+          status: requestBody.status,
+          updated_at: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'generate_remediation':
+        return new Response(JSON.stringify({
+          success: true,
+          plan: {
+            steps: [
+              { order: 1, action: 'Auditar procesos actuales', responsible: 'Compliance Officer', deadline: '2025-02-15' },
+              { order: 2, action: 'Documentar gaps identificados', responsible: 'Legal Team', deadline: '2025-02-28' },
+              { order: 3, action: 'Implementar controles', responsible: 'IT Security', deadline: '2025-03-15' },
+              { order: 4, action: 'Validar implementación', responsible: 'Auditor Interno', deadline: '2025-03-30' }
+            ],
+            estimated_time: '6 semanas',
+            resources_needed: ['Compliance Officer', 'Legal Team', 'IT Security', 'Auditor Externo']
+          },
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+    // For AI-powered actions
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const { action, context, entityId, entityType } = await req.json() as ComplianceRequest;
-    console.log(`[compliance-ia] Processing action: ${action}`);
-
     let systemPrompt = '';
     let userPrompt = '';
+    const { context, entityId, entityType, documentContent, regulation } = requestBody;
 
     switch (action) {
+      case 'analyze_document':
+        systemPrompt = `Eres un experto en análisis de cumplimiento normativo.
+
+ANALIZA el documento contra la regulación especificada.
+
+RESPONDE EN JSON ESTRICTO:
+{
+  "findings": [
+    { "issue": string, "severity": "critical" | "high" | "medium" | "low", "recommendation": string }
+  ],
+  "score": number (0-100)
+}`;
+        userPrompt = `Analiza este documento para cumplimiento de ${regulation}:
+${documentContent?.substring(0, 2000)}`;
+        break;
+
       case 'check_compliance':
         systemPrompt = `Eres un experto en cumplimiento normativo empresarial.
 
@@ -163,6 +286,12 @@ RESPONDE EN JSON ESTRICTO:
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -181,12 +310,16 @@ RESPONDE EN JSON ESTRICTO:
 
     console.log(`[compliance-ia] Success: ${action}`);
 
-    return new Response(JSON.stringify({
-      success: true,
-      action,
-      data: result,
-      timestamp: new Date().toISOString()
-    }), {
+    // Format response based on action
+    const responseData: Record<string, unknown> = { success: true, action, timestamp: new Date().toISOString() };
+    
+    if (action === 'analyze_document') {
+      responseData.analysis = result;
+    } else {
+      responseData.data = result;
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
