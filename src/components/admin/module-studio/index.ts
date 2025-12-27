@@ -16,3 +16,8 @@ export { ModuleTestingPanel } from './ModuleTestingPanel';
 export { ModuleSecurityPanel } from './ModuleSecurityPanel';
 export { ModuleDocumentationPanel } from './ModuleDocumentationPanel';
 export { ModuleCollaborationPanel } from './ModuleCollaborationPanel';
+
+// Phase 7 Components
+export { ModuleAnalyticsPanel } from './ModuleAnalyticsPanel';
+export { ModuleDeploymentPanel } from './ModuleDeploymentPanel';
+export { ModuleMarketplacePanel } from './ModuleMarketplacePanel';
