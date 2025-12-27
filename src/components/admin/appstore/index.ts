@@ -6,3 +6,5 @@ export { CNAEModuleGenerator } from './CNAEModuleGenerator';
 export { GeneratedModules } from './GeneratedModules';
 export { ModuleDetails } from './ModuleDetails';
 export { ModulePublisherPanel } from './ModulePublisherPanel';
+export { ModuleCoverageAnalyzer } from './ModuleCoverageAnalyzer';
+export { VerticalModuleGenerator } from './VerticalModuleGenerator';
