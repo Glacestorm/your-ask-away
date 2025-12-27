@@ -30,3 +30,4 @@ export { ModuleABTestingPanel } from './ModuleABTestingPanel';
 // Phase 9 Components - Export/Import & Templates
 export { ModuleExportImportPanel } from './ModuleExportImportPanel';
 export { ModuleTemplatesPanel } from './ModuleTemplatesPanel';
+export { ModuleDependenciesPanel } from './ModuleDependenciesPanel';
