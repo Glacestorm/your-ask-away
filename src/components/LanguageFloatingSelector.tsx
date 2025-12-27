@@ -40,20 +40,20 @@ export function LanguageFloatingSelector() {
 
   return (
     <>
-      <div className="fixed left-4 bottom-20 z-50">
+      <div className="fixed left-6 bottom-6 z-40">
         <Tooltip>
           <TooltipTrigger asChild>
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.5 }}
             >
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
                 onClick={() => setIsModalOpen(true)}
-                className="h-11 w-11 rounded-full bg-background/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 hover:border-primary/40 group"
+                className="w-14 h-14 rounded-full bg-secondary text-secondary-foreground shadow-lg hover:shadow-xl transition-shadow"
                 aria-label={`Idioma actual: ${currentLang.name}. Clic para cambiar`}
               >
               <motion.div 
@@ -61,9 +61,8 @@ export function LanguageFloatingSelector() {
                 initial={{ scale: 0.5, rotate: -20 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                className="group-hover:scale-110 transition-transform"
               >
-                <RegionalFlag code={language} size="md" />
+                <RegionalFlag code={language} size="lg" />
               </motion.div>
               </Button>
             </motion.div>
