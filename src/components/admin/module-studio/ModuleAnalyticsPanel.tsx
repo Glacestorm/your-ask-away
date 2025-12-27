@@ -18,11 +18,11 @@ interface ModuleAnalyticsPanelProps {
 }
 
 export function ModuleAnalyticsPanel({ moduleKey, className }: ModuleAnalyticsPanelProps) {
-  const { isLoading, dashboardData, fetchDashboard, getTrendIcon } = useModuleAnalytics();
+  const { isLoading, dashboardData, fetchDashboardData, getTrendIcon } = useModuleAnalytics(moduleKey);
 
   useEffect(() => {
-    if (moduleKey) fetchDashboard();
-  }, [moduleKey, fetchDashboard]);
+    if (moduleKey) fetchDashboardData();
+  }, [moduleKey, fetchDashboardData]);
 
   if (!moduleKey) {
     return (
@@ -48,7 +48,7 @@ export function ModuleAnalyticsPanel({ moduleKey, className }: ModuleAnalyticsPa
               <CardDescription className="text-xs">Métricas de uso y rendimiento</CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={fetchDashboard} disabled={isLoading} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={fetchDashboardData} disabled={isLoading} className="h-8 w-8">
             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
           </Button>
         </div>

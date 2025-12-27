@@ -2,14 +2,13 @@
  * ModuleMarketplacePanel - Catálogo de módulos con ratings, reviews e instalación
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
 import { 
   RefreshCw, 
   Store,
@@ -20,14 +19,10 @@ import {
   Upload,
   Package,
   TrendingUp,
-  Users,
-  CheckCircle,
-  Clock
+  CheckCircle
 } from 'lucide-react';
-import { useModuleMarketplace, MarketplaceModule, ModuleReview } from '@/hooks/admin/useModuleMarketplace';
+import { useModuleMarketplace, MarketplaceModule } from '@/hooks/admin/useModuleMarketplace';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface ModuleMarketplacePanelProps {
   onInstall?: (moduleKey: string) => void;
@@ -41,27 +36,18 @@ export function ModuleMarketplacePanel({
   const [activeTab, setActiveTab] = useState('discover');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedModule, setSelectedModule] = useState<MarketplaceModule | null>(null);
 
   const {
     isLoading,
     modules,
     installedModules,
-    error,
-    lastRefresh,
+    categories,
     fetchModules,
     installModule,
     uninstallModule,
-    publishModule,
     fetchReviews,
-    startAutoRefresh,
-    stopAutoRefresh
+    isInstalled
   } = useModuleMarketplace();
-
-  useEffect(() => {
-    startAutoRefresh(120000);
-    return () => stopAutoRefresh();
-  }, [startAutoRefresh, stopAutoRefresh]);
 
   const handleInstall = async (moduleKey: string) => {
     const result = await installModule(moduleKey);
@@ -71,19 +57,16 @@ export function ModuleMarketplacePanel({
   };
 
   const handleViewDetails = async (mod: MarketplaceModule) => {
-    setSelectedModule(mod);
     await fetchReviews(mod.id);
   };
 
   const filteredModules = modules.filter(mod => {
     const matchesSearch = !searchQuery || 
-      mod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mod.module_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mod.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || mod.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
-
-  const categories = [...new Set(modules.map(m => m.category).filter(Boolean))];
 
   const renderStars = (rating: number) => (
     <div className="flex gap-0.5">
@@ -110,10 +93,7 @@ export function ModuleMarketplacePanel({
             <div>
               <CardTitle className="text-base">Module Marketplace</CardTitle>
               <CardDescription className="text-xs">
-                {lastRefresh 
-                  ? `Actualizado ${formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}`
-                  : 'Sincronizando...'
-                }
+                {modules.length} módulos disponibles
               </CardDescription>
             </div>
           </div>
@@ -186,84 +166,80 @@ export function ModuleMarketplacePanel({
 
             {/* Module Grid */}
             <ScrollArea className="h-[400px]">
-              {error ? (
-                <div className="text-center py-8 text-destructive text-sm">{error}</div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {filteredModules.map(mod => {
-                    const isInstalled = installedModules.includes(mod.key);
-                    return (
-                      <div 
-                        key={mod.id}
-                        className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
-                        onClick={() => handleViewDetails(mod)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                              <Package className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-sm">{mod.name}</h4>
-                              <p className="text-xs text-muted-foreground">{mod.author}</p>
-                            </div>
+              <div className="grid grid-cols-2 gap-3">
+                {filteredModules.map(mod => {
+                  const moduleInstalled = isInstalled(mod.module_key);
+                  return (
+                    <div 
+                      key={mod.id}
+                      className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => handleViewDetails(mod)}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                            <Package className="h-5 w-5 text-primary" />
                           </div>
-                          {isInstalled && (
-                            <Badge variant="secondary" className="text-xs">
-                              <CheckCircle className="h-3 w-3 mr-1" /> Instalado
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                          {mod.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            {renderStars(mod.rating)}
-                            <span className="text-xs text-muted-foreground">
-                              ({mod.reviewCount})
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Download className="h-3 w-3" />
-                            {mod.downloads}
+                          <div>
+                            <h4 className="font-medium text-sm">{mod.module_name}</h4>
+                            <p className="text-xs text-muted-foreground">{mod.author}</p>
                           </div>
                         </div>
-                        <div className="flex gap-2 mt-3">
-                          <Badge variant="outline" className="text-xs">
-                            v{mod.version}
+                        {moduleInstalled && (
+                          <Badge variant="secondary" className="text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" /> Instalado
                           </Badge>
-                          {mod.price === 0 ? (
-                            <Badge variant="secondary" className="text-xs">Gratis</Badge>
-                          ) : (
-                            <Badge className="text-xs">{mod.price}€</Badge>
-                          )}
-                        </div>
-                        {!isInstalled && (
-                          <Button 
-                            size="sm" 
-                            className="w-full mt-3"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleInstall(mod.key);
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Instalar
-                          </Button>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                        {mod.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {renderStars(mod.rating)}
+                          <span className="text-xs text-muted-foreground">
+                            ({mod.reviews_count})
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Download className="h-3 w-3" />
+                          {mod.downloads}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <Badge variant="outline" className="text-xs">
+                          v{mod.version}
+                        </Badge>
+                        {mod.is_free ? (
+                          <Badge variant="secondary" className="text-xs">Gratis</Badge>
+                        ) : (
+                          <Badge className="text-xs">{mod.price}€</Badge>
+                        )}
+                      </div>
+                      {!moduleInstalled && (
+                        <Button 
+                          size="sm" 
+                          className="w-full mt-3"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleInstall(mod.module_key);
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Instalar
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </ScrollArea>
           </TabsContent>
 
           <TabsContent value="installed" className="mt-0">
             <ScrollArea className="h-[450px]">
               <div className="space-y-2">
-                {modules.filter(m => installedModules.includes(m.key)).map(mod => (
+                {modules.filter(m => isInstalled(m.module_key)).map(mod => (
                   <div 
                     key={mod.id}
                     className="p-3 rounded-lg border bg-card flex items-center justify-between"
@@ -273,14 +249,14 @@ export function ModuleMarketplacePanel({
                         <Package className="h-5 w-5 text-green-600" />
                       </div>
                       <div>
-                        <h4 className="font-medium text-sm">{mod.name}</h4>
+                        <h4 className="font-medium text-sm">{mod.module_name}</h4>
                         <p className="text-xs text-muted-foreground">v{mod.version}</p>
                       </div>
                     </div>
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => uninstallModule(mod.key)}
+                      onClick={() => uninstallModule(mod.module_key)}
                     >
                       Desinstalar
                     </Button>
@@ -325,7 +301,7 @@ export function ModuleMarketplacePanel({
                         #{idx + 1}
                       </span>
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{mod.name}</h4>
+                        <h4 className="font-medium text-sm">{mod.module_name}</h4>
                         <div className="flex items-center gap-2 mt-1">
                           {renderStars(mod.rating)}
                           <span className="text-xs text-muted-foreground">

@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   RefreshCw, 
   GitBranch,
@@ -26,7 +25,7 @@ import {
   FileText,
   AlertCircle
 } from 'lucide-react';
-import { useModuleVersionControl, ModuleVersion, ModuleBranch, MergeRequest } from '@/hooks/admin/useModuleVersionControl';
+import { useModuleVersionControl } from '@/hooks/admin/useModuleVersionControl';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -42,7 +41,6 @@ export function ModuleVersionControlPanel({
 }: ModuleVersionControlPanelProps) {
   const [activeTab, setActiveTab] = useState('versions');
   const [newBranchName, setNewBranchName] = useState('');
-  const [commitMessage, setCommitMessage] = useState('');
   const [showCreateBranch, setShowCreateBranch] = useState(false);
 
   const {
@@ -51,30 +49,17 @@ export function ModuleVersionControlPanel({
     branches,
     currentBranch,
     mergeRequests,
-    error,
-    lastRefresh,
     fetchVersions,
     fetchBranches,
     createBranch,
     switchBranch,
-    createMergeRequest,
-    approveMerge,
-    rollback,
-    versionComparison,
-    startAutoRefresh,
-    stopAutoRefresh
-  } = useModuleVersionControl();
-
-  useEffect(() => {
-    if (moduleKey) {
-      startAutoRefresh(moduleKey, 60000);
-    }
-    return () => stopAutoRefresh();
-  }, [moduleKey, startAutoRefresh, stopAutoRefresh]);
+    merge,
+    rollback
+  } = useModuleVersionControl(moduleKey);
 
   const handleCreateBranch = async () => {
     if (!moduleKey || !newBranchName.trim()) return;
-    const result = await createBranch(moduleKey, newBranchName.trim());
+    const result = await createBranch(moduleKey, newBranchName.trim(), undefined, undefined);
     if (result) {
       setNewBranchName('');
       setShowCreateBranch(false);
@@ -83,7 +68,7 @@ export function ModuleVersionControlPanel({
 
   const handleRollback = async (versionId: string) => {
     if (!moduleKey) return;
-    await rollback(moduleKey, versionId);
+    await rollback(moduleKey, versionId, 'Rollback manual');
   };
 
   if (!moduleKey) {
@@ -113,7 +98,7 @@ export function ModuleVersionControlPanel({
                 {currentBranch && (
                   <span className="flex items-center gap-1">
                     <GitBranch className="h-3 w-3" />
-                    {currentBranch}
+                    {currentBranch.name}
                   </span>
                 )}
               </CardDescription>
@@ -149,87 +134,83 @@ export function ModuleVersionControlPanel({
           </TabsList>
 
           <TabsContent value="versions" className="mt-0">
-            {error ? (
-              <div className="text-center py-8 text-destructive text-sm">{error}</div>
-            ) : (
-              <ScrollArea className="h-[400px]">
-                <div className="space-y-2">
-                  {versions.map((version, idx) => (
-                    <div 
-                      key={version.id}
-                      className={cn(
-                        "p-4 rounded-lg border bg-card transition-colors",
-                        version.isLatest && "border-primary/50 bg-primary/5"
-                      )}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={version.isLatest ? "default" : "outline"}>
-                            v{version.version}
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-2">
+                {versions.map((version) => (
+                  <div 
+                    key={version.id}
+                    className={cn(
+                      "p-4 rounded-lg border bg-card transition-colors",
+                      version.isLatest && "border-primary/50 bg-primary/5"
+                    )}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={version.isLatest ? "default" : "outline"}>
+                          v{version.version}
+                        </Badge>
+                        {version.isLatest && (
+                          <Badge variant="secondary" className="text-xs">Latest</Badge>
+                        )}
+                        {version.tags && version.tags.length > 0 && (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Tag className="h-3 w-3" />
+                            {version.tags[0]}
                           </Badge>
-                          {version.isLatest && (
-                            <Badge variant="secondary" className="text-xs">Latest</Badge>
-                          )}
-                          {version.tag && (
-                            <Badge variant="outline" className="text-xs gap-1">
-                              <Tag className="h-3 w-3" />
-                              {version.tag}
+                        )}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleRollback(version.id)}
+                        disabled={version.isLatest}
+                      >
+                        <RotateCcw className="h-4 w-4 mr-1" />
+                        Rollback
+                      </Button>
+                    </div>
+                    <p className="text-sm mb-2">{version.commitMessage || 'Sin mensaje'}</p>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {version.author}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(version.createdAt), { locale: es, addSuffix: true })}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <GitCommit className="h-3 w-3" />
+                        {version.commitHash.slice(0, 7)}
+                      </span>
+                    </div>
+                    {version.changes && version.changes.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-xs text-muted-foreground mb-1">Cambios:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {version.changes.slice(0, 5).map((change, cidx) => (
+                            <Badge key={cidx} variant="outline" className="text-xs">
+                              {change.type}: {change.field}
+                            </Badge>
+                          ))}
+                          {version.changes.length > 5 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{version.changes.length - 5} más
                             </Badge>
                           )}
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleRollback(version.id)}
-                          disabled={version.isLatest}
-                        >
-                          <RotateCcw className="h-4 w-4 mr-1" />
-                          Rollback
-                        </Button>
                       </div>
-                      <p className="text-sm mb-2">{version.releaseNotes || 'Sin notas'}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {version.author}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(version.createdAt), { locale: es, addSuffix: true })}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <GitCommit className="h-3 w-3" />
-                          {version.commitHash.slice(0, 7)}
-                        </span>
-                      </div>
-                      {version.changes && version.changes.length > 0 && (
-                        <div className="mt-3 pt-3 border-t">
-                          <p className="text-xs text-muted-foreground mb-1">Cambios:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {version.changes.slice(0, 5).map((change, cidx) => (
-                              <Badge key={cidx} variant="outline" className="text-xs">
-                                {change}
-                              </Badge>
-                            ))}
-                            {version.changes.length > 5 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{version.changes.length - 5} más
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {versions.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Tag className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                      <p className="text-sm">Sin versiones registradas</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            )}
+                    )}
+                  </div>
+                ))}
+                {versions.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Tag className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                    <p className="text-sm">Sin versiones registradas</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
           </TabsContent>
 
           <TabsContent value="branches" className="mt-0 space-y-4">
@@ -259,50 +240,49 @@ export function ModuleVersionControlPanel({
 
             <ScrollArea className="h-[350px]">
               <div className="space-y-2">
-                {branches.map(branch => (
-                  <div 
-                    key={branch.id}
-                    className={cn(
-                      "p-4 rounded-lg border bg-card cursor-pointer transition-colors hover:bg-muted/50",
-                      branch.isCurrent && "border-primary/50 bg-primary/5"
-                    )}
-                    onClick={() => switchBranch(branch.name)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <GitBranch className={cn(
-                          "h-4 w-4",
-                          branch.isCurrent ? "text-primary" : "text-muted-foreground"
-                        )} />
-                        <span className="font-medium">{branch.name}</span>
-                        {branch.isDefault && (
-                          <Badge variant="secondary" className="text-xs">default</Badge>
-                        )}
-                        {branch.isCurrent && (
-                          <Badge className="text-xs">actual</Badge>
-                        )}
-                        {branch.isProtected && (
-                          <Badge variant="outline" className="text-xs">protegido</Badge>
-                        )}
+                {branches.map(branch => {
+                  const isCurrent = currentBranch?.id === branch.id;
+                  return (
+                    <div 
+                      key={branch.id}
+                      className={cn(
+                        "p-4 rounded-lg border bg-card cursor-pointer transition-colors hover:bg-muted/50",
+                        isCurrent && "border-primary/50 bg-primary/5"
+                      )}
+                      onClick={() => switchBranch(branch.name)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <GitBranch className={cn(
+                            "h-4 w-4",
+                            isCurrent ? "text-primary" : "text-muted-foreground"
+                          )} />
+                          <span className="font-medium">{branch.name}</span>
+                          {branch.isDefault && (
+                            <Badge variant="secondary" className="text-xs">default</Badge>
+                          )}
+                          {isCurrent && (
+                            <Badge className="text-xs">actual</Badge>
+                          )}
+                          {branch.isProtected && (
+                            <Badge variant="outline" className="text-xs">protegido</Badge>
+                          )}
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          {branch.author}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatDistanceToNow(new Date(branch.updatedAt), { locale: es, addSuffix: true })}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" />
-                        {branch.author}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <GitCommit className="h-3 w-3" />
-                        {branch.aheadBehind.ahead} ahead, {branch.aheadBehind.behind} behind
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDistanceToNow(new Date(branch.lastCommitAt), { locale: es, addSuffix: true })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {branches.length === 0 && (
                   <div className="text-center py-12 text-muted-foreground">
                     <GitBranch className="h-12 w-12 mx-auto mb-4 opacity-30" />
@@ -327,7 +307,7 @@ export function ModuleVersionControlPanel({
                           "h-4 w-4",
                           mr.status === 'open' && "text-green-500",
                           mr.status === 'merged' && "text-purple-500",
-                          mr.status === 'closed' && "text-red-500"
+                          mr.status === 'rejected' && "text-red-500"
                         )} />
                         <span className="font-medium">{mr.title}</span>
                         <Badge variant={
@@ -356,20 +336,20 @@ export function ModuleVersionControlPanel({
                         </span>
                         <span className="flex items-center gap-1">
                           <FileText className="h-3 w-3" />
-                          {mr.filesChanged} archivos
+                          {mr.changes?.length || 0} cambios
                         </span>
-                        {mr.conflicts > 0 && (
+                        {mr.conflicts && mr.conflicts.length > 0 && (
                           <span className="flex items-center gap-1 text-orange-500">
                             <AlertCircle className="h-3 w-3" />
-                            {mr.conflicts} conflictos
+                            {mr.conflicts.length} conflictos
                           </span>
                         )}
                       </div>
                       {mr.status === 'open' && (
                         <Button 
                           size="sm"
-                          onClick={() => approveMerge(mr.id)}
-                          disabled={mr.conflicts > 0}
+                          onClick={() => merge(mr.id)}
+                          disabled={mr.conflicts && mr.conflicts.length > 0}
                         >
                           <GitMerge className="h-4 w-4 mr-1" />
                           Merge
