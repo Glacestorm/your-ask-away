@@ -34,7 +34,7 @@ const HeroSection: React.FC = () => {
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[150px]" />
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 pt-32 pb-24">
+        <div className="container mx-auto px-6 relative z-10 pt-24 pb-16">
           <div className="max-w-4xl mx-auto">
             {/* Eyebrow */}
             <motion.div
