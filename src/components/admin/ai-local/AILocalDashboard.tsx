@@ -34,6 +34,10 @@ import {
   Eye,
   Network,
   Gauge,
+  Library,
+  MessageCircle,
+  Target,
+  Users,
 } from 'lucide-react';
 import { AIConfigurationPanel } from './AIConfigurationPanel';
 import { AIAssistantLocal } from './AIAssistantLocal';
@@ -43,6 +47,10 @@ import { NaturalLanguageQueryPanel } from '../ai-modules/NaturalLanguageQueryPan
 import { ScreenUnderstandingPanel } from '../ai-modules/ScreenUnderstandingPanel';
 import { GraphRAGPanel } from '../ai-modules/GraphRAGPanel';
 import { PredictiveMaintenancePanel } from '../ai-modules/PredictiveMaintenancePanel';
+import { KnowledgeBaseRAGPanel } from '../ai-modules/KnowledgeBaseRAGPanel';
+import { MultiChannelIntegrationPanel } from '../ai-modules/MultiChannelIntegrationPanel';
+import { PerformanceCoachPanel } from '../ai-modules/PerformanceCoachPanel';
+import { Customer360IAPanel } from '../ai-modules/Customer360IAPanel';
 import { useLocalAI } from '@/hooks/admin/useLocalAI';
 import { cn } from '@/lib/utils';
 
@@ -132,7 +140,7 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="assistant" className="gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Asistente</span>
@@ -144,6 +152,10 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
           <TabsTrigger value="advanced" className="gap-2">
             <Network className="h-4 w-4" />
             <span className="hidden sm:inline">Avanzado</span>
+          </TabsTrigger>
+          <TabsTrigger value="knowledge" className="gap-2">
+            <Library className="h-4 w-4" />
+            <span className="hidden sm:inline">Knowledge</span>
           </TabsTrigger>
           <TabsTrigger value="config" className="gap-2">
             <Settings className="h-4 w-4" />
@@ -353,6 +365,105 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
                       <li>• Predicción de fallos</li>
                       <li>• Detección de anomalías</li>
                       <li>• Sesiones proactivas</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="knowledge" className="mt-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-secondary to-accent">
+                <Library className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Knowledge & Comms - Fase 4</h3>
+                <p className="text-sm text-muted-foreground">
+                  Base de conocimiento RAG, integración multicanal, coaching y Customer 360°
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <KnowledgeBaseRAGPanel className="h-fit" />
+              <MultiChannelIntegrationPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <PerformanceCoachPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <Customer360IAPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+            </div>
+
+            <Card className="bg-gradient-to-r from-secondary/5 via-accent/5 to-primary/5 border-secondary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-secondary" />
+                  Capacidades Knowledge & Comms - Fase 4
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Library className="h-4 w-4 text-primary" />
+                      Knowledge Base RAG
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Búsqueda semántica</li>
+                      <li>• Documentos vectorizados</li>
+                      <li>• Contexto aumentado</li>
+                      <li>• Respuestas precisas</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-accent" />
+                      Multi-Canal
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Email, chat, WhatsApp</li>
+                      <li>• Respuestas unificadas</li>
+                      <li>• Historial consolidado</li>
+                      <li>• Routing inteligente</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Target className="h-4 w-4 text-secondary" />
+                      Performance Coach
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Análisis de desempeño</li>
+                      <li>• Recomendaciones IA</li>
+                      <li>• Objetivos adaptativos</li>
+                      <li>• Feedback continuo</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" />
+                      Customer 360°
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Vista unificada cliente</li>
+                      <li>• Predicción de comportamiento</li>
+                      <li>• Segmentación IA</li>
+                      <li>• Next Best Action</li>
                     </ul>
                   </div>
                 </div>
