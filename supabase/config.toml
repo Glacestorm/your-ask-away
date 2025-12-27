@@ -728,3 +728,6 @@ verify_jwt = true
 
 [functions.automation-orchestrator]
 verify_jwt = true
+
+[functions.security-intelligence]
+verify_jwt = true
