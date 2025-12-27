@@ -111,6 +111,7 @@ const StoreNavbar: React.FC = () => {
               { id: 'modules', label: t('nav.modules'), href: '/store/modules', icon: Package, description: t('nav.modules.desc') },
               { id: 'bundles', label: t('nav.bundles'), href: '/store#bundles', icon: Boxes, description: t('nav.bundles.desc') },
               { id: 'pricing', label: t('nav.pricing'), href: '/precios', icon: DollarSign, description: t('nav.pricing.desc') },
+              { id: 'paquetes', label: language === 'es' ? 'Paquetes CRM/ERP' : language === 'ca' ? 'Paquets CRM/ERP' : 'CRM/ERP Packages', href: '/paquetes', icon: Boxes, description: language === 'es' ? 'Solo CRM, Solo ERP o Suite Completa' : language === 'ca' ? 'Només CRM, Només ERP o Suite Completa' : 'CRM Only, ERP Only or Complete Suite', badge: language === 'es' ? 'Nuevo' : language === 'ca' ? 'Nou' : 'New' },
             ],
           },
           {
