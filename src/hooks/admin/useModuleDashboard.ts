@@ -53,8 +53,7 @@ export function useModuleDashboard() {
         'module-analytics',
         {
           body: {
-            action: 'get_overview',
-            params: { includeHealth: true, includeAlerts: true }
+            action: 'get_dashboard'
           }
         }
       );
