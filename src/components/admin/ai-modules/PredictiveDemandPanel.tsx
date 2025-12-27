@@ -217,7 +217,7 @@ export function PredictiveDemandPanel({ context, className }: PredictiveDemandPa
                             </Badge>
                           </div>
                           <div className="text-right">
-                            <p className="text-lg font-bold">{optAny.recommended_quantity || opt.optimal_quantity}</p>
+                            <p className="text-lg font-bold">{opt.order_quantity || opt.optimal_stock}</p>
                             <p className="text-xs text-muted-foreground">unidades sugeridas</p>
                           </div>
                         </div>
@@ -228,8 +228,8 @@ export function PredictiveDemandPanel({ context, className }: PredictiveDemandPa
                             <span className="ml-1 font-medium">{opt.current_stock}</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Seguridad:</span>
-                            <span className="ml-1 font-medium">{optAny.safety_stock ?? opt.reorder_point}</span>
+                            <span className="text-muted-foreground">Días Suministro:</span>
+                            <span className="ml-1 font-medium">{opt.days_of_supply}</span>
                           </div>
                           <div>
                             <span className="text-muted-foreground">Días Cobertura:</span>
@@ -268,10 +268,10 @@ export function PredictiveDemandPanel({ context, className }: PredictiveDemandPa
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium text-sm">{pattern.pattern_name}</p>
-                              <p className="text-xs text-muted-foreground">{patAny.description || pattern.pattern_type}</p>
+                              <p className="text-xs text-muted-foreground">Amplitud: {(pattern.amplitude * 100).toFixed(0)}%</p>
                             </div>
                             <Badge variant="outline">
-                              {(patAny.impact_percentage ?? pattern.strength * 100) > 0 ? '+' : ''}{(patAny.impact_percentage ?? pattern.strength * 100).toFixed(0)}%
+                              {Math.round(pattern.confidence * 100)}% confianza
                             </Badge>
                           </div>
                         </div>

@@ -182,8 +182,8 @@ export function PredictiveAnomaliesPanel({ context, className }: PredictiveAnoma
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <p className="font-medium text-sm">{anomaly.anomaly_type}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {anomalyAny.description || `Anomalía detectada en ${anomaly.metric}`}
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                              {anomalyAny.description || `Anomalía detectada en ${anomaly.metric_name}`}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               {getSeverityBadge(anomaly.severity)}
@@ -192,14 +192,14 @@ export function PredictiveAnomaliesPanel({ context, className }: PredictiveAnoma
                           </div>
                           <div className="text-right">
                             <p className={cn("text-2xl font-bold", getSeverityColor(anomaly.severity))}>
-                              {Math.round((anomalyAny.confidence || anomaly.score || 0) * 100)}%
+                              {Math.round((anomaly.confidence || 0) * 100)}%
                             </p>
                             <p className="text-xs text-muted-foreground">Confianza</p>
                           </div>
                         </div>
 
                         <Progress 
-                          value={(anomalyAny.confidence || anomaly.score || 0) * 100} 
+                          value={(anomaly.confidence || 0) * 100} 
                           className="h-1.5 mb-2"
                         />
 
@@ -253,19 +253,19 @@ export function PredictiveAnomaliesPanel({ context, className }: PredictiveAnoma
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-3 rounded-lg bg-muted/50">
                             <p className="text-xs text-muted-foreground">Total Detectadas</p>
-                            <p className="text-xl font-bold">{statsAny.total_detected || stats.total || 0}</p>
+                            <p className="text-xl font-bold">{stats.total_detected || 0}</p>
                           </div>
                           <div className="p-3 rounded-lg bg-red-500/10">
                             <p className="text-xs text-muted-foreground">Críticas</p>
-                            <p className="text-xl font-bold text-red-500">{statsAny.critical_count || stats.by_severity?.critical || 0}</p>
+                            <p className="text-xl font-bold text-red-500">{stats.by_severity?.critical || 0}</p>
                           </div>
                           <div className="p-3 rounded-lg bg-green-500/10">
                             <p className="text-xs text-muted-foreground">Resueltas</p>
-                            <p className="text-xl font-bold text-green-500">{statsAny.resolved_count || stats.by_status?.resolved || 0}</p>
+                            <p className="text-xl font-bold text-green-500">{statsAny.resolved_count || 0}</p>
                           </div>
                           <div className="p-3 rounded-lg bg-yellow-500/10">
                             <p className="text-xs text-muted-foreground">Investigando</p>
-                            <p className="text-xl font-bold text-yellow-500">{statsAny.investigating_count || stats.by_status?.investigating || 0}</p>
+                            <p className="text-xl font-bold text-yellow-500">{statsAny.investigating_count || 0}</p>
                           </div>
                         </div>
 
@@ -331,7 +331,7 @@ export function PredictiveAnomaliesPanel({ context, className }: PredictiveAnoma
                           <div>
                             <p className="font-medium text-sm">{pattern.pattern_name}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {patAny.description || pattern.pattern_type}
+                              {patAny.description || pattern.typical_severity}
                             </p>
                           </div>
                           <Badge variant="outline">
