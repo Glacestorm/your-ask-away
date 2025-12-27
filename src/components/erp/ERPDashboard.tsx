@@ -24,8 +24,10 @@ import {
   ArrowDownRight,
   PiggyBank,
   Wallet,
-  CreditCard
+  CreditCard,
+  Layers
 } from 'lucide-react';
+import { ERPModulesGrid } from './ERPModulesGrid';
 
 // Types
 export interface Transaction {
@@ -202,7 +204,7 @@ export const ERPDashboard: React.FC<ERPDashboardProps> = ({
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full max-w-lg grid-cols-4">
+        <TabsList className="grid w-full max-w-2xl grid-cols-5">
           <TabsTrigger value="overview" className="gap-2">
             <Calculator className="h-4 w-4" />
             Resumen
@@ -218,6 +220,10 @@ export const ERPDashboard: React.FC<ERPDashboardProps> = ({
           <TabsTrigger value="payroll" className="gap-2">
             <Users className="h-4 w-4" />
             Nóminas
+          </TabsTrigger>
+          <TabsTrigger value="modules" className="gap-2">
+            <Layers className="h-4 w-4" />
+            Módulos
           </TabsTrigger>
         </TabsList>
 
@@ -439,6 +445,11 @@ export const ERPDashboard: React.FC<ERPDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Modules Tab */}
+        <TabsContent value="modules" className="mt-4">
+          <ERPModulesGrid />
         </TabsContent>
       </Tabs>
     </div>
