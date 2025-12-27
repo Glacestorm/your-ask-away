@@ -188,63 +188,64 @@ export default function ModuleStudioPage() {
     } as const
   )[mainCols as 4 | 5 | 6 | 7 | 8 | 10] ?? 'col-span-6';
 
+  // Header actions for GlobalNavHeader
+  const headerTitleActions = (
+    <div className="flex items-center gap-2">
+      <Badge variant="outline" className="gap-1 text-xs">
+        <Network className="h-3 w-3" />
+        {graph.nodes.size} módulos
+      </Badge>
+      <Badge variant="outline" className="gap-1 text-xs">
+        <GitBranch className="h-3 w-3" />
+        {dependencies.length} dependencias
+      </Badge>
+    </div>
+  );
+
+  const headerRightSlot = (
+    <div className="flex items-center gap-1.5">
+      <Button variant="outline" size="sm" onClick={handleRefreshAll} className="h-8">
+        <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+        Refrescar
+      </Button>
+      <Button 
+        variant={showPreview ? 'default' : 'outline'} 
+        size="sm" 
+        onClick={() => setShowPreview(!showPreview)}
+        className="h-8"
+      >
+        <Eye className="h-3.5 w-3.5 mr-1.5" />
+        Preview
+      </Button>
+      <Button 
+        variant={showCopilot ? 'default' : 'outline'} 
+        size="sm" 
+        onClick={() => setShowCopilot(!showCopilot)}
+        className="h-8"
+      >
+        <Bot className="h-3.5 w-3.5 mr-1.5" />
+        Copilot
+      </Button>
+      <Button 
+        variant={showAgent ? 'default' : 'outline'} 
+        size="sm" 
+        onClick={() => setShowAgent(!showAgent)}
+        className="h-8"
+      >
+        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+        Agent
+      </Button>
+    </div>
+  );
+
   return (
     <DashboardLayout
       title="Module Studio"
-      subtitle="Sistema de gestión de módulos enterprise"
+      subtitle="Editor visual con análisis de impacto y sandbox"
+      titleActions={headerTitleActions}
+      rightSlot={headerRightSlot}
     >
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-              <Package className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Module Studio</h1>
-              <p className="text-muted-foreground">Editor visual con análisis de impacto y sandbox</p>
-            </div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <Badge variant="outline" className="gap-1">
-              <Network className="h-3 w-3" />
-              {graph.nodes.size} módulos
-            </Badge>
-            <Badge variant="outline" className="gap-1">
-              <GitBranch className="h-3 w-3" />
-              {dependencies.length} dependencias
-            </Badge>
-            <Button variant="outline" size="sm" onClick={handleRefreshAll}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refrescar
-            </Button>
-            <Button 
-              variant={showPreview ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              Preview
-            </Button>
-            <Button 
-              variant={showCopilot ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setShowCopilot(!showCopilot)}
-            >
-              <Bot className="h-4 w-4 mr-2" />
-              Copilot
-            </Button>
-            <Button 
-              variant={showAgent ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setShowAgent(!showAgent)}
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Agent
-            </Button>
-          </div>
-        </div>
-
+      <div className="space-y-4">
         <div className="grid grid-cols-12 gap-4">
           {/* Sidebar - Module List */}
           <div className="col-span-2">

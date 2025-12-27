@@ -39,8 +39,8 @@ export function GlobalNavHeader({
 
   return (
     <header className="flex items-center justify-between gap-4 rounded-2xl bg-card px-4 py-3 shadow-lg border border-border backdrop-blur-sm">
-      {/* Left Section: Logo + Title + Navigation */}
-      <div className="flex items-center gap-3 min-w-0">
+      {/* Left Section: Logo + Title + Navigation + Title Actions */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         {/* Logo */}
         <ObelixiaLogo size="sm" variant="icon" animated={false} />
         
@@ -90,7 +90,7 @@ export function GlobalNavHeader({
           </div>
         )}
         
-        {/* Title Actions (buttons next to title) */}
+        {/* Title Actions (badges, buttons next to title) */}
         {titleActions}
       </div>
       
