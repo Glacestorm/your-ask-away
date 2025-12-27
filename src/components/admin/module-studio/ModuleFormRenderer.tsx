@@ -3,7 +3,7 @@
  * Renders module configuration forms based on field definitions
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, HelpCircle, AlertCircle } from 'lucide-react';
+import { ChevronDown, ChevronRight, HelpCircle, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { ModuleField, ModuleSection, PreviewState, PreviewConfig } from '@/hooks/admin/useModulePreview';
 
 interface ModuleFormRendererProps {
@@ -24,6 +25,7 @@ interface ModuleFormRendererProps {
   config: PreviewConfig;
   onFieldChange: (fieldId: string, value: unknown) => void;
   onToggleSection: (sectionId: string) => void;
+  onExpandSection?: (section: ModuleSection) => void;
   className?: string;
 }
 
@@ -294,6 +296,7 @@ const SectionRenderer = memo(function SectionRenderer({
   config,
   onFieldChange,
   onToggle,
+  onExpand,
 }: {
   section: ModuleSection;
   isExpanded: boolean;
@@ -301,40 +304,54 @@ const SectionRenderer = memo(function SectionRenderer({
   config: PreviewConfig;
   onFieldChange: (fieldId: string, value: unknown) => void;
   onToggle: () => void;
+  onExpand?: () => void;
 }) {
   if (section.collapsible) {
     return (
       <Collapsible open={isExpanded} onOpenChange={onToggle}>
-        <CollapsibleTrigger asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-between px-4 py-3 h-auto hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-2">
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center">
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="flex-1 justify-between px-4 py-3 h-auto hover:bg-muted/50"
+            >
+              <div className="flex items-center gap-2">
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                )}
+                <span className="font-medium">{section.title}</span>
+                <Badge variant="outline" className="text-xs">
+                  {section.fields.length}
+                </Badge>
+              </div>
+              {section.description && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs">{section.description}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              <span className="font-medium">{section.title}</span>
-              <Badge variant="outline" className="text-xs">
-                {section.fields.length}
-              </Badge>
-            </div>
-            {section.description && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">{section.description}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </Button>
-        </CollapsibleTrigger>
+            </Button>
+          </CollapsibleTrigger>
+          {onExpand && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 mr-2"
+              onClick={onExpand}
+              title="Expandir sección"
+            >
+              <Maximize2 className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          )}
+        </div>
         <CollapsibleContent>
           <div className="px-4 pb-4 space-y-4">
             {section.fields.map(field => (
@@ -357,13 +374,26 @@ const SectionRenderer = memo(function SectionRenderer({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-4 py-2 bg-muted/30 rounded-lg">
-        <div>
+        <div className="flex-1">
           <h3 className="font-medium">{section.title}</h3>
           {section.description && (
             <p className="text-xs text-muted-foreground mt-0.5">{section.description}</p>
           )}
         </div>
-        <Badge variant="outline" className="text-xs">{section.fields.length} campos</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs">{section.fields.length} campos</Badge>
+          {onExpand && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onExpand}
+              title="Expandir sección"
+            >
+              <Maximize2 className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          )}
+        </div>
       </div>
       <div className="px-4 space-y-4">
         {section.fields.map(field => (
@@ -391,6 +421,8 @@ export function ModuleFormRenderer({
   onToggleSection,
   className,
 }: ModuleFormRendererProps) {
+  const [expandedSection, setExpandedSection] = useState<ModuleSection | null>(null);
+
   if (!sections || sections.length === 0) {
     return (
       <div className={cn('flex items-center justify-center py-12 text-muted-foreground', className)}>
@@ -400,23 +432,56 @@ export function ModuleFormRenderer({
   }
   
   return (
-    <div className={cn('space-y-4', className)}>
-      {sections.map(section => (
-        <div
-          key={section.id}
-          className="border rounded-lg bg-card overflow-hidden"
-        >
-          <SectionRenderer
-            section={section}
-            isExpanded={previewState.expandedSections.includes(section.id)}
-            previewState={previewState}
-            config={config}
-            onFieldChange={onFieldChange}
-            onToggle={() => onToggleSection(section.id)}
-          />
-        </div>
-      ))}
-    </div>
+    <>
+      <div className={cn('space-y-4', className)}>
+        {sections.map(section => (
+          <div
+            key={section.id}
+            className="border rounded-lg bg-card overflow-hidden"
+          >
+            <SectionRenderer
+              section={section}
+              isExpanded={previewState.expandedSections.includes(section.id)}
+              previewState={previewState}
+              config={config}
+              onFieldChange={onFieldChange}
+              onToggle={() => onToggleSection(section.id)}
+              onExpand={() => setExpandedSection(section)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Dialog de expansión de sección */}
+      <Dialog open={!!expandedSection} onOpenChange={(open) => !open && setExpandedSection(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {expandedSection?.title}
+              <Badge variant="outline" className="text-xs">
+                {expandedSection?.fields.length} campos
+              </Badge>
+            </DialogTitle>
+            {expandedSection?.description && (
+              <p className="text-sm text-muted-foreground">{expandedSection.description}</p>
+            )}
+          </DialogHeader>
+          <div className="flex-1 overflow-auto py-4 space-y-4">
+            {expandedSection?.fields.map(field => (
+              <FieldRenderer
+                key={field.id}
+                field={field}
+                value={previewState.formValues[field.id]}
+                error={previewState.validationErrors[field.id]}
+                showValidation={config.showValidation}
+                showLabels={config.showLabels}
+                onChange={value => onFieldChange(field.id, value)}
+              />
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

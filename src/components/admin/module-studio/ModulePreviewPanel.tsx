@@ -491,7 +491,7 @@ export function ModulePreviewPanel({
         {/* Preview Content */}
         <div 
           className={cn(
-            'flex-1 overflow-hidden flex items-start justify-center p-4',
+            'flex-1 overflow-hidden flex items-start justify-center p-4 min-h-0',
             config.showGrid && 'bg-[linear-gradient(to_right,hsl(var(--muted)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--muted)/0.3)_1px,transparent_1px)] bg-[size:20px_20px]'
           )}
         >
@@ -504,7 +504,7 @@ export function ModulePreviewPanel({
             style={{
               width: deviceDimensions.width,
               maxWidth: deviceDimensions.maxWidth,
-              height: config.device !== 'desktop' ? deviceDimensions.height : 'auto',
+              height: config.device !== 'desktop' ? deviceDimensions.height : 'calc(100% - 2rem)',
               transform: `scale(${config.zoom / 100})`,
               transformOrigin: 'top center',
             }}
@@ -517,7 +517,7 @@ export function ModulePreviewPanel({
             )}
             
             <ScrollArea className={cn(
-              config.device === 'desktop' ? 'max-h-[600px]' : 'h-[calc(100%-24px)]'
+              config.device === 'desktop' ? 'h-full' : 'h-[calc(100%-24px)]'
             )}>
               {/* Form Preview */}
               {config.mode === 'form' && previewData.sections && (
