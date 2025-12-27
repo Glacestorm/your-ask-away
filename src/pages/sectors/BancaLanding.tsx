@@ -5,6 +5,7 @@ import { ArrowLeft, Landmark, CheckCircle2, TrendingUp, Shield, Users, FileText 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import { SectorModulesSection } from '@/components/sectors/SectorModulesSection';
 
 const BancaLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
@@ -91,13 +92,16 @@ const BancaLanding: React.FC = () => {
           ))}
         </div>
 
+        {/* Módulos Recomendados */}
+        <SectorModulesSection sectorSlug="banca" accentColor="emerald" />
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className="text-center"
         >
-          <Link to="/store#marketing">
+          <Link to="/demo">
             <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Solicitar Demo para Banca
             </Button>

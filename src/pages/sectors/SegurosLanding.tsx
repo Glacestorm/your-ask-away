@@ -5,6 +5,7 @@ import { ArrowLeft, Shield, CheckCircle2, TrendingUp, FileText, Users, Brain } f
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import { SectorModulesSection } from '@/components/sectors/SectorModulesSection';
 
 const SegurosLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
@@ -90,6 +91,9 @@ const SegurosLanding: React.FC = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Módulos Recomendados */}
+        <SectorModulesSection sectorSlug="seguros" accentColor="blue" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

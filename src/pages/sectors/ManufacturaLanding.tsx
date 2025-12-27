@@ -5,6 +5,7 @@ import { ArrowLeft, Factory, Cog, TrendingUp, Truck, BarChart3 } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import { SectorModulesSection } from '@/components/sectors/SectorModulesSection';
 
 const ManufacturaLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
@@ -90,6 +91,9 @@ const ManufacturaLanding: React.FC = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Módulos Recomendados */}
+        <SectorModulesSection sectorSlug="manufactura" accentColor="purple" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
