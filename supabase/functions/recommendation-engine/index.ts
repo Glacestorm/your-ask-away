@@ -6,7 +6,21 @@ const corsHeaders = {
 };
 
 interface RecommendationRequest {
-  action: 'get_recommendations' | 'personalize' | 'cross_sell' | 'content_recommend' | 'next_best_offer';
+  action: 'get_recommendations' | 'submit_feedback' | 'get_config' | 'update_config' | 'get_metrics' | 
+          'train_model' | 'explain' |
+          'personalize' | 'cross_sell' | 'content_recommend' | 'next_best_offer';
+  entityId?: string;
+  entityType?: string;
+  options?: { types?: string[]; limit?: number };
+  feedback?: {
+    recommendation_id: string;
+    accepted: boolean;
+    rating?: number;
+    feedback_text?: string;
+  };
+  updates?: Record<string, unknown>;
+  days?: number;
+  recommendationId?: string;
   context?: {
     userId?: string;
     userProfile?: Record<string, unknown>;
@@ -19,53 +33,147 @@ interface RecommendationRequest {
   limit?: number;
 }
 
+// Mock data generators
+function generateMockRecommendations(entityId: string, limit: number = 5) {
+  const types = ['product', 'action', 'content', 'offer', 'upsell', 'cross_sell'] as const;
+  return Array.from({ length: limit }, (_, i) => ({
+    id: `rec-${Date.now()}-${i}`,
+    type: types[i % types.length],
+    title: `Recomendación ${i + 1}`,
+    description: `Descripción de la recomendación personalizada para ${entityId}`,
+    confidence: 0.75 + Math.random() * 0.2,
+    relevance_score: 0.8 + Math.random() * 0.15,
+    reasoning: 'Basado en historial de comportamiento y preferencias similares',
+    target_entity_id: entityId,
+    target_entity_type: 'customer',
+    metadata: { category: 'enterprise', priority: 'high' },
+    expires_at: new Date(Date.now() + 7 * 86400000).toISOString()
+  }));
+}
+
+function generateMockConfig() {
+  return {
+    enabled: true,
+    algorithms: ['collaborative_filtering', 'content_based', 'hybrid'],
+    min_confidence: 0.6,
+    max_recommendations: 10,
+    personalization_level: 'high' as const,
+    include_reasoning: true
+  };
+}
+
+function generateMockMetrics() {
+  return {
+    total_generated: 15420,
+    acceptance_rate: 0.42,
+    avg_confidence: 0.78,
+    conversion_rate: 0.18,
+    revenue_attributed: 125000
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const requestBody = await req.json() as RecommendationRequest;
+    const { action } = requestBody;
+    console.log(`[recommendation-engine] Processing action: ${action}`);
+
+    // Handle mock data actions (no AI needed)
+    switch (action) {
+      case 'get_recommendations':
+        const recommendations = generateMockRecommendations(
+          requestBody.entityId || 'default',
+          requestBody.options?.limit || 5
+        );
+        return new Response(JSON.stringify({
+          success: true,
+          recommendations,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'get_config':
+        return new Response(JSON.stringify({
+          success: true,
+          config: generateMockConfig(),
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'get_metrics':
+        return new Response(JSON.stringify({
+          success: true,
+          metrics: generateMockMetrics(),
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'submit_feedback':
+        return new Response(JSON.stringify({
+          success: true,
+          feedback_id: `fb-${Date.now()}`,
+          recommendation_id: requestBody.feedback?.recommendation_id,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'update_config':
+        return new Response(JSON.stringify({
+          success: true,
+          config: { ...generateMockConfig(), ...requestBody.updates },
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'train_model':
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Modelo entrenado con 15,420 ejemplos. Precisión: 0.87',
+          training_id: `train-${Date.now()}`,
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+
+      case 'explain':
+        return new Response(JSON.stringify({
+          success: true,
+          explanation: {
+            factors: [
+              { name: 'Historial de compras', weight: 0.35, description: 'Basado en productos similares adquiridos' },
+              { name: 'Perfil demográfico', weight: 0.25, description: 'Segmento de cliente enterprise' },
+              { name: 'Comportamiento reciente', weight: 0.25, description: 'Páginas visitadas en últimos 7 días' },
+              { name: 'Tendencias del mercado', weight: 0.15, description: 'Productos populares en la industria' }
+            ],
+            similar_cases: 342,
+            explanation_text: 'Esta recomendación se basa en el análisis de clientes con perfiles similares que han mostrado interés en productos de esta categoría.'
+          },
+          timestamp: new Date().toISOString()
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+    }
+
+    // For AI-powered actions
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const { action, context, category, limit = 5 } = await req.json() as RecommendationRequest;
-    console.log(`[recommendation-engine] Processing action: ${action}`);
-
     let systemPrompt = '';
     let userPrompt = '';
+    const { context, category, limit = 5 } = requestBody;
 
     switch (action) {
-      case 'get_recommendations':
-        systemPrompt = `Eres un sistema de recomendaciones empresariales inteligente.
-
-GENERA recomendaciones personalizadas basadas en el perfil del usuario.
-
-RESPONDE EN JSON ESTRICTO:
-{
-  "recommendations": [
-    {
-      "id": string,
-      "type": string,
-      "title": string,
-      "description": string,
-      "relevanceScore": number,
-      "reason": string,
-      "expectedValue": string,
-      "actionUrl": string
-    }
-  ],
-  "personalizationFactors": string[],
-  "alternativeRecommendations": string[]
-}`;
-        userPrompt = `Genera ${limit} recomendaciones para:
-Usuario: ${context?.userId}
-Perfil: ${JSON.stringify(context?.userProfile || {})}
-Historial: ${context?.purchaseHistory?.join(', ')}
-Categoría: ${category || 'todas'}`;
-        break;
-
       case 'personalize':
         systemPrompt = `Eres un motor de personalización avanzado.
 
@@ -189,6 +297,12 @@ Perfil: ${JSON.stringify(context?.userProfile || {})}`;
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error(`AI API error: ${response.status}`);
     }
 

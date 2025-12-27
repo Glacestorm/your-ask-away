@@ -689,3 +689,6 @@ verify_jwt = true
 
 [functions.performance-coach]
 verify_jwt = true
+
+[functions.advanced-reporting]
+verify_jwt = true
