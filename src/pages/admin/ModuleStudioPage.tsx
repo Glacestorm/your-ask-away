@@ -32,8 +32,10 @@ import {
   ModuleDependencyGraph,
   ModuleEditor,
   ModuleSandboxPanel,
-  ModuleImpactAnalysis
+  ModuleImpactAnalysis,
+  ModuleCopilotPanel
 } from '@/components/admin/module-studio';
+import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
@@ -43,7 +45,7 @@ export default function ModuleStudioPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [showImpactAnalysis, setShowImpactAnalysis] = useState(false);
-  
+  const [showCopilot, setShowCopilot] = useState(true);
   const { graph, dependencies, isLoading: graphLoading, refetch: refetchGraph } = useModuleDependencyGraph();
   const { history, versions, refetch: refetchHistory } = useModuleChangeHistory(selectedModule || undefined);
 
@@ -131,6 +133,15 @@ export default function ModuleStudioPage() {
     is_required: selectedModuleData.is_required,
   } : {};
 
+  // Create copilot context
+  const copilotContext: ModuleContext | null = selectedModuleData ? {
+    moduleKey: selectedModuleData.module_key,
+    moduleName: selectedModuleData.module_name,
+    currentState: moduleDataForComponents,
+    dependencies: selectedModuleData.dependencies || [],
+    dependents: graph.nodes.get(selectedModuleData.module_key)?.dependents || [],
+  } : null;
+
   return (
     <DashboardLayout
       title="Module Studio"
@@ -164,9 +175,9 @@ export default function ModuleStudioPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-6">
+        <div className={showCopilot ? "grid grid-cols-12 gap-6" : "grid grid-cols-12 gap-6"}>
           {/* Sidebar - Module List */}
-          <div className="col-span-3">
+          <div className={showCopilot ? "col-span-3" : "col-span-3"}>
             <Card className="h-[calc(100vh-240px)]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center justify-between">
@@ -236,7 +247,7 @@ export default function ModuleStudioPage() {
           </div>
 
           {/* Main Content */}
-          <div className="col-span-9">
+          <div className={showCopilot ? "col-span-6" : "col-span-9"}>
             {selectedModule && selectedModuleData ? (
               <Tabs defaultValue="overview" className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -425,6 +436,16 @@ export default function ModuleStudioPage() {
               </Card>
             )}
           </div>
+
+          {/* AI Copilot Panel */}
+          {showCopilot && (
+            <div className="col-span-3">
+              <ModuleCopilotPanel
+                moduleContext={copilotContext}
+                className="h-[calc(100vh-240px)] sticky top-4"
+              />
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
