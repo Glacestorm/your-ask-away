@@ -23,6 +23,32 @@ const translationQueue: Array<{ resolve: () => void; priority: number }> = [];
 const TRANSLATION_DELAY_MS = 500;
 let lastTranslationTime = 0;
 
+// === GLOBAL TRANSLATION STATE ===
+let globalCMSTranslatingCount = 0;
+const cmsTranslatingListeners: Set<(isTranslating: boolean) => void> = new Set();
+
+const notifyCMSTranslatingChange = () => {
+  const isTranslating = globalCMSTranslatingCount > 0;
+  cmsTranslatingListeners.forEach(listener => listener(isTranslating));
+};
+
+export const incrementGlobalTranslating = () => {
+  globalCMSTranslatingCount++;
+  notifyCMSTranslatingChange();
+};
+
+export const decrementGlobalTranslating = () => {
+  globalCMSTranslatingCount = Math.max(0, globalCMSTranslatingCount - 1);
+  notifyCMSTranslatingChange();
+};
+
+export const getGlobalTranslatingState = () => globalCMSTranslatingCount > 0;
+
+export const subscribeToCMSTranslating = (listener: (isTranslating: boolean) => void) => {
+  cmsTranslatingListeners.add(listener);
+  return () => cmsTranslatingListeners.delete(listener);
+};
+
 const acquireTranslationSlot = async (): Promise<void> => {
   // Wait for slot availability
   if (activeTranslations >= MAX_CONCURRENT_TRANSLATIONS) {
@@ -117,6 +143,7 @@ export function useCMSTranslation(namespace: string = 'common') {
 
       translateInflight[cacheKey] = (async () => {
         await acquireTranslationSlot();
+        incrementGlobalTranslating();
         try {
           const { data, error } = await supabase.functions.invoke('cms-translate-content', {
             body: {
@@ -136,6 +163,7 @@ export function useCMSTranslation(namespace: string = 'common') {
           return text;
         } finally {
           releaseTranslationSlot();
+          decrementGlobalTranslating();
           delete translateInflight[cacheKey];
         }
       })();
@@ -175,6 +203,7 @@ export function useCMSTranslation(namespace: string = 'common') {
       }
       
       await acquireTranslationSlot();
+      incrementGlobalTranslating();
       try {
         // Convert texts array to items array expected by the edge function
         const items = uncachedTexts.map((text, idx) => ({
@@ -215,6 +244,7 @@ export function useCMSTranslation(namespace: string = 'common') {
         return results;
       } finally {
         releaseTranslationSlot();
+        decrementGlobalTranslating();
       }
     },
     [language]
