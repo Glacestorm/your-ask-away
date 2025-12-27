@@ -1,257 +1,113 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { 
-  SECURITY_HEADERS, 
-  handleOptionsRequest, 
-  createSecureResponse,
-  checkRateLimit,
-  validatePayloadSize
-} from '../_shared/owasp-security.ts';
-import { secureAICall, getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 interface ComplianceRequest {
-  action: 'get_status' | 'run_scan' | 'predict_risks' | 'resolve_violation';
-  context?: Record<string, unknown>;
-  params?: Record<string, unknown>;
+  action: 'get_status' | 'run_assessment' | 'generate_report' | 'update_control';
+  frameworkId?: string;
+  controlId?: string;
+  status?: string;
+  evidence?: string;
+  reportType?: 'assessment' | 'gap_analysis' | 'remediation';
 }
 
 serve(async (req) => {
-  const requestId = generateRequestId();
-  const clientIp = getClientIP(req);
-  const startTime = Date.now();
-
-  console.log(`[compliance-monitor] Request ${requestId} from ${clientIp}`);
-
-  // === CORS ===
   if (req.method === 'OPTIONS') {
-    return handleOptionsRequest();
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // === Rate Limiting ===
-    const rateCheck = checkRateLimit({
-      maxRequests: 60,
-      windowMs: 60000,
-      identifier: `compliance-monitor:${clientIp}`,
-    });
-
-    if (!rateCheck.allowed) {
-      console.warn(`[compliance-monitor] Rate limit exceeded: ${clientIp}`);
-      return createSecureResponse({ 
-        success: false,
-        error: 'rate_limit_exceeded', 
-        message: 'Demasiadas solicitudes. Intenta más tarde.',
-        retryAfter: Math.ceil(rateCheck.resetIn / 1000)
-      }, 429);
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // === Parse & Validate Body ===
-    let body: ComplianceRequest;
-    try {
-      body = await req.json();
-    } catch {
-      return createSecureResponse({ 
-        success: false, 
-        error: 'invalid_json', 
-        message: 'El cuerpo no es JSON válido' 
-      }, 400);
-    }
+    const { action, frameworkId, controlId, status, evidence, reportType } = await req.json() as ComplianceRequest;
 
-    const payloadCheck = validatePayloadSize(body);
-    if (!payloadCheck.valid) {
-      return createSecureResponse({ 
-        success: false, 
-        error: 'payload_too_large', 
-        message: payloadCheck.error 
-      }, 413);
-    }
+    console.log(`[compliance-monitor] Processing action: ${action}`);
 
-    const { action, context, params } = body;
-
-    // === Build Prompts ===
     let systemPrompt = '';
     let userPrompt = '';
 
     switch (action) {
       case 'get_status':
-        systemPrompt = `Eres un sistema experto en compliance y cumplimiento normativo para empresas.
-        
-CONTEXTO DEL ROL:
-- Monitorizas el cumplimiento de regulaciones empresariales
-- Analizas riesgos de incumplimiento en tiempo real
-- Proporcionas métricas de compliance actualizadas
-
+        systemPrompt = `Eres un sistema de monitoreo de compliance enterprise. Genera el estado de frameworks de compliance y controles.
 FORMATO DE RESPUESTA (JSON estricto):
 {
-  "metrics": {
-    "overallScore": 0-100,
-    "trend": "improving" | "stable" | "declining",
-    "totalRules": number,
-    "compliantRules": number,
-    "violations": number,
-    "criticalViolations": number,
-    "lastFullScan": "ISO timestamp",
-    "predictedRisks": []
-  },
-  "rules": [
-    {
-      "id": "uuid",
-      "code": "string",
-      "name": "string",
-      "category": "string",
-      "severity": "low" | "medium" | "high" | "critical",
-      "status": "compliant" | "non_compliant" | "warning" | "pending",
-      "lastCheck": "ISO timestamp",
-      "nextCheck": "ISO timestamp",
-      "automatedFix": boolean
-    }
-  ],
-  "violations": [],
-  "predictedRisks": []
+  "frameworks": [{"id": "uuid", "name": "nombre", "version": "1.0", "description": "desc", "total_controls": 100, "compliant_controls": 90, "non_compliant_controls": 5, "not_applicable_controls": 5, "compliance_percentage": 90, "last_assessment": "ISO", "next_assessment": "ISO", "status": "compliant"}],
+  "controls": [{"id": "uuid", "framework_id": "uuid", "control_id": "código", "control_name": "nombre", "description": "desc", "category": "cat", "status": "compliant", "evidence_required": true, "evidence_status": "complete", "risk_level": "medium", "last_reviewed": "ISO"}]
 }`;
-        userPrompt = context 
-          ? `Analiza el estado de compliance para el sector: ${JSON.stringify(context)}`
-          : 'Proporciona un estado general de compliance empresarial';
+        userPrompt = frameworkId ? `Estado de compliance para framework: ${frameworkId}` : 'Estado general de todos los frameworks';
         break;
 
-      case 'run_scan':
-        systemPrompt = `Eres un escáner de compliance empresarial con capacidades de IA.
-
-CAPACIDADES:
-- Escaneo profundo de políticas y procedimientos
-- Detección de violaciones en tiempo real
-- Análisis de brechas de cumplimiento
-- Recomendaciones automáticas de remediación
-
+      case 'run_assessment':
+        systemPrompt = `Eres un evaluador de compliance.
 FORMATO DE RESPUESTA (JSON estricto):
-{
-  "metrics": {
-    "overallScore": 0-100,
-    "scanDuration": "string",
-    "rulesChecked": number,
-    "violationsFound": number,
-    "autoRemediations": number
-  },
-  "violations": [
-    {
-      "id": "uuid",
-      "ruleId": "string",
-      "ruleName": "string",
-      "description": "string",
-      "detectedAt": "ISO timestamp",
-      "severity": "low" | "medium" | "high" | "critical",
-      "status": "open",
-      "suggestedAction": "string",
-      "autoResolvable": boolean
-    }
-  ]
-}`;
-        userPrompt = `Ejecuta un escaneo ${context?.scanDepth || 'standard'} de compliance para: ${JSON.stringify(context)}`;
+{"assessment": {"id": "uuid", "framework_id": "uuid", "started_at": "ISO", "completed_at": "ISO", "status": "completed", "controls_assessed": 100, "compliant": 90, "non_compliant": 10, "findings": [{"control_id": "código", "finding": "hallazgo", "severity": "medium", "recommendation": "recomendación"}], "overall_score": 90}}`;
+        userPrompt = `Ejecutar evaluación de compliance para framework: ${frameworkId}`;
         break;
 
-      case 'predict_risks':
-        systemPrompt = `Eres un sistema predictivo de riesgos de compliance con machine learning.
-
-CAPACIDADES:
-- Predicción de riesgos futuros basada en patrones históricos
-- Análisis de tendencias regulatorias
-- Identificación de áreas de riesgo emergente
-
+      case 'generate_report':
+        systemPrompt = `Eres un generador de informes de compliance.
 FORMATO DE RESPUESTA (JSON estricto):
-{
-  "predictions": [
-    {
-      "id": "uuid",
-      "ruleCode": "string",
-      "ruleName": "string",
-      "probability": 0-100,
-      "expectedDate": "ISO date",
-      "impact": "low" | "medium" | "high" | "critical",
-      "preventiveAction": "string"
-    }
-  ],
-  "riskScore": 0-100,
-  "timeHorizon": "30 días",
-  "confidence": 0-100
-}`;
-        userPrompt = `Predice riesgos de compliance para: ${JSON.stringify(context)}`;
+{"report": {"id": "uuid", "framework_id": "uuid", "report_type": "${reportType || 'assessment'}", "generated_at": "ISO", "period_start": "ISO", "period_end": "ISO", "overall_score": 90, "findings": [], "executive_summary": "resumen"}}`;
+        userPrompt = `Generar informe de ${reportType || 'assessment'} para framework: ${frameworkId}`;
         break;
 
-      case 'resolve_violation':
-        systemPrompt = `Eres un sistema de remediación de violaciones de compliance.
-
-CAPACIDADES:
-- Análisis de causa raíz
-- Generación de planes de remediación
-- Documentación de resoluciones
-- Verificación de correcciones
-
+      case 'update_control':
+        systemPrompt = `Eres un gestor de controles de compliance.
 FORMATO DE RESPUESTA (JSON estricto):
-{
-  "resolved": boolean,
-  "remediationSteps": ["string"],
-  "documentation": "string",
-  "verificationRequired": boolean,
-  "followUpDate": "ISO date"
-}`;
-        userPrompt = `Resuelve la violación: ${JSON.stringify(params)}`;
+{"updated": true, "control": {"id": "uuid", "status": "${status}", "updated_at": "ISO"}}`;
+        userPrompt = `Actualizar control ${controlId} a estado: ${status}`;
         break;
 
       default:
-        return createSecureResponse({ 
-          success: false, 
-          error: 'invalid_action', 
-          message: `Acción no soportada: ${action}` 
-        }, 400);
+        return new Response(JSON.stringify({ success: false, error: `Acción no soportada: ${action}` }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
     }
 
-    // === AI Call ===
-    const aiResult = await secureAICall({
-      systemPrompt,
-      userPrompt,
-      maxTokens: 4000,
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+        temperature: 0.7, max_tokens: 3000,
+      }),
     });
 
-    if (!aiResult.success) {
-      console.error(`[compliance-monitor] AI error: ${aiResult.error}`);
-      
-      if (aiResult.error?.includes('Rate limit')) {
-        return createSecureResponse({ 
-          success: false,
-          error: 'rate_limit_exceeded', 
-          message: 'Demasiadas solicitudes a IA. Intenta más tarde.' 
-        }, 429);
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ success: false, error: 'Rate limit exceeded' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
-      if (aiResult.error?.includes('Payment required')) {
-        return createSecureResponse({ 
-          success: false,
-          error: 'payment_required', 
-          message: 'Créditos de IA insuficientes.' 
-        }, 402);
-      }
-      
-      throw new Error(aiResult.error);
+      throw new Error(`AI API error: ${response.status}`);
     }
 
-    const duration = Date.now() - startTime;
-    console.log(`[compliance-monitor] Success: ${action} in ${duration}ms`);
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('No content in AI response');
 
-    return createSecureResponse({
-      success: true,
-      action,
-      data: aiResult.parsed || { rawContent: aiResult.content },
-      requestId,
-      timestamp: new Date().toISOString()
+    let result;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+      else throw new Error('No JSON found');
+    } catch { result = { rawContent: content, parseError: true }; }
+
+    console.log(`[compliance-monitor] Success: ${action}`);
+
+    return new Response(JSON.stringify({ success: true, action, ...result, timestamp: new Date().toISOString() }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    const duration = Date.now() - startTime;
-    console.error(`[compliance-monitor] Error after ${duration}ms:`, error);
-    
-    return createSecureResponse({
-      success: false,
-      error: 'internal_error',
-      message: error instanceof Error ? error.message : 'Error interno',
-      requestId
-    }, 500);
+    console.error('[compliance-monitor] Error:', error);
+    return new Response(JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
