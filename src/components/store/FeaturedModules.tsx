@@ -46,7 +46,7 @@ const FeaturedModules: React.FC = () => {
     {
       id: '1',
       module_key: 'core',
-      module_name: 'Core CRM',
+      module_name: 'Core Sistema',
       description: t('landing.modules.coreDesc'),
       module_icon: 'Building2',
       base_price: null,
