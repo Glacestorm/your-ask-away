@@ -4,8 +4,8 @@
  * Usado en: Dashboard, Admin, Profile, Home (logged in)
  */
 
-import React, { ReactNode, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { ReactNode, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,29 +39,20 @@ export function DashboardLayout({
   rightSlot,
 }: DashboardLayoutProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, loading } = useAuth();
   
-  // Estado para navegación de historial
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const [historyStack, setHistoryStack] = useState<string[]>([location.pathname]);
-
-  const canGoBack = historyIndex > 0;
-  const canGoForward = historyIndex < historyStack.length - 1;
+  // Use browser's native history - canGoBack is true if there's history to go back to
+  // We check if window.history.length > 1 as a simple heuristic
+  const canGoBack = typeof window !== 'undefined' && window.history.length > 1;
+  const canGoForward = false; // Browser doesn't expose forward history state reliably
 
   const handleGoBack = useCallback(() => {
-    if (canGoBack) {
-      setHistoryIndex((prev) => prev - 1);
-      navigate(-1);
-    }
-  }, [canGoBack, navigate]);
+    navigate(-1);
+  }, [navigate]);
 
   const handleGoForward = useCallback(() => {
-    if (canGoForward) {
-      setHistoryIndex((prev) => prev + 1);
-      navigate(1);
-    }
-  }, [canGoForward, navigate]);
+    navigate(1);
+  }, [navigate]);
 
   // Padding classes
   const paddingClasses = {
@@ -92,8 +83,8 @@ export function DashboardLayout({
           subtitle={subtitle}
           canGoBack={showHistoryNav && canGoBack}
           canGoForward={showHistoryNav && canGoForward}
-          onGoBack={handleGoBack}
-          onGoForward={handleGoForward}
+          onGoBack={showHistoryNav ? handleGoBack : undefined}
+          onGoForward={showHistoryNav ? handleGoForward : undefined}
           titleActions={titleActions}
           rightSlot={rightSlot}
         />
