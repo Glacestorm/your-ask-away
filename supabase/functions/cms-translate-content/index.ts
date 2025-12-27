@@ -40,7 +40,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Retry with exponential backoff
+// Retry with exponential backoff for transient errors
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -48,32 +48,43 @@ async function fetchWithRetry(
   baseDelay: number = 1000
 ): Promise<Response> {
   let lastError: Error | null = null;
+  let lastResponse: Response | null = null;
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const response = await fetch(url, options);
       
-      // If rate limited, wait and retry
-      if (response.status === 429 && attempt < maxRetries - 1) {
+      // Retry on rate limit (429) or server errors (5xx)
+      const shouldRetry = response.status === 429 || response.status >= 500;
+      
+      if (shouldRetry && attempt < maxRetries - 1) {
         const retryAfter = response.headers.get('Retry-After');
         const delay = retryAfter 
           ? parseInt(retryAfter) * 1000 
           : baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
         
-        console.log(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        console.log(`Request failed with ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(delay);
+        lastResponse = response;
         continue;
       }
       
       return response;
     } catch (error) {
       lastError = error as Error;
+      console.error(`Network error on attempt ${attempt + 1}:`, error);
+      
       if (attempt < maxRetries - 1) {
         const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 500;
-        console.log(`Request failed, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        console.log(`Retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
         await sleep(delay);
       }
     }
+  }
+  
+  // Return last response if we got one, otherwise throw
+  if (lastResponse) {
+    return lastResponse;
   }
   
   throw lastError || new Error('Max retries exceeded');
