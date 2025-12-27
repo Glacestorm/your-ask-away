@@ -707,3 +707,6 @@ verify_jwt = true
 
 [functions.recommendation-engine]
 verify_jwt = true
+
+[functions.module-self-healing]
+verify_jwt = true
