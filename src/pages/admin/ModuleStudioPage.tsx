@@ -142,13 +142,22 @@ export default function ModuleStudioPage() {
     is_required: selectedModuleData.is_required,
   } : {};
 
-  // Create copilot context
+  // Create copilot context (compatible with both ModuleContext and ModuleAgentContext)
   const copilotContext: ModuleContext | null = selectedModuleData ? {
     moduleKey: selectedModuleData.module_key,
     moduleName: selectedModuleData.module_name,
     currentState: moduleDataForComponents,
     dependencies: selectedModuleData.dependencies || [],
     dependents: graph.nodes.get(selectedModuleData.module_key)?.dependents || [],
+  } : null;
+
+  // Create agent context (same structure as copilotContext but typed for agent)
+  const agentContext = copilotContext ? {
+    moduleKey: copilotContext.moduleKey,
+    moduleName: copilotContext.moduleName,
+    currentState: copilotContext.currentState,
+    dependencies: copilotContext.dependencies,
+    dependents: copilotContext.dependents,
   } : null;
 
   return (
@@ -494,7 +503,7 @@ export default function ModuleStudioPage() {
           {showAgent && (
             <div className="col-span-2">
               <ModuleAutonomousAgentPanel
-                context={copilotContext}
+                context={agentContext}
                 className="h-[calc(100vh-240px)] sticky top-4"
               />
             </div>
