@@ -47,12 +47,12 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
   ];
 
   return (
-    <div className="relative overflow-hidden border-b bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+    <div className="relative overflow-hidden border-b border-border/30 bg-gradient-to-br from-[hsl(222,47%,11%)] via-[hsl(222,47%,9%)] to-[hsl(217,33%,12%)]">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/5 to-transparent opacity-50" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/10 to-transparent opacity-50" />
       </div>
 
       <div className="container mx-auto px-4 py-12 md:py-16 relative">
@@ -74,7 +74,7 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
           </motion.div>
 
           <motion.h1 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
@@ -83,7 +83,7 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
           </motion.h1>
 
           <motion.p 
-            className="text-base md:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
+            className="text-base md:text-lg text-gray-400 mb-8 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.4 }}
@@ -103,7 +103,7 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Buscar apps, módulos, integraciones..."
-              className="pl-11 h-12 text-base bg-background/80 backdrop-blur-sm border-border/50 focus:border-primary/50 shadow-sm"
+            className="pl-11 h-12 text-base bg-white/10 backdrop-blur-sm border-white/20 focus:border-primary/50 shadow-sm text-white placeholder:text-gray-400"
             />
           </motion.div>
 
@@ -117,7 +117,7 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
             {statItems.map((stat, index) => (
               <motion.div
                 key={stat.label}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.5 + index * 0.1, duration: 0.3 }}
@@ -126,9 +126,9 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
                 <div className={`p-1.5 rounded-full bg-gradient-to-br ${stat.gradient}`}>
                   <stat.icon className="h-3.5 w-3.5 text-white" />
                 </div>
-                <span className="text-sm">
+                <span className="text-sm text-white">
                   <strong className="font-semibold">{stat.value}</strong>
-                  <span className="text-muted-foreground ml-1">{stat.label}</span>
+                  <span className="text-gray-400 ml-1">{stat.label}</span>
                 </span>
               </motion.div>
             ))}
