@@ -45,6 +45,7 @@ const categories: NavCategory[] = [
       { id: 'quotes', label: 'Presupuestos', icon: FileText },
       { id: 'invoices', label: 'Facturas', icon: Receipt },
       { id: 'pricing', label: 'Precios', icon: Euro },
+      { id: 'demo-requests', label: 'Solicitudes Demo', icon: ClipboardList },
     ]
   },
   {
