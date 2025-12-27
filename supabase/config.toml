@@ -692,3 +692,6 @@ verify_jwt = true
 
 [functions.advanced-reporting]
 verify_jwt = true
+
+[functions.recommendation-engine]
+verify_jwt = true
