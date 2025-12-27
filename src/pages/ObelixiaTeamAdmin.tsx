@@ -7,7 +7,8 @@ import {
   Store, Layers, BookOpen, Activity, Rocket,
   GraduationCap, Languages, Briefcase, Gauge, ClipboardList,
   Leaf, Globe, Bot, Building2, HeartPulse, Headphones,
-  Bell, MonitorCheck, Zap
+  Bell, MonitorCheck, Zap, Users, TrendingUp, ShieldCheck,
+  AlertTriangle, LineChart, Key, Workflow, Target, Brain, Shield
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -44,6 +45,17 @@ import {
   ModulePerformancePanel 
 } from '@/components/admin/module-studio';
 
+// Lazy loaded components for new tabs
+import { lazy, Suspense } from 'react';
+const RFMDashboard = lazy(() => import('@/components/admin/RFMDashboard').then(m => ({ default: m.RFMDashboard })));
+const PredictiveAnalyticsDashboard = lazy(() => import('@/components/admin/PredictiveAnalyticsDashboard').then(m => ({ default: m.PredictiveAnalyticsDashboard })));
+const ISO27001Dashboard = lazy(() => import('@/components/admin/ISO27001Dashboard').then(m => ({ default: m.ISO27001Dashboard })));
+const DORAComplianceDashboard = lazy(() => import('@/components/admin/DORAComplianceDashboard').then(m => ({ default: m.DORAComplianceDashboard })));
+const AdaptiveAuthDashboard = lazy(() => import('@/components/admin/AdaptiveAuthDashboard').then(m => ({ default: m.AdaptiveAuthDashboard })));
+const AdvancedMLDashboard = lazy(() => import('@/components/admin/AdvancedMLDashboard').then(m => ({ default: m.AdvancedMLDashboard })));
+const SystemHealthMonitor = lazy(() => import('@/components/admin/SystemHealthMonitor').then(m => ({ default: m.SystemHealthMonitor })));
+const MetricsExplorer = lazy(() => import('@/components/admin/MetricsExplorer').then(m => ({ default: m.MetricsExplorer })));
+
 // Premium components
 import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
 import { ObelixiaAdminHeader } from '@/components/obelixia-admin/ObelixiaAdminHeader';
@@ -53,6 +65,12 @@ import { ObelixiaAdminCard3D } from '@/components/obelixia-admin/ObelixiaAdminCa
 import { ObelixiaViewToggle } from '@/components/obelixia-admin/ObelixiaViewToggle';
 import { useObelixiaAdminPreferences } from '@/hooks/useObelixiaAdminPreferences';
 import { cn } from '@/lib/utils';
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
@@ -92,6 +110,22 @@ const ObelixiaTeamAdmin: React.FC = () => {
       navigate('/obelixia-admin/ai-local');
       return;
     }
+    if (tab === 'automation-engine') {
+      navigate('/obelixia-admin/automation-engine');
+      return;
+    }
+    if (tab === 'service-quotes') {
+      navigate('/admin/service-quotes');
+      return;
+    }
+    if (tab === 'crm-migration') {
+      navigate('/admin/crm-migration');
+      return;
+    }
+    if (tab === 'marketplace') {
+      navigate('/admin/marketplace');
+      return;
+    }
     setActiveTab(tab);
     setSearchParams({ tab });
   };
@@ -102,12 +136,15 @@ const ObelixiaTeamAdmin: React.FC = () => {
       invoices: 'Facturas',
       pricing: 'Precios',
       'demo-requests': 'Solicitudes Demo',
+      'service-quotes': 'Cotizaciones Servicio',
+      'crm-migration': 'CRM Migration',
       content: 'Contenidos',
       cms: 'CMS',
       docs: 'Documentación',
       appstore: 'App Store',
       'module-studio': 'Module Studio',
       whitelabel: 'White Label',
+      marketplace: 'Marketplace',
       api: 'API',
       academia: 'Academia',
       translations: 'Traducciones',
@@ -117,6 +154,8 @@ const ObelixiaTeamAdmin: React.FC = () => {
       news: 'Noticias',
       faq: 'FAQ',
       security: 'Seguridad',
+      'system-health': 'System Health',
+      'error-dashboard': 'Errors Dashboard',
       // Nuevos módulos Estrategia & Datos
       'esg': 'ESG & Sostenibilidad',
       'market-intelligence': 'Market Intelligence',
@@ -124,11 +163,20 @@ const ObelixiaTeamAdmin: React.FC = () => {
       'enterprise-dashboard': 'Enterprise Dashboard',
       'cs-metrics': 'CS Metrics Hub',
       'remote-support': 'Soporte Remoto',
+      'rfm-dashboard': 'RFM Analysis',
+      'predictive-analytics': 'Predictive Analytics',
+      // Compliance & ML
+      'iso27001': 'ISO 27001',
+      'dora-compliance': 'DORA Compliance',
+      'adaptive-auth': 'Adaptive Auth',
+      'advanced-ml': 'Advanced ML',
       // Nuevos módulos Operaciones
       'module-dashboard': 'Dashboard Módulos',
       'module-notifications': 'Notificaciones',
       'module-monitoring': 'Monitoreo',
       'module-performance': 'Performance',
+      'metrics-explorer': 'Metrics Explorer',
+      'automation-engine': 'Automation Engine',
     };
     return labels[tab] || tab;
   };
@@ -520,6 +568,67 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="module-performance" className="m-0">
                 <ModulePerformancePanel />
+              </TabsContent>
+
+              {/* Nuevos módulos añadidos */}
+              <TabsContent value="metrics-explorer" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <MetricsExplorer />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="system-health" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <SystemHealthMonitor />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="error-dashboard" className="m-0">
+                <div className="text-center py-12">
+                  <AlertTriangle className="h-16 w-16 mx-auto mb-4 text-red-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Error Dashboard</h3>
+                  <p className="text-slate-400 mb-6">Monitorización y gestión de errores del sistema.</p>
+                  <a href="/admin?section=errors" className="inline-flex items-center gap-2 px-6 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="rfm-dashboard" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <RFMDashboard />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="predictive-analytics" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <PredictiveAnalyticsDashboard />
+                </Suspense>
+              </TabsContent>
+
+              {/* Compliance & ML */}
+              <TabsContent value="iso27001" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <ISO27001Dashboard />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="dora-compliance" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <DORAComplianceDashboard />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="adaptive-auth" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdaptiveAuthDashboard />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="advanced-ml" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdvancedMLDashboard />
+                </Suspense>
               </TabsContent>
             </Tabs>
           </ObelixiaContentArea>
