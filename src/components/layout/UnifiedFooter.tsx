@@ -3,13 +3,16 @@
  * Combina StoreFooter y MainFooter en un solo componente consistente
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, Linkedin, Twitter, Github } from 'lucide-react';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import { footerNavigation, quickActions, type NavItem, type NavGroup } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { RegionalFlag } from '@/components/ui/RegionalFlag';
+import { WelcomeLanguageModal } from '@/components/WelcomeLanguageModal';
+import { AnimatePresence } from 'framer-motion';
 
 interface UnifiedFooterProps {
   /** Mostrar la sección CTA con botones de acción */
@@ -23,7 +26,37 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
   variant = 'default'
 }) => {
   const currentYear = new Date().getFullYear();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
+
+  // Nombres de idiomas para mostrar
+  const LANGUAGE_NAMES: Record<string, string> = {
+    es: 'Español',
+    en: 'English',
+    ca: 'Català',
+    eu: 'Euskara',
+    gl: 'Galego',
+    oc: 'Occitan',
+    ast: 'Asturianu',
+    an: 'Aragonés',
+    fr: 'Français',
+    de: 'Deutsch',
+    pt: 'Português',
+    it: 'Italiano',
+    'zh-CN': '简体中文',
+    'zh-TW': '繁體中文',
+    ja: '日本語',
+    ko: '한국어',
+    ar: 'العربية',
+    ru: 'Русский',
+    nl: 'Nederlands',
+    pl: 'Polski',
+    'pt-BR': 'Português (BR)',
+    'es-MX': 'Español (MX)',
+    'en-US': 'English (US)',
+  };
+
+  const currentLanguageName = LANGUAGE_NAMES[language] || 'Language';
 
   // === Helpers de traducción ===
   const getItemLabel = (item: NavItem): string => {
@@ -217,10 +250,34 @@ const UnifiedFooter: React.FC<UnifiedFooterProps> = ({
             <p className="text-sm text-slate-500">
               {t('footer.copyright').replace('{year}', String(currentYear))}
             </p>
-            <SocialLinks />
+            
+            <div className="flex items-center gap-6">
+              {/* Language Selector Link */}
+              <button
+                onClick={() => setIsLanguageModalOpen(true)}
+                className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors cursor-pointer"
+                aria-label={`Idioma actual: ${currentLanguageName}. Clic para cambiar`}
+              >
+                <RegionalFlag code={language} size="sm" />
+                <span>{currentLanguageName}</span>
+              </button>
+              
+              <SocialLinks />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Language Modal */}
+      <AnimatePresence>
+        {isLanguageModalOpen && (
+          <WelcomeLanguageModal
+            mode="selector"
+            isOpen={isLanguageModalOpen}
+            onOpenChange={setIsLanguageModalOpen}
+          />
+        )}
+      </AnimatePresence>
     </footer>
   );
 };
