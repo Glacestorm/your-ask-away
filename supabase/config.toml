@@ -716,3 +716,6 @@ verify_jwt = true
 
 [functions.ai-agent-orchestrator]
 verify_jwt = true
+
+[functions.analytics-intelligence]
+verify_jwt = true
