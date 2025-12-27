@@ -34,7 +34,7 @@ const HeroSection: React.FC = () => {
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[150px]" />
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 pt-24 pb-16">
+        <div className="container mx-auto px-6 relative z-10 pt-20 pb-8">
           <div className="max-w-4xl mx-auto">
             {/* Eyebrow */}
             <motion.div
@@ -77,7 +77,7 @@ const HeroSection: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-10"
             >
               <Link to="/store/modules">
                 <Button 
@@ -119,7 +119,7 @@ const HeroSection: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
