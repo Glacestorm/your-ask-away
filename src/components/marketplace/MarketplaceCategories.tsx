@@ -22,16 +22,16 @@ interface MarketplaceCategoriesProps {
 }
 
 const CATEGORY_ICONS: Record<AppCategory, React.ReactNode> = {
-  erp: <Building2 className="h-5 w-5" />,
-  crm: <Users className="h-5 w-5" />,
-  fiscal: <Receipt className="h-5 w-5" />,
-  banking: <Landmark className="h-5 w-5" />,
-  logistics: <Truck className="h-5 w-5" />,
-  analytics: <BarChart3 className="h-5 w-5" />,
-  productivity: <Briefcase className="h-5 w-5" />,
-  communication: <MessageSquare className="h-5 w-5" />,
-  security: <Shield className="h-5 w-5" />,
-  other: <Layers className="h-5 w-5" />,
+  erp: <Building2 className="h-5 w-5 text-blue-400" />,
+  crm: <Users className="h-5 w-5 text-green-400" />,
+  fiscal: <Receipt className="h-5 w-5 text-purple-400" />,
+  banking: <Landmark className="h-5 w-5 text-yellow-400" />,
+  logistics: <Truck className="h-5 w-5 text-orange-400" />,
+  analytics: <BarChart3 className="h-5 w-5 text-cyan-400" />,
+  productivity: <Briefcase className="h-5 w-5 text-pink-400" />,
+  communication: <MessageSquare className="h-5 w-5 text-indigo-400" />,
+  security: <Shield className="h-5 w-5 text-red-400" />,
+  other: <Layers className="h-5 w-5 text-gray-400" />,
 };
 
 const CATEGORY_COLORS: Record<AppCategory, string> = {
