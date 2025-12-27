@@ -725,3 +725,6 @@ verify_jwt = true
 
 [functions.predictive-intelligence]
 verify_jwt = true
+
+[functions.automation-orchestrator]
+verify_jwt = true
