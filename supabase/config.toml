@@ -42,6 +42,15 @@ verify_jwt = true
 [functions.module-export-import]
 verify_jwt = true
 
+[functions.module-monitoring-ai]
+verify_jwt = true
+
+[functions.module-performance-ai]
+verify_jwt = true
+
+[functions.module-notifications-ai]
+verify_jwt = true
+
 [functions.web-market-research]
 verify_jwt = true
 
