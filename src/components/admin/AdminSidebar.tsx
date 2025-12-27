@@ -310,8 +310,8 @@ export function AdminSidebar({
               {/* Module Studio - Gestión de Módulos Enterprise */}
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  onClick={() => navigate('/admin/module-studio')}
-                  isActive={location.pathname === '/admin/module-studio'}
+                  onClick={() => navigate('/obelixia-admin/module-studio')}
+                  isActive={location.pathname === '/obelixia-admin/module-studio'}
                   className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                   tooltip={!open ? {
                     children: 'Module Studio',
