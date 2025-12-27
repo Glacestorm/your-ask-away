@@ -4,3 +4,4 @@ export { InstalledModules } from './InstalledModules';
 export { CNAEModuleGenerator } from './CNAEModuleGenerator';
 export { GeneratedModules } from './GeneratedModules';
 export { ModuleDetails } from './ModuleDetails';
+export { ModulePublisherPanel } from './ModulePublisherPanel';

@@ -12,13 +12,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   Store, Package, Download, Check, Search, Plus, Sparkles, 
   Building2, Shield, BarChart3, Loader2, RefreshCw, Trash2,
-  Eye, Settings, FileCode2, Database, Puzzle, Star
+  Eye, Settings, FileCode2, Database, Puzzle, Star, Rocket
 } from 'lucide-react';
 import { ModuleCatalog } from './ModuleCatalog';
 import { InstalledModules } from './InstalledModules';
 import { CNAEModuleGenerator } from './CNAEModuleGenerator';
 import { GeneratedModules } from './GeneratedModules';
 import { ModuleDetails } from './ModuleDetails';
+import { ModulePublisherPanel } from './ModulePublisherPanel';
 
 export interface AppModule {
   id: string;
@@ -277,7 +278,7 @@ export const AppStoreManager: React.FC = () => {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="catalog" className="flex items-center gap-2">
             <Package className="h-4 w-4" />
             Catálogo
@@ -286,9 +287,13 @@ export const AppStoreManager: React.FC = () => {
             <Check className="h-4 w-4" />
             Instalados ({stats.installedCount})
           </TabsTrigger>
+          <TabsTrigger value="publish" className="flex items-center gap-2">
+            <Rocket className="h-4 w-4" />
+            Publicar
+          </TabsTrigger>
           <TabsTrigger value="generate" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            Generar por CNAE
+            Generar CNAE
           </TabsTrigger>
           <TabsTrigger value="generated" className="flex items-center gap-2">
             <Puzzle className="h-4 w-4" />
@@ -318,6 +323,10 @@ export const AppStoreManager: React.FC = () => {
             onToggleStatus={toggleModuleStatus}
             onViewDetails={(module) => setSelectedModule(module)}
           />
+        </TabsContent>
+
+        <TabsContent value="publish" className="space-y-4">
+          <ModulePublisherPanel />
         </TabsContent>
 
         <TabsContent value="generate" className="space-y-4">
