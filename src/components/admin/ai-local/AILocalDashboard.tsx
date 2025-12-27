@@ -55,6 +55,10 @@ import { KnowledgeBaseRAGPanel } from '../ai-modules/KnowledgeBaseRAGPanel';
 import { MultiChannelIntegrationPanel } from '../ai-modules/MultiChannelIntegrationPanel';
 import { PerformanceCoachPanel } from '../ai-modules/PerformanceCoachPanel';
 import { Customer360IAPanel } from '../ai-modules/Customer360IAPanel';
+import { PredictiveChurnPanel } from '../ai-modules/PredictiveChurnPanel';
+import { PredictiveRevenuePanel } from '../ai-modules/PredictiveRevenuePanel';
+import { PredictiveDemandPanel } from '../ai-modules/PredictiveDemandPanel';
+import { PredictiveAnomaliesPanel } from '../ai-modules/PredictiveAnomaliesPanel';
 import { useLocalAI } from '@/hooks/admin/useLocalAI';
 import { cn } from '@/lib/utils';
 
@@ -144,7 +148,7 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="assistant" className="gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Asistente</span>
@@ -160,6 +164,10 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
           <TabsTrigger value="knowledge" className="gap-2">
             <Library className="h-4 w-4" />
             <span className="hidden sm:inline">Knowledge</span>
+          </TabsTrigger>
+          <TabsTrigger value="predictive" className="gap-2">
+            <LineChart className="h-4 w-4" />
+            <span className="hidden sm:inline">Predictive</span>
           </TabsTrigger>
           <TabsTrigger value="config" className="gap-2">
             <Settings className="h-4 w-4" />
@@ -468,6 +476,110 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
                       <li>• Predicción de comportamiento</li>
                       <li>• Segmentación IA</li>
                       <li>• Next Best Action</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="predictive" className="mt-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-red-500">
+                <LineChart className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Inteligencia Predictiva - Fase 5</h3>
+                <p className="text-sm text-muted-foreground">
+                  Predicción de churn, revenue, demanda y detección de anomalías
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <PredictiveChurnPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <PredictiveRevenuePanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <PredictiveDemandPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+              <PredictiveAnomaliesPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard'
+                }} 
+                className="h-fit"
+              />
+            </div>
+
+            <Card className="bg-gradient-to-r from-orange-500/5 via-red-500/5 to-pink-500/5 border-orange-500/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-orange-500" />
+                  Capacidades Predictivas - Fase 5
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-red-500" />
+                      Predicción Churn
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Probabilidad de abandono</li>
+                      <li>• Factores de riesgo</li>
+                      <li>• Acciones preventivas</li>
+                      <li>• Intervenciones IA</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                      Predicción Revenue
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Forecast mensual</li>
+                      <li>• Análisis de escenarios</li>
+                      <li>• Cohort analysis</li>
+                      <li>• Desglose por fuente</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Package className="h-4 w-4 text-blue-500" />
+                      Predicción Demanda
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Forecast por producto</li>
+                      <li>• Optimización inventario</li>
+                      <li>• Patrones estacionales</li>
+                      <li>• Drivers de demanda</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      Detección Anomalías
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Alertas en tiempo real</li>
+                      <li>• Análisis causa raíz</li>
+                      <li>• Patrones recurrentes</li>
+                      <li>• Resolución automática</li>
                     </ul>
                   </div>
                 </div>
