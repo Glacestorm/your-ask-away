@@ -3,6 +3,18 @@ project_id = "avaugfnqvvqcilhiudlf"
 [functions.module-copilot]
 verify_jwt = true
 
+[functions.module-marketplace]
+verify_jwt = true
+
+[functions.module-analytics]
+verify_jwt = true
+
+[functions.module-version-control]
+verify_jwt = true
+
+[functions.module-deployment-pipeline]
+verify_jwt = true
+
 [functions.module-autonomous-agent]
 verify_jwt = true
 
