@@ -10,3 +10,7 @@ export { PartnerManager } from './PartnerManager';
 export { BankReconciliation } from './BankReconciliation';
 export { FinancialReports } from './FinancialReports';
 export { TaxDeclarations } from './TaxDeclarations';
+
+// Fase 1: AI Accounting Copilot
+export { ObelixiaAccountingCopilotPanel } from './ObelixiaAccountingCopilotPanel';
+export { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';

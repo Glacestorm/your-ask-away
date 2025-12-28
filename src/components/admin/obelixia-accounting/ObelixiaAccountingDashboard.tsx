@@ -362,8 +362,14 @@ export function ObelixiaAccountingDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* AI Copilot Button */}
+      <ObelixiaAccountingHelpButton />
     </div>
   );
 }
+
+// Import for copilot
+import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 
 export default ObelixiaAccountingDashboard;
