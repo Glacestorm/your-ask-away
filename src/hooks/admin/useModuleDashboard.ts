@@ -99,13 +99,13 @@ export function useModuleDashboard() {
           {
             moduleKey: 'marketplace',
             moduleName: 'Marketplace',
-            status: 'updating',
+            status: 'active',
             version: '1.2.0',
-            health: 88,
+            health: 100,
             lastActivity: new Date().toISOString(),
             activeUsers: 12,
-            errorCount: 1,
-            performance: { responseTime: 340, uptime: 98.2, memoryUsage: 55 }
+            errorCount: 0,
+            performance: { responseTime: 280, uptime: 99.9, memoryUsage: 55 }
           }
         ];
 
