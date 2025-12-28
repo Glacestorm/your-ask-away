@@ -68,22 +68,22 @@ export function useModuleDashboard() {
             moduleName: 'CRM Core',
             status: 'active',
             version: '2.1.0',
-            health: 98,
+            health: 100,
             lastActivity: new Date().toISOString(),
             activeUsers: 45,
             errorCount: 0,
-            performance: { responseTime: 120, uptime: 99.9, memoryUsage: 45 }
+            performance: { responseTime: 120, uptime: 100, memoryUsage: 45 }
           },
           {
             moduleKey: 'analytics',
             moduleName: 'Analytics Suite',
             status: 'active',
             version: '1.8.0',
-            health: 95,
+            health: 100,
             lastActivity: new Date().toISOString(),
             activeUsers: 23,
-            errorCount: 2,
-            performance: { responseTime: 180, uptime: 99.5, memoryUsage: 62 }
+            errorCount: 0,
+            performance: { responseTime: 180, uptime: 99.9, memoryUsage: 62 }
           },
           {
             moduleKey: 'ai-copilot',
