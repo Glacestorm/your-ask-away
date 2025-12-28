@@ -746,3 +746,6 @@ verify_jwt = true
 
 [functions.obelixia-accounting-copilot]
 verify_jwt = true
+
+[functions.obelixia-document-vision]
+verify_jwt = true
