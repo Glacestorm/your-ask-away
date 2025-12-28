@@ -12,7 +12,8 @@ interface AccountingRequest {
           'reconcile_bank' | 'auto_reconcile' | 'generate_fiscal_declaration' |
           'partner_transaction' | 'ai_categorize' |
           'get_balance_sheet' | 'get_income_statement' | 'get_cash_flow' |
-          'close_fiscal_period' | 'close_fiscal_year';
+          'close_fiscal_period' | 'close_fiscal_year' |
+          'get_tax_calendar' | 'get_tax_declarations';
   params?: Record<string, unknown>;
 }
 
@@ -1038,6 +1039,144 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           total_expenses: totalExpenses,
           net_profit: netProfit,
           message: `Ejercicio ${fiscal_year} cerrado. Resultado: ${netProfit.toFixed(2)}€`
+        };
+        break;
+      }
+
+      case 'get_tax_calendar': {
+        const { year } = params as { year?: number };
+        const fiscalYear = year || new Date().getFullYear();
+
+        // Get periods for the year
+        const { data: periods } = await supabase
+          .from('obelixia_fiscal_periods')
+          .select('*')
+          .eq('fiscal_year', fiscalYear)
+          .order('start_date');
+
+        // Generate calendar events for tax deadlines
+        const calendar: Array<{
+          id: string;
+          title: string;
+          due_date: string;
+          type: string;
+          period: string;
+          status: 'pending' | 'upcoming' | 'overdue' | 'completed';
+        }> = [];
+
+        const today = new Date().toISOString().split('T')[0];
+
+        for (const period of periods || []) {
+          const periodEnd = new Date(period.end_date);
+          
+          // IVA due 20th of next month
+          const ivaDue = new Date(periodEnd);
+          ivaDue.setMonth(ivaDue.getMonth() + 1);
+          ivaDue.setDate(20);
+          
+          // Check if IVA declaration exists
+          const { data: ivaDecl } = await supabase
+            .from('obelixia_fiscal_declarations')
+            .select('status')
+            .eq('fiscal_period_id', period.id)
+            .eq('declaration_type', 'iva')
+            .single();
+
+          calendar.push({
+            id: `iva-${period.id}`,
+            title: `IVA ${period.period_name}`,
+            due_date: ivaDue.toISOString().split('T')[0],
+            type: 'iva',
+            period: period.period_name,
+            status: ivaDecl?.status === 'submitted' ? 'completed' 
+                  : ivaDue.toISOString().split('T')[0] < today ? 'overdue'
+                  : ivaDue.toISOString().split('T')[0] <= new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0] ? 'upcoming'
+                  : 'pending'
+          });
+
+          // IRPF quarterly (only Q1, Q2, Q3, Q4)
+          if (period.period_type === 'quarter') {
+            const irpfDue = new Date(periodEnd);
+            irpfDue.setMonth(irpfDue.getMonth() + 1);
+            irpfDue.setDate(20);
+
+            const { data: irpfDecl } = await supabase
+              .from('obelixia_fiscal_declarations')
+              .select('status')
+              .eq('fiscal_period_id', period.id)
+              .eq('declaration_type', 'irpf')
+              .single();
+
+            calendar.push({
+              id: `irpf-${period.id}`,
+              title: `IRPF ${period.period_name}`,
+              due_date: irpfDue.toISOString().split('T')[0],
+              type: 'irpf',
+              period: period.period_name,
+              status: irpfDecl?.status === 'submitted' ? 'completed'
+                    : irpfDue.toISOString().split('T')[0] < today ? 'overdue'
+                    : irpfDue.toISOString().split('T')[0] <= new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0] ? 'upcoming'
+                    : 'pending'
+            });
+          }
+        }
+
+        // Annual corporate tax (July 25th)
+        calendar.push({
+          id: `is-${fiscalYear}`,
+          title: `Impuesto Sociedades ${fiscalYear}`,
+          due_date: `${fiscalYear + 1}-07-25`,
+          type: 'corporate',
+          period: `Ejercicio ${fiscalYear}`,
+          status: `${fiscalYear + 1}-07-25` < today ? 'overdue' : 'pending'
+        });
+
+        result = { year: fiscalYear, calendar };
+        break;
+      }
+
+      case 'get_tax_declarations': {
+        const { year, status } = params as { year?: number; status?: string };
+        const fiscalYear = year || new Date().getFullYear();
+
+        let query = supabase
+          .from('obelixia_fiscal_declarations')
+          .select(`
+            *,
+            fiscal_period:obelixia_fiscal_periods(*)
+          `)
+          .order('due_date', { ascending: false });
+
+        if (status) {
+          query = query.eq('status', status);
+        }
+
+        const { data: declarations } = await query;
+
+        // Filter by year if fiscal_period exists
+        const filtered = (declarations || []).filter(d => {
+          if (!d.fiscal_period) return true;
+          return d.fiscal_period.fiscal_year === fiscalYear;
+        });
+
+        // Group by type
+        const byType = {
+          iva: filtered.filter(d => d.declaration_type === 'iva'),
+          irpf: filtered.filter(d => d.declaration_type === 'irpf'),
+          corporate: filtered.filter(d => d.declaration_type === 'corporate'),
+          other: filtered.filter(d => !['iva', 'irpf', 'corporate'].includes(d.declaration_type))
+        };
+
+        result = { 
+          year: fiscalYear, 
+          declarations: filtered,
+          byType,
+          summary: {
+            total: filtered.length,
+            pending: filtered.filter(d => d.status === 'pending' || d.status === 'calculated').length,
+            submitted: filtered.filter(d => d.status === 'submitted').length,
+            paid: filtered.filter(d => d.status === 'paid').length
+          }
         };
         break;
       }
