@@ -1,4 +1,4 @@
-import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, ButtonHTMLAttributes, ReactNode, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 
 interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -90,14 +90,25 @@ export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
     disabled,
     children,
     ...props 
-  }, ref) => {
-    // React 19 + Radix "asChild" can pass `ref` as a normal prop; make sure we don't
-    // forward that `ref` prop to the DOM element (we already set ref explicitly).
-    const { ref: _refProp, ...buttonProps } = (props as unknown as { ref?: unknown });
+  }, forwardedRef) => {
+    // React 19 + Radix "asChild" passes ref as a prop which can cause infinite loops.
+    // Filter out any ref prop that might have been passed through spread props.
+    const safeProps = Object.fromEntries(
+      Object.entries(props).filter(([key]) => key !== 'ref')
+    );
+
+    // Use a stable callback ref to prevent re-render loops
+    const setRef = useCallback((node: HTMLButtonElement | null) => {
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(node);
+      } else if (forwardedRef) {
+        forwardedRef.current = node;
+      }
+    }, [forwardedRef]);
 
     return (
       <button
-        ref={ref}
+        ref={setRef}
         disabled={disabled}
         className={cn(
           // Base styles
@@ -113,7 +124,7 @@ export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
           active && 'ring-2 ring-primary/50 ring-offset-1',
           className
         )}
-        {...(buttonProps as Omit<typeof props, 'ref'>)}
+        {...safeProps}
       >
         {icon && <span className="flex-shrink-0">{icon}</span>}
         {label && showLabel && <span className="hidden sm:inline">{label}</span>}
