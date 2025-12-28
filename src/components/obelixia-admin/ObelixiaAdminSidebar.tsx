@@ -71,10 +71,6 @@ const categories: NavCategory[] = [
     color: 'purple',
     items: [
       { id: 'reports', label: 'Reportes', icon: ClipboardList },
-      { id: 'web-vitals', label: 'Web Vitals', icon: Activity },
-      { id: 'codebase-index', label: 'Índice Codebase', icon: Code },
-      { id: 'analyzer', label: 'Analizador App', icon: Sparkles },
-      { id: 'audit-improvements', label: 'Mejoras Diagnóstico', icon: BarChart3 },
       { id: 'system-help', label: 'Ayuda Sistema', icon: HelpCircle },
     ]
   },
