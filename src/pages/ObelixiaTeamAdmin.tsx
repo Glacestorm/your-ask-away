@@ -131,6 +131,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
       navigate('/obelixia-admin/licenses');
       return;
     }
+    if (tab === 'accounting') {
+      navigate('/obelixia-admin/accounting');
+      return;
+    }
     setActiveTab(tab);
     setSearchParams({ tab });
   };
