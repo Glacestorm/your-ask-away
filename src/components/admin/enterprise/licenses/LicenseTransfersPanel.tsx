@@ -1,6 +1,6 @@
 /**
  * License Transfers Panel
- * Gestión de transferencias de licencias entre clientes
+ * Gestión de transferencias de licencias entre organizaciones
  */
 
 import { useState, useEffect } from 'react';
@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -48,8 +47,7 @@ import {
   AlertTriangle,
   Send,
   ThumbsUp,
-  ThumbsDown,
-  History
+  ThumbsDown
 } from 'lucide-react';
 import { useLicenseTransfer } from '@/hooks/admin/enterprise/useLicenseTransfer';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -61,9 +59,8 @@ export function LicenseTransfersPanel() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [formData, setFormData] = useState({
     license_id: '',
-    from_organization_id: '',
     to_organization_id: '',
-    reason: ''
+    to_email: ''
   });
 
   const {
@@ -82,30 +79,23 @@ export function LicenseTransfersPanel() {
   }, []);
 
   const handleInitiateTransfer = async () => {
-    if (!formData.license_id || !formData.from_organization_id || !formData.to_organization_id) {
+    if (!formData.license_id || !formData.to_organization_id || !formData.to_email) {
       toast.error('Complete todos los campos requeridos');
-      return;
-    }
-
-    if (formData.from_organization_id === formData.to_organization_id) {
-      toast.error('La organización de origen y destino no pueden ser la misma');
       return;
     }
 
     const success = await initiateTransfer({
       license_id: formData.license_id,
-      from_organization_id: formData.from_organization_id,
       to_organization_id: formData.to_organization_id,
-      reason: formData.reason
+      to_email: formData.to_email
     });
 
     if (success) {
       setIsCreateOpen(false);
       setFormData({
         license_id: '',
-        from_organization_id: '',
         to_organization_id: '',
-        reason: ''
+        to_email: ''
       });
     }
   };
@@ -200,14 +190,8 @@ export function LicenseTransfersPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Este Mes</p>
-                <p className="text-2xl font-bold">
-                  {transfers.filter(t => {
-                    const date = new Date(t.created_at);
-                    const now = new Date();
-                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-                  }).length}
-                </p>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{transfers.length}</p>
               </div>
               <ArrowUpDown className="h-8 w-8 text-purple-500" />
             </div>
@@ -225,7 +209,7 @@ export function LicenseTransfersPanel() {
                 Transferencias de Licencias
               </CardTitle>
               <CardDescription>
-                Gestione transferencias de licencias entre organizaciones
+                Gestione transferencias entre organizaciones
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -255,9 +239,9 @@ export function LicenseTransfersPanel() {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Iniciar Transferencia de Licencia</DialogTitle>
+                    <DialogTitle>Iniciar Transferencia</DialogTitle>
                     <DialogDescription>
-                      Transfiera una licencia de una organización a otra
+                      Transfiera una licencia a otra organización
                     </DialogDescription>
                   </DialogHeader>
 
@@ -272,43 +256,31 @@ export function LicenseTransfersPanel() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="from">Organización Origen *</Label>
-                        <Input
-                          id="from"
-                          placeholder="ID organización origen"
-                          value={formData.from_organization_id}
-                          onChange={e => setFormData({ ...formData, from_organization_id: e.target.value })}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="to">Organización Destino *</Label>
-                        <Input
-                          id="to"
-                          placeholder="ID organización destino"
-                          value={formData.to_organization_id}
-                          onChange={e => setFormData({ ...formData, to_organization_id: e.target.value })}
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="to_org">ID Organización Destino *</Label>
+                      <Input
+                        id="to_org"
+                        placeholder="ID organización destino"
+                        value={formData.to_organization_id}
+                        onChange={e => setFormData({ ...formData, to_organization_id: e.target.value })}
+                      />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="reason">Motivo</Label>
-                      <Textarea
-                        id="reason"
-                        placeholder="Describa el motivo de la transferencia..."
-                        value={formData.reason}
-                        onChange={e => setFormData({ ...formData, reason: e.target.value })}
-                        rows={3}
+                      <Label htmlFor="to_email">Email Destino *</Label>
+                      <Input
+                        id="to_email"
+                        type="email"
+                        placeholder="email@destino.com"
+                        value={formData.to_email}
+                        onChange={e => setFormData({ ...formData, to_email: e.target.value })}
                       />
                     </div>
 
                     <div className="p-3 bg-amber-500/10 rounded-lg flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5" />
                       <p className="text-xs text-muted-foreground">
-                        La transferencia requerirá aprobación antes de ser completada. 
-                        Todos los dispositivos asociados serán desactivados.
+                        La transferencia requerirá aprobación.
                       </p>
                     </div>
                   </div>
@@ -319,7 +291,7 @@ export function LicenseTransfersPanel() {
                     </Button>
                     <Button onClick={handleInitiateTransfer}>
                       <Send className="h-4 w-4 mr-2" />
-                      Iniciar Transferencia
+                      Iniciar
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -334,7 +306,6 @@ export function LicenseTransfersPanel() {
                 <TableRow>
                   <TableHead>Licencia</TableHead>
                   <TableHead>Transferencia</TableHead>
-                  <TableHead>Motivo</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -343,8 +314,8 @@ export function LicenseTransfersPanel() {
               <TableBody>
                 {filteredTransfers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No hay transferencias que mostrar
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No hay transferencias
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -372,15 +343,6 @@ export function LicenseTransfersPanel() {
                             <span className="max-w-[80px] truncate">{transfer.to_organization_id.slice(0, 6)}...</span>
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {transfer.reason ? (
-                          <p className="text-sm max-w-[150px] truncate" title={transfer.reason}>
-                            {transfer.reason}
-                          </p>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
                       </TableCell>
                       <TableCell>{getStatusBadge(transfer.status)}</TableCell>
                       <TableCell>

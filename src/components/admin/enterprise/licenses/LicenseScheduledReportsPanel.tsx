@@ -49,40 +49,17 @@ import {
   AlertTriangle,
   BarChart3
 } from 'lucide-react';
-import { useLicenseScheduledReports, ScheduledReport, ReportHistory } from '@/hooks/admin/enterprise/useLicenseScheduledReports';
+import { useLicenseScheduledReports, REPORT_TYPES, SCHEDULE_OPTIONS } from '@/hooks/admin/enterprise/useLicenseScheduledReports';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
-
-const REPORT_TYPES = [
-  { value: 'usage', label: 'Uso de Licencias' },
-  { value: 'expiration', label: 'Próximas Expiraciones' },
-  { value: 'revenue', label: 'Ingresos' },
-  { value: 'anomalies', label: 'Anomalías' },
-  { value: 'devices', label: 'Dispositivos' },
-  { value: 'summary', label: 'Resumen Ejecutivo' },
-];
-
-const FREQUENCIES = [
-  { value: 'daily', label: 'Diario' },
-  { value: 'weekly', label: 'Semanal' },
-  { value: 'biweekly', label: 'Quincenal' },
-  { value: 'monthly', label: 'Mensual' },
-];
-
-const FORMATS = [
-  { value: 'pdf', label: 'PDF' },
-  { value: 'excel', label: 'Excel' },
-  { value: 'csv', label: 'CSV' },
-];
 
 export function LicenseScheduledReportsPanel() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    report_type: 'summary',
-    frequency: 'weekly',
-    format: 'pdf',
+    report_type: 'summary' as const,
+    schedule_type: 'weekly' as const,
     recipients: ''
   });
 
@@ -114,8 +91,7 @@ export function LicenseScheduledReportsPanel() {
     const success = await createReport({
       name: formData.name,
       report_type: formData.report_type,
-      frequency: formData.frequency,
-      format: formData.format,
+      schedule_cron: SCHEDULE_OPTIONS.find(s => s.value === formData.schedule_type)?.cron || '0 9 * * 1',
       recipients
     });
 
@@ -124,14 +100,13 @@ export function LicenseScheduledReportsPanel() {
       setFormData({
         name: '',
         report_type: 'summary',
-        frequency: 'weekly',
-        format: 'pdf',
+        schedule_type: 'weekly',
         recipients: ''
       });
     }
   };
 
-  const handleToggle = async (report: ScheduledReport) => {
+  const handleToggle = async (report: typeof reports[0]) => {
     await updateReport(report.id, { is_active: !report.is_active });
   };
 
@@ -141,12 +116,12 @@ export function LicenseScheduledReportsPanel() {
     }
   };
 
-  const handleRunNow = async (reportId: string) => {
-    await runNow(reportId);
+  const handleRunNow = async (report: typeof reports[0]) => {
+    await runNow(report);
   };
 
-  const getFrequencyLabel = (freq: string) => {
-    return FREQUENCIES.find(f => f.value === freq)?.label || freq;
+  const getScheduleLabel = (scheduleType: string) => {
+    return SCHEDULE_OPTIONS.find(s => s.value === scheduleType)?.label || scheduleType;
   };
 
   const getReportTypeLabel = (type: string) => {
@@ -155,21 +130,21 @@ export function LicenseScheduledReportsPanel() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Completado</Badge>;
+      case 'sent':
+        return <Badge className="bg-green-500/10 text-green-500 border-green-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Enviado</Badge>;
       case 'failed':
         return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Fallido</Badge>;
-      case 'running':
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Procesando</Badge>;
+      case 'generating':
+        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20"><RefreshCw className="h-3 w-3 mr-1 animate-spin" />Generando</Badge>;
+      case 'pending':
+        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
   const activeReports = reports.filter(r => r.is_active);
-  const todayHistory = history.filter(h => 
-    new Date(h.generated_at).toDateString() === new Date().toDateString()
-  );
+  const sentCount = history.filter(h => h.status === 'sent').length;
 
   return (
     <div className="space-y-6">
@@ -191,8 +166,8 @@ export function LicenseScheduledReportsPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Generados Hoy</p>
-                <p className="text-2xl font-bold">{todayHistory.length}</p>
+                <p className="text-sm text-muted-foreground">Enviados</p>
+                <p className="text-2xl font-bold">{sentCount}</p>
               </div>
               <BarChart3 className="h-8 w-8 text-green-500" />
             </div>
@@ -203,10 +178,8 @@ export function LicenseScheduledReportsPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Emails Enviados</p>
-                <p className="text-2xl font-bold">
-                  {history.filter(h => h.status === 'completed').length}
-                </p>
+                <p className="text-sm text-muted-foreground">Total Historial</p>
+                <p className="text-2xl font-bold">{history.length}</p>
               </div>
               <Mail className="h-8 w-8 text-blue-500" />
             </div>
@@ -236,7 +209,7 @@ export function LicenseScheduledReportsPanel() {
                 Reportes Programados
               </CardTitle>
               <CardDescription>
-                Configure reportes automáticos que se envían periódicamente
+                Configure reportes automáticos
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -255,7 +228,7 @@ export function LicenseScheduledReportsPanel() {
                   <DialogHeader>
                     <DialogTitle>Crear Reporte Programado</DialogTitle>
                     <DialogDescription>
-                      Configure un nuevo reporte que se generará automáticamente
+                      Configure un nuevo reporte automático
                     </DialogDescription>
                   </DialogHeader>
 
@@ -264,7 +237,7 @@ export function LicenseScheduledReportsPanel() {
                       <Label htmlFor="name">Nombre del Reporte *</Label>
                       <Input
                         id="name"
-                        placeholder="Ej: Reporte Semanal de Uso"
+                        placeholder="Ej: Reporte Semanal"
                         value={formData.name}
                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                       />
@@ -275,7 +248,7 @@ export function LicenseScheduledReportsPanel() {
                         <Label>Tipo de Reporte</Label>
                         <Select
                           value={formData.report_type}
-                          onValueChange={v => setFormData({ ...formData, report_type: v })}
+                          onValueChange={v => setFormData({ ...formData, report_type: v as typeof formData.report_type })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -292,40 +265,21 @@ export function LicenseScheduledReportsPanel() {
                       <div className="space-y-2">
                         <Label>Frecuencia</Label>
                         <Select
-                          value={formData.frequency}
-                          onValueChange={v => setFormData({ ...formData, frequency: v })}
+                          value={formData.schedule_type}
+                          onValueChange={v => setFormData({ ...formData, schedule_type: v as typeof formData.schedule_type })}
                         >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {FREQUENCIES.map(freq => (
-                              <SelectItem key={freq.value} value={freq.value}>
-                                {freq.label}
+                            {SCHEDULE_OPTIONS.map(opt => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Formato</Label>
-                      <Select
-                        value={formData.format}
-                        onValueChange={v => setFormData({ ...formData, format: v })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {FORMATS.map(fmt => (
-                            <SelectItem key={fmt.value} value={fmt.value}>
-                              {fmt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
 
                     <div className="space-y-2">
@@ -362,7 +316,7 @@ export function LicenseScheduledReportsPanel() {
                 <TableRow>
                   <TableHead>Reporte</TableHead>
                   <TableHead>Frecuencia</TableHead>
-                  <TableHead>Formato</TableHead>
+                  <TableHead>Próximo Envío</TableHead>
                   <TableHead>Destinatarios</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -391,13 +345,20 @@ export function LicenseScheduledReportsPanel() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {getFrequencyLabel(report.frequency)}
+                          {report.schedule_cron}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="uppercase">
-                          {report.format}
-                        </Badge>
+                        {report.next_send_at ? (
+                          <div className="text-sm">
+                            <p>{format(new Date(report.next_send_at), 'dd/MM/yy HH:mm')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatDistanceToNow(new Date(report.next_send_at), { addSuffix: true, locale: es })}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
@@ -417,7 +378,7 @@ export function LicenseScheduledReportsPanel() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            onClick={() => handleRunNow(report.id)}
+                            onClick={() => handleRunNow(report)}
                             title="Ejecutar ahora"
                           >
                             <Play className="h-4 w-4" />
@@ -447,7 +408,7 @@ export function LicenseScheduledReportsPanel() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Historial de Reportes Generados
+            Historial de Reportes
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -456,7 +417,6 @@ export function LicenseScheduledReportsPanel() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Reporte</TableHead>
-                  <TableHead>Formato</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Generado</TableHead>
                   <TableHead className="text-right">Descargar</TableHead>
@@ -465,8 +425,8 @@ export function LicenseScheduledReportsPanel() {
               <TableBody>
                 {history.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No hay reportes generados
+                    <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      No hay historial
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -474,18 +434,13 @@ export function LicenseScheduledReportsPanel() {
                     <TableRow key={item.id}>
                       <TableCell>
                         <span className="font-medium">
-                          {reports.find(r => r.id === item.report_id)?.name || 'Reporte'}
+                          {reports.find(r => r.id === item.scheduled_report_id)?.name || 'Reporte'}
                         </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="uppercase">
-                          {item.format}
-                        </Badge>
                       </TableCell>
                       <TableCell>{getStatusBadge(item.status)}</TableCell>
                       <TableCell>
                         <span className="text-sm">
-                          {formatDistanceToNow(new Date(item.generated_at), { addSuffix: true, locale: es })}
+                          {formatDistanceToNow(new Date(item.created_at), { addSuffix: true, locale: es })}
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
