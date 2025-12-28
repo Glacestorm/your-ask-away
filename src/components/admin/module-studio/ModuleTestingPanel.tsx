@@ -175,17 +175,18 @@ export function ModuleTestingPanel({ context, className }: ModuleTestingPanelPro
             <div className="flex items-center gap-1">
               {/* Dropdown for test types */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 gap-1" disabled={isLoading}>
-                    {isLoading ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        <ChevronDown className="h-3 w-3" />
-                      </>
-                    )}
-                  </Button>
+                <DropdownMenuTrigger 
+                  className="h-8 gap-1 inline-flex items-center justify-center rounded-md text-sm font-medium px-3 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4" />
+                      <ChevronDown className="h-3 w-3" />
+                    </>
+                  )}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Ejecutar Tests</DropdownMenuLabel>
@@ -209,21 +210,15 @@ export function ModuleTestingPanel({ context, className }: ModuleTestingPanelPro
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="h-8 w-8"
-                  >
-                    {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isExpanded ? 'Minimizar' : 'Expandir'}
-                </TooltipContent>
-              </Tooltip>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-8 w-8"
+                title={isExpanded ? 'Minimizar' : 'Expandir'}
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -326,15 +321,11 @@ export function ModuleTestingPanel({ context, className }: ModuleTestingPanelPro
                                 {testCase.duration_ms || 0}ms
                               </Badge>
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <MoreVertical className="h-3 w-3" />
-                                  </Button>
+                                <DropdownMenuTrigger 
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline-none"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreVertical className="h-3 w-3" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleViewTestDetails(testCase); }}>

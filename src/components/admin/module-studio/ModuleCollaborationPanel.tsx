@@ -204,33 +204,25 @@ export function ModuleCollaborationPanel({ context, className }: ModuleCollabora
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => context?.moduleKey && getComments(context.moduleKey)}
-                    disabled={isLoading}
-                    className="h-8 w-8"
-                  >
-                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Actualizar</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="h-8 w-8"
-                  >
-                    {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{isExpanded ? 'Minimizar' : 'Expandir'}</TooltipContent>
-              </Tooltip>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => context?.moduleKey && getComments(context.moduleKey)}
+                disabled={isLoading}
+                className="h-8 w-8"
+                title="Actualizar"
+              >
+                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-8 w-8"
+                title={isExpanded ? 'Minimizar' : 'Expandir'}
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -288,14 +280,10 @@ export function ModuleCollaborationPanel({ context, className }: ModuleCollabora
                                     {formatDistanceToNow(new Date(comment.created_at), { locale: es, addSuffix: true })}
                                   </span>
                                   <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                      >
-                                        <MoreVertical className="h-3 w-3" />
-                                      </Button>
+                                    <DropdownMenuTrigger 
+                                      className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline-none"
+                                    >
+                                      <MoreVertical className="h-3 w-3" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                       <DropdownMenuItem onClick={() => handleReplyToComment(comment)}>
@@ -341,10 +329,8 @@ export function ModuleCollaborationPanel({ context, className }: ModuleCollabora
                                   Responder
                                 </Button>
                                 <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                                      <Smile className="h-3 w-3" />
-                                    </Button>
+                                  <PopoverTrigger className="h-6 px-2 text-xs inline-flex items-center justify-center rounded-md font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none">
+                                    <Smile className="h-3 w-3" />
                                   </PopoverTrigger>
                                   <PopoverContent className="w-auto p-2" align="start">
                                     <div className="flex gap-1">
@@ -405,18 +391,14 @@ export function ModuleCollaborationPanel({ context, className }: ModuleCollabora
                     }}
                   />
                   <div className="flex flex-col gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          size="icon"
-                          onClick={handleAddComment}
-                          disabled={!newComment.trim() || isLoading}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Enviar (⌘ + Enter)</TooltipContent>
-                    </Tooltip>
+                    <Button 
+                      size="icon"
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim() || isLoading}
+                      title="Enviar (⌘ + Enter)"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -529,14 +511,10 @@ export function ModuleCollaborationPanel({ context, className }: ModuleCollabora
                                 {assignment.role}
                               </Badge>
                               <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    <MoreVertical className="h-3 w-3" />
-                                  </Button>
+                                <DropdownMenuTrigger 
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center justify-center rounded text-sm font-medium hover:bg-accent hover:text-accent-foreground focus-visible:outline-none"
+                                >
+                                  <MoreVertical className="h-3 w-3" />
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem>
