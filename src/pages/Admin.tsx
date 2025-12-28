@@ -1758,51 +1758,6 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-              {/* Auditoría Comercial */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
-                onClick={() => handleSectionChange('commercial-manager-audit')}
-              >
-                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
-                    <History className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.commercialAudit')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.commercialAudit.desc')}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Fichas de Visita */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
-                onClick={() => handleSectionChange('visit-sheets')}
-              >
-                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg">
-                    <FileText className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.visitSheets')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.visitSheets.desc')}</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Mapa */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
-                onClick={() => handleSectionChange('map')}
-              >
-                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg">
-                    <Eye className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.map')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.map.desc')}</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         );
