@@ -91,7 +91,7 @@ export function LicenseScheduledReportsPanel() {
     const success = await createReport({
       name: formData.name,
       report_type: formData.report_type,
-      schedule_cron: SCHEDULE_OPTIONS.find(s => s.value === formData.schedule_type)?.cron || '0 9 * * 1',
+      schedule: formData.schedule_type,
       recipients
     });
 
@@ -345,7 +345,7 @@ export function LicenseScheduledReportsPanel() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {report.schedule_cron}
+                          {SCHEDULE_OPTIONS.find(s => s.value === report.schedule)?.label || report.schedule}
                         </Badge>
                       </TableCell>
                       <TableCell>
