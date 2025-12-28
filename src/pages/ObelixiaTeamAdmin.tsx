@@ -193,15 +193,6 @@ const ObelixiaTeamAdmin: React.FC = () => {
     { id: 'revenue', label: 'Ingresos Mes', value: 45000, icon: Euro, color: 'purple' as const, prefix: '€', trend: { value: 15, isPositive: true } },
   ];
 
-  // Doc cards for quick access
-  const docCards = [
-    { id: 'technical-docs', title: 'Documentación Técnica', description: 'Generar documentación completa del sistema', icon: FileText, color: 'emerald' as const },
-    { id: 'competitor-gap', title: 'Análisis Competencia', description: 'Gap analysis vs competidores', icon: BarChart3, color: 'purple' as const },
-    { id: 'app-status', title: 'Estado Aplicación', description: 'Estado detallado del sistema', icon: Activity, color: 'blue' as const },
-    { id: 'codebase-index', title: 'Índice Codebase', description: 'Índice de funcionalidades del código', icon: Code, color: 'teal' as const },
-    { id: 'analyzer', title: 'Analizador App', description: 'Análisis completo del estado y cumplimiento', icon: Rocket, color: 'amber' as const },
-    { id: 'audit-improvements', title: 'Mejoras Diagnóstico', description: 'Seguimiento de mejoras con % cumplimiento', icon: BarChart3, color: 'cyan' as const },
-  ];
 
   const appstoreCards = [
     { id: 'appstore-manager', title: 'Gestión App Store', description: 'Administrar módulos disponibles', icon: Store, color: 'cyan' as const },
@@ -309,30 +300,6 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 <CMSDashboard />
               </TabsContent>
 
-              <TabsContent value="docs" className="m-0 space-y-6">
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold text-white mb-2">Centro de Documentación</h3>
-                  <p className="text-slate-400 text-sm">Acceso rápido a generadores de documentación y análisis.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {docCards.map((card, index) => (
-                    <motion.div
-                      key={card.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <ObelixiaAdminCard3D
-                        title={card.title}
-                        description={card.description}
-                        icon={card.icon}
-                        color={card.color}
-                        onClick={() => handleTabChange(card.id)}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </TabsContent>
 
               <TabsContent value="technical-docs" className="m-0">
                 <DynamicTechnicalDocGenerator />
