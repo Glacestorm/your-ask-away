@@ -4,6 +4,9 @@ export { AutonomousAgentPanel } from './AutonomousAgentPanel';
 // Phase 4: Financial Forecasting Panel
 export { FinancialForecastingPanel } from './FinancialForecastingPanel';
 
+// Phase 5: Compliance & Audit AI
+export { ComplianceAuditPanel } from './ComplianceAuditPanel';
+
 /**
  * ObelixIA Accounting Components - Barrel Export
  * Fase 11 - Enterprise SaaS 2025-2026
@@ -24,9 +27,3 @@ export { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 // Fase 2: Multimodal AI - Vision & Voice
 export { DocumentScannerPanel } from './DocumentScannerPanel';
 export { VoiceCommandInterface } from './VoiceCommandInterface';
-
-// Fase 3: Autonomous Bookkeeping Engine
-// AutonomousAgentPanel - exported above
-
-// Fase 4: Predictive Analytics & Financial Forecasting
-// FinancialForecastingPanel - exported above

@@ -289,16 +289,16 @@ export function TaxDeclarations() {
                       )}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="text-center">
-                          <p className="text-2xl font-bold">
+                                <div className="text-center">
+                          <p className="text-2xl font-bold text-foreground">
                             {format(new Date(item.due_date), 'd')}
                           </p>
-                          <p className="text-xs uppercase">
+                          <p className="text-xs uppercase text-muted-foreground">
                             {format(new Date(item.due_date), 'MMM', { locale: es })}
                           </p>
                         </div>
                         <div>
-                          <p className="font-medium">{item.description}</p>
+                          <p className="font-medium text-foreground">{item.description}</p>
                           <p className="text-sm text-muted-foreground">
                             {getDeclarationTypeName(item.declaration_type)}
                           </p>
