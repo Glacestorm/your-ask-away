@@ -31,16 +31,13 @@ export function ThemeSelector() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={navButton3DClassName({ variant: 'default', size: 'md' })}
-          aria-label="Cambiar tema"
-        >
-          <span className="flex-shrink-0">
-            <Icon className="h-4 w-4" />
-          </span>
-        </button>
+      <DropdownMenuTrigger
+        className={navButton3DClassName({ variant: 'default', size: 'md' })}
+        aria-label="Cambiar tema"
+      >
+        <span className="flex-shrink-0">
+          <Icon className="h-4 w-4" />
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-popover border-border min-w-[160px]">
         {themes.map((themeOption) => {
