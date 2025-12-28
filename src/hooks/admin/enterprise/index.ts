@@ -39,3 +39,14 @@ export type {
   ValidationResult,
   FeatureCheckResult
 } from './useLicenseManager';
+
+export { useDeviceFingerprint } from './useDeviceFingerprint';
+export type {
+  DeviceFingerprint as DeviceFingerprintData,
+  FingerprintResult
+} from './useDeviceFingerprint';
+
+export { useLicenseValidation } from './useLicenseValidation';
+export type {
+  LicenseValidationResult
+} from './useLicenseValidation';
