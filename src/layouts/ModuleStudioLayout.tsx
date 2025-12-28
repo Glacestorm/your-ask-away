@@ -10,7 +10,7 @@ import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Input } from '@/components/ui/input';
 import {
   Package,
@@ -276,7 +276,7 @@ function ModuleStudioLayoutContent({
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <ScrollArea className="h-[calc(100vh-400px)]">
+                  <div className="h-[calc(100vh-400px)] overflow-y-auto overscroll-contain">
                     <div className="p-2 space-y-1">
                       {isLoadingModules ? (
                         <div className="flex items-center justify-center py-8">
@@ -318,7 +318,8 @@ function ModuleStudioLayoutContent({
                         })
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
+
                 </CardContent>
               </Card>
             </div>
