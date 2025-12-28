@@ -69,21 +69,18 @@ export const LanguageSelector = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={navButton3DClassName({
-            variant: 'primary',
-            size: 'md',
-            className: `bg-gradient-to-r ${getLanguageGradient(language)} border-0 text-white shadow-md`,
-          })}
-          aria-label="Change language"
-        >
-          <span className="flex-shrink-0">
-            <Languages className="h-4 w-4" />
-          </span>
-          <span className="hidden sm:inline">{`${currentFlag} ${currentName}`}</span>
-        </button>
+      <DropdownMenuTrigger
+        className={navButton3DClassName({
+          variant: 'primary',
+          size: 'md',
+          className: `bg-gradient-to-r ${getLanguageGradient(language)} border-0 text-white shadow-md`,
+        })}
+        aria-label="Change language"
+      >
+        <span className="flex-shrink-0">
+          <Languages className="h-4 w-4" />
+        </span>
+        <span className="hidden sm:inline">{`${currentFlag} ${currentName}`}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-popover border-border w-[240px] p-0">
         <ScrollArea className="h-[400px]">
