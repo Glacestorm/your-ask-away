@@ -27,7 +27,8 @@ import {
   LicensesDashboard,
   LicenseReportingDashboard,
   LicenseAutomation,
-  LicenseSystemPanel
+  LicenseSystemPanel,
+  LicenseHelpButton
 } from '@/components/admin/enterprise/licenses';
 
 export default function LicenseManagementPage() {
@@ -66,6 +67,7 @@ export default function LicenseManagementPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <LicenseHelpButton />
               <Button
                 variant="outline"
                 size="sm"
