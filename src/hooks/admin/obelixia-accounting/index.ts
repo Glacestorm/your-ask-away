@@ -60,3 +60,13 @@ export type {
   BankImport,
   AccountingExport
 } from './useObelixiaIntegrations';
+
+// Fase 1: AI Accounting Copilot
+export { useObelixiaAccountingCopilot } from './useObelixiaAccountingCopilot';
+export type {
+  CopilotMessage,
+  CopilotConversation,
+  QuickAction,
+  CopilotSuggestion,
+  CopilotContext
+} from './useObelixiaAccountingCopilot';

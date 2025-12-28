@@ -15980,6 +15980,213 @@ export type Database = {
         }
         Relationships: []
       }
+      obelixia_copilot_conversations: {
+        Row: {
+          context_id: string | null
+          context_type: string | null
+          created_at: string | null
+          fiscal_config_id: string | null
+          id: string
+          is_active: boolean | null
+          last_message_at: string | null
+          messages_count: number | null
+          metadata: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          fiscal_config_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          messages_count?: number | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          fiscal_config_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          messages_count?: number | null
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_copilot_conversations_fiscal_config_id_fkey"
+            columns: ["fiscal_config_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_fiscal_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_copilot_messages: {
+        Row: {
+          action_taken: Json | null
+          content: string
+          conversation_id: string
+          created_at: string | null
+          feedback: string | null
+          id: string
+          metadata: Json | null
+          references_data: Json | null
+          role: string
+        }
+        Insert: {
+          action_taken?: Json | null
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          metadata?: Json | null
+          references_data?: Json | null
+          role: string
+        }
+        Update: {
+          action_taken?: Json | null
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          feedback?: string | null
+          id?: string
+          metadata?: Json | null
+          references_data?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_copilot_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_copilot_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_copilot_quick_actions: {
+        Row: {
+          action_key: string
+          category: string | null
+          context_type: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          prompt_template: string
+          requires_context: boolean | null
+          title: string
+        }
+        Insert: {
+          action_key: string
+          category?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_template: string
+          requires_context?: boolean | null
+          title: string
+        }
+        Update: {
+          action_key?: string
+          category?: string | null
+          context_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          prompt_template?: string
+          requires_context?: boolean | null
+          title?: string
+        }
+        Relationships: []
+      }
+      obelixia_copilot_suggestions: {
+        Row: {
+          accepted_at: string | null
+          context_data: Json | null
+          created_at: string | null
+          description: string | null
+          expires_at: string | null
+          fiscal_config_id: string | null
+          id: string
+          priority: string | null
+          rejected_at: string | null
+          rejection_reason: string | null
+          status: string | null
+          suggested_action: Json | null
+          suggestion_type: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          fiscal_config_id?: string | null
+          id?: string
+          priority?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          suggested_action?: Json | null
+          suggestion_type: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          expires_at?: string | null
+          fiscal_config_id?: string | null
+          id?: string
+          priority?: string | null
+          rejected_at?: string | null
+          rejection_reason?: string | null
+          status?: string | null
+          suggested_action?: Json | null
+          suggestion_type?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_copilot_suggestions_fiscal_config_id_fkey"
+            columns: ["fiscal_config_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_fiscal_config"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obelixia_fiscal_config: {
         Row: {
           auto_send_invoices: boolean | null
