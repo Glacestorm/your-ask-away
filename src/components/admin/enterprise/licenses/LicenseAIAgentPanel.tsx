@@ -362,32 +362,100 @@ export function LicenseAIAgentPanel() {
             </Card>
           </div>
 
-          {/* Agent Configuration Quick View */}
+          {/* Agent Configuration - Full Controls */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <Settings className="h-4 w-4" />
-                Configuración del Agente
+                Configuración del Agente IA
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Autonomía</Label>
-                  <Badge variant="outline" className="capitalize">
-                    {config.autonomyLevel.replace('_', ' ')}
-                  </Badge>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">Umbral de Confianza</Label>
-                  <div className="flex items-center gap-2">
-                    <Progress value={config.confidenceThreshold} className="h-2" />
-                    <span className="text-sm font-medium">{config.confidenceThreshold}%</span>
+            <CardContent className="space-y-6">
+              {/* Autonomy Level Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Nivel de Autonomía</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div
+                    onClick={() => updateConfig({ autonomyLevel: 'suggestions_only' })}
+                    className={cn(
+                      "p-3 rounded-lg border cursor-pointer transition-all hover:border-primary/50",
+                      config.autonomyLevel === 'suggestions_only' 
+                        ? "border-primary bg-primary/10" 
+                        : "border-border"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Eye className="h-4 w-4 text-blue-500" />
+                      <span className="font-medium text-sm">Solo Sugerencias</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      El agente solo sugiere acciones, requiere aprobación manual para todo.
+                    </p>
+                  </div>
+                  
+                  <div
+                    onClick={() => updateConfig({ autonomyLevel: 'semi_autonomous' })}
+                    className={cn(
+                      "p-3 rounded-lg border cursor-pointer transition-all hover:border-primary/50",
+                      config.autonomyLevel === 'semi_autonomous' 
+                        ? "border-primary bg-primary/10" 
+                        : "border-border"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="h-4 w-4 text-amber-500" />
+                      <span className="font-medium text-sm">Semi-Autónomo</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Ejecuta acciones de bajo riesgo automáticamente, pide aprobación para el resto.
+                    </p>
+                  </div>
+                  
+                  <div
+                    onClick={() => updateConfig({ autonomyLevel: 'fully_autonomous' })}
+                    className={cn(
+                      "p-3 rounded-lg border cursor-pointer transition-all hover:border-primary/50",
+                      config.autonomyLevel === 'fully_autonomous' 
+                        ? "border-primary bg-primary/10" 
+                        : "border-border"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Bot className="h-4 w-4 text-green-500" />
+                      <span className="font-medium text-sm">Totalmente Autónomo</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Ejecuta todas las acciones automáticamente según el umbral de confianza.
+                    </p>
                   </div>
                 </div>
-                
-                <div className="space-y-2">
+              </div>
+
+              {/* Confidence Threshold Slider */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Umbral de Confianza</Label>
+                  <Badge variant="outline" className="font-mono">
+                    {config.confidenceThreshold}%
+                  </Badge>
+                </div>
+                <Slider
+                  value={[config.confidenceThreshold]}
+                  onValueChange={([value]) => updateConfig({ confidenceThreshold: value })}
+                  min={50}
+                  max={100}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>50% - Más acciones automáticas</span>
+                  <span>100% - Solo alta certeza</span>
+                </div>
+              </div>
+
+              {/* Feature Toggles */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2 p-3 rounded-lg bg-muted/30">
                   <Label className="text-xs text-muted-foreground">Predicciones</Label>
                   <div className="flex items-center gap-2">
                     <Switch 
@@ -398,7 +466,7 @@ export function LicenseAIAgentPanel() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-2 p-3 rounded-lg bg-muted/30">
                   <Label className="text-xs text-muted-foreground">Detección Anomalías</Label>
                   <div className="flex items-center gap-2">
                     <Switch 
@@ -406,6 +474,28 @@ export function LicenseAIAgentPanel() {
                       onCheckedChange={(checked) => updateConfig({ enableAnomalyDetection: checked })}
                     />
                     <span className="text-sm">{config.enableAnomalyDetection ? 'Activo' : 'Inactivo'}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 p-3 rounded-lg bg-muted/30">
+                  <Label className="text-xs text-muted-foreground">Automatización</Label>
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      checked={config.enableAutomation}
+                      onCheckedChange={(checked) => updateConfig({ enableAutomation: checked })}
+                    />
+                    <span className="text-sm">{config.enableAutomation ? 'Activo' : 'Inactivo'}</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 p-3 rounded-lg bg-muted/30">
+                  <Label className="text-xs text-muted-foreground">Lenguaje Natural</Label>
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      checked={config.enableNaturalLanguage}
+                      onCheckedChange={(checked) => updateConfig({ enableNaturalLanguage: checked })}
+                    />
+                    <span className="text-sm">{config.enableNaturalLanguage ? 'Activo' : 'Inactivo'}</span>
                   </div>
                 </div>
               </div>

@@ -17,7 +17,7 @@ import {
   ArrowRight, Settings, AlertTriangle, Users, Laptop,
   FileText, CheckCircle2, RefreshCw, Lock, Unlock,
   Activity, Target, Clock, TrendingUp, Database,
-  Bot, Sparkles, Download, Upload, Search, Network
+  Bot, Sparkles, Download, Upload, Search, Network, Crown
 } from 'lucide-react';
 
 interface TabGuide {
@@ -47,6 +47,46 @@ const LICENSE_TABS: TabGuide[] = [
       'Usa las pestañas internas para navegar',
       'Genera nuevas licencias desde "Generar"',
       'Monitoriza dispositivos desde "Dispositivos"'
+    ]
+  },
+  {
+    id: 'ai-agent',
+    name: 'Agente IA',
+    icon: <Bot className="h-4 w-4" />,
+    description: 'Sistema de inteligencia artificial autónomo para gestión predictiva de licencias.',
+    actions: [
+      'Configurar nivel de autonomía (Solo Sugerencias, Semi-Autónomo, Totalmente Autónomo)',
+      'Ajustar umbral de confianza con slider (50%-100%)',
+      'Activar/desactivar predicciones, anomalías y automatización',
+      'Consultar en lenguaje natural sobre licencias',
+      'Aprobar o rechazar acciones sugeridas por IA'
+    ],
+    workflow: [
+      'Selecciona el nivel de autonomía deseado',
+      'Ajusta el umbral de confianza según tu tolerancia al riesgo',
+      'Activa las capacidades que necesites',
+      'Inicia el monitoreo para análisis continuo',
+      'Revisa y aprueba acciones en la pestaña Acciones'
+    ]
+  },
+  {
+    id: 'plans',
+    name: 'Planes',
+    icon: <Crown className="h-4 w-4" />,
+    description: 'Gestión completa de planes de licencia con precios configurables.',
+    actions: [
+      'Crear nuevos planes de licencia',
+      'Editar precios mensuales y anuales',
+      'Configurar límites (usuarios, dispositivos, API)',
+      'Activar/desactivar features por plan',
+      'Eliminar planes obsoletos'
+    ],
+    workflow: [
+      'Revisa los planes existentes',
+      'Crea nuevos planes con "Nuevo Plan"',
+      'Configura código, nombre y descripción',
+      'Establece precios y límites',
+      'Activa las características incluidas'
     ]
   },
   {
@@ -122,12 +162,20 @@ const FAQ_ITEMS = [
     answer: 'Sí, desde la lista de licencias puedes cambiar el estado a "revocada". Esto invalida inmediatamente la licencia y desactiva todos los dispositivos asociados.'
   },
   {
-    question: '¿Cómo configuro alertas de expiración?',
-    answer: 'En Automatización → Alertas de Expiración, configura los días de anticipación (ej: 30, 15, 7 días) y el método de notificación (email, webhook).'
+    question: '¿Cómo configuro el nivel de autonomía del agente IA?',
+    answer: 'En Agente IA → Configuración, elige entre: Solo Sugerencias (requiere aprobación manual), Semi-Autónomo (ejecuta bajo riesgo automáticamente), o Totalmente Autónomo (ejecuta todo según umbral de confianza).'
   },
   {
-    question: '¿Qué es el heartbeat de licencia?',
-    answer: 'Es una comprobación periódica que el cliente envía al servidor para verificar que la licencia sigue activa. Permite detectar uso offline prolongado o anomalías.'
+    question: '¿Qué es el umbral de confianza?',
+    answer: 'Es el nivel mínimo de certeza (50%-100%) que debe tener la IA para ejecutar acciones automáticamente. Un umbral alto (90-100%) significa más precaución, uno bajo (50-70%) más automatización.'
+  },
+  {
+    question: '¿Cómo creo un nuevo plan de licencia?',
+    answer: 'Ve a la pestaña Planes → Nuevo Plan. Define código, nombre, precios (mensual/anual), límites de usuarios y dispositivos, y activa las características incluidas.'
+  },
+  {
+    question: '¿Puedo modificar los precios de planes existentes?',
+    answer: 'Sí, desde Planes pulsa "Editar" en cualquier plan. Puedes cambiar precios, límites y características sin afectar las licencias ya generadas.'
   },
   {
     question: '¿Cómo funcionan los límites de dispositivos?',
@@ -139,7 +187,7 @@ const FAQ_ITEMS = [
   },
   {
     question: '¿Cómo detecto uso fraudulento?',
-    answer: 'El sistema monitoriza anomalías como múltiples IPs, activaciones masivas, o patrones sospechosos. Las alertas aparecen en Dashboard → Alertas.'
+    answer: 'El sistema monitoriza anomalías como múltiples IPs, activaciones masivas, o patrones sospechosos. Las alertas aparecen en Dashboard → Alertas y el Agente IA las analiza automáticamente.'
   }
 ];
 

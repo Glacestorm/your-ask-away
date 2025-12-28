@@ -20,7 +20,8 @@ import {
   FileText,
   RefreshCw,
   Sparkles,
-  Bot
+  Bot,
+  Crown
 } from 'lucide-react';
 
 // License components
@@ -30,7 +31,8 @@ import {
   LicenseAutomation,
   LicenseSystemPanel,
   LicenseHelpButton,
-  LicenseAIAgentPanel
+  LicenseAIAgentPanel,
+  LicensePlansManager
 } from '@/components/admin/enterprise/licenses';
 
 export default function LicenseManagementPage() {
@@ -89,7 +91,7 @@ export default function LicenseManagementPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
           <div className="bg-card rounded-lg border p-1">
-            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5 gap-1 bg-transparent">
+            <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6 gap-1 bg-transparent">
               <TabsTrigger
                 value="dashboard"
                 className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -103,6 +105,13 @@ export default function LicenseManagementPage() {
               >
                 <Bot className="h-4 w-4" />
                 <span className="hidden sm:inline">Agente IA</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="plans"
+                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Crown className="h-4 w-4" />
+                <span className="hidden sm:inline">Planes</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
@@ -136,6 +145,11 @@ export default function LicenseManagementPage() {
           {/* AI Agent Tab */}
           <TabsContent value="ai-agent" className="space-y-6 mt-6">
             <LicenseAIAgentPanel />
+          </TabsContent>
+
+          {/* Plans Tab */}
+          <TabsContent value="plans" className="space-y-6 mt-6">
+            <LicensePlansManager />
           </TabsContent>
 
           {/* Analytics Tab */}
