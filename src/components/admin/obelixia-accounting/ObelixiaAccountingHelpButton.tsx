@@ -81,49 +81,12 @@ export function ObelixiaAccountingHelpButton({
                     )}
                   </AnimatePresence>
 
-                  {/* Pulse & Expanding Waves */}
+                  {/* Pulse waves - same style as Agendar Demo button */}
                   {!isOpen && (
                     <>
-                      {/* Primary pulse */}
-                      <motion.span
-                        className="absolute inset-0 rounded-lg bg-violet-400/40"
-                        animate={{
-                          scale: [1, 1.15, 1],
-                          opacity: [0.6, 0, 0.6],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeInOut',
-                        }}
-                      />
-                      {/* First expanding wave */}
-                      <motion.span
-                        className="absolute inset-0 rounded-lg bg-violet-500/30"
-                        animate={{
-                          scale: [1, 1.4],
-                          opacity: [0.4, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeOut',
-                        }}
-                      />
-                      {/* Second expanding wave (delayed) */}
-                      <motion.span
-                        className="absolute inset-0 rounded-lg bg-purple-500/25"
-                        animate={{
-                          scale: [1, 1.6],
-                          opacity: [0.3, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeOut',
-                          delay: 0.4,
-                        }}
-                      />
+                      <span className="absolute inset-0 rounded-lg animate-[ping_2s_ease-out_infinite] bg-violet-500/20" />
+                      <span className="absolute inset-0 rounded-lg animate-[ping_2s_ease-out_infinite_0.5s] bg-violet-500/15" />
+                      <span className="absolute inset-0 rounded-lg animate-[ping_2s_ease-out_infinite_1s] bg-violet-500/10" />
                     </>
                   )}
                 </Button>
