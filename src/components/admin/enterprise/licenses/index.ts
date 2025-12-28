@@ -10,3 +10,5 @@ export { DeviceActivationsList } from './DeviceActivationsList';
 export { LicenseUsageAnalytics } from './LicenseUsageAnalytics';
 export { LicenseAnomalyAlerts } from './LicenseAnomalyAlerts';
 export { AntiPiracyDashboard } from './AntiPiracyDashboard';
+export { LicenseActivation } from './LicenseActivation';
+export { LicenseStatus } from './LicenseStatus';

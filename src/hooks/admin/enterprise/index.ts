@@ -59,3 +59,10 @@ export type {
   SuspiciousActivity,
   AntiPiracyConfig
 } from './useLicenseAntiPiracy';
+
+export { useLicenseClient } from './useLicenseClient';
+export type {
+  LicenseState,
+  ActivationResult,
+  FeatureAccess
+} from './useLicenseClient';
