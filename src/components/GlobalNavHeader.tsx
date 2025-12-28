@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
 import { OfflineSyncIndicator } from '@/components/dashboard/OfflineSyncIndicator';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
@@ -61,42 +61,39 @@ export function GlobalNavHeader({
         {/* Navigation Arrows - after title */}
         {(onGoBack || onGoForward) && (
           <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                className={navButton3DClassName({
-                  variant: canGoBack ? 'default' : 'ghost',
-                  size: 'sm',
-                })}
-                onClick={onGoBack}
-                disabled={!canGoBack}
-                aria-label="Atrás"
-              >
-                <span className="flex-shrink-0">
-                  <ChevronLeft className="h-4 w-4" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Atrás</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger
-                type="button"
-                className={navButton3DClassName({
-                  variant: canGoForward ? 'default' : 'ghost',
-                  size: 'sm',
-                })}
-                onClick={onGoForward}
-                disabled={!canGoForward}
-                aria-label="Adelante"
-              >
-                <span className="flex-shrink-0">
-                  <ChevronRight className="h-4 w-4" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Adelante</TooltipContent>
-            </Tooltip>
+            <button
+              type="button"
+              className={navButton3DClassName({
+                variant: canGoBack ? 'default' : 'ghost',
+                size: 'sm',
+              })}
+              onClick={onGoBack}
+              disabled={!canGoBack}
+              aria-label="Atrás"
+              title="Atrás"
+            >
+              <span className="flex-shrink-0">
+                <ChevronLeft className="h-4 w-4" />
+              </span>
+            </button>
+            <button
+              type="button"
+              className={navButton3DClassName({
+                variant: canGoForward ? 'default' : 'ghost',
+                size: 'sm',
+              })}
+              onClick={onGoForward}
+              disabled={!canGoForward}
+              aria-label="Adelante"
+              title="Adelante"
+            >
+              <span className="flex-shrink-0">
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </button>
           </div>
         )}
+
         
         {/* Title Actions (badges, buttons next to title) */}
         {titleActions}
@@ -113,38 +110,36 @@ export function GlobalNavHeader({
         </div>
         
         {/* Map Button */}
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            className={navButton3DClassName({ variant: 'primary', size: 'md' })}
-            onClick={() => navigate('/admin?section=map')}
-            aria-label="Mapa de empresas"
-          >
-            <span className="flex-shrink-0">
-              <Map className="h-4 w-4" />
-            </span>
-            <span className="hidden sm:inline">Mapa</span>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Mapa de empresas</TooltipContent>
-        </Tooltip>
+        <button
+          type="button"
+          className={navButton3DClassName({ variant: 'primary', size: 'md' })}
+          onClick={() => navigate('/admin?section=map')}
+          aria-label="Mapa de empresas"
+          title="Mapa de empresas"
+        >
+          <span className="flex-shrink-0">
+            <Map className="h-4 w-4" />
+          </span>
+          <span className="hidden sm:inline">Mapa</span>
+        </button>
+
         
         {/* Profile Avatar */}
-        <Tooltip>
-          <TooltipTrigger
-            type="button"
-            onClick={() => navigate('/profile')}
-            className="relative h-9 w-9 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md hover:border-primary/50 hover:scale-105 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Mi Perfil"
-          >
-            <Avatar className="h-full w-full">
-              <AvatarImage src={user?.user_metadata?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Mi Perfil</TooltipContent>
-        </Tooltip>
+        <button
+          type="button"
+          onClick={() => navigate('/profile')}
+          className="relative h-9 w-9 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md hover:border-primary/50 hover:scale-105 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Mi Perfil"
+          title="Mi Perfil"
+        >
+          <Avatar className="h-full w-full">
+            <AvatarImage src={user?.user_metadata?.avatar_url} />
+            <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
+              {user?.email?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+
         
         {/* Theme Selector */}
         <ThemeSelector />
