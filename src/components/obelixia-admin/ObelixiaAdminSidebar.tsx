@@ -70,7 +70,6 @@ const categories: NavCategory[] = [
     icon: BookOpen,
     color: 'purple',
     items: [
-      { id: 'docs', label: 'Documentación', icon: BookOpen },
       { id: 'reports', label: 'Reportes', icon: ClipboardList },
       { id: 'web-vitals', label: 'Web Vitals', icon: Activity },
       { id: 'codebase-index', label: 'Índice Codebase', icon: Code },
