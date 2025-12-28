@@ -27,3 +27,22 @@ export type {
   BankTransaction, 
   ReconciliationRule 
 } from './useObelixiaBanking';
+
+export { useObelixiaReports } from './useObelixiaReports';
+export type {
+  BalanceSheet,
+  BalanceSheetRow,
+  IncomeStatement,
+  IncomeStatementRow,
+  CashFlowStatement,
+  CashFlowRow,
+  ReportExportOptions
+} from './useObelixiaReports';
+
+export { useObelixiaFiscal } from './useObelixiaFiscal';
+export type {
+  TaxDeclaration,
+  VATSummary,
+  TaxCalendar,
+  FiscalPeriodClose
+} from './useObelixiaFiscal';
