@@ -49,6 +49,8 @@ interface ObelixiaAccountingCopilotPanelProps {
   entryId?: string;
   className?: string;
   onClose?: () => void;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 // Iconos para quick actions
@@ -76,9 +78,10 @@ export function ObelixiaAccountingCopilotPanel({
   accountId,
   entryId,
   className,
-  onClose
+  onClose,
+  isExpanded = false,
+  onToggleExpand
 }: ObelixiaAccountingCopilotPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -242,8 +245,7 @@ export function ObelixiaAccountingCopilotPanel({
 
   return (
     <Card className={cn(
-      "flex flex-col transition-all duration-300 overflow-hidden",
-      isExpanded ? "fixed inset-4 z-50 shadow-2xl" : "h-[600px]",
+      "flex flex-col transition-all duration-300 overflow-hidden h-full border-0 shadow-none",
       className
     )}>
       {/* Header */}
@@ -276,14 +278,16 @@ export function ObelixiaAccountingCopilotPanel({
                 <TooltipContent>Nueva conversación</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-8 w-8"
-            >
-              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </Button>
+            {onToggleExpand && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleExpand}
+                className="h-8 w-8"
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            )}
             {onClose && (
               <Button
                 variant="ghost"

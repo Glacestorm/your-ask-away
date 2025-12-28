@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.obelixia-autonomous-agent]
+verify_jwt = true
+
 [functions.module-copilot]
 verify_jwt = true
 

@@ -6,12 +6,13 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sparkles, X } from 'lucide-react';
 import { ObelixiaAccountingCopilotPanel } from './ObelixiaAccountingCopilotPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface ObelixiaAccountingHelpButtonProps {
   fiscalConfigId?: string;
@@ -28,6 +29,7 @@ export function ObelixiaAccountingHelpButton({
 }: ObelixiaAccountingHelpButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <>
@@ -92,7 +94,7 @@ export function ObelixiaAccountingHelpButton({
                 </Button>
               </motion.div>
             </TooltipTrigger>
-            <TooltipContent side="left" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0">
+            <TooltipContent side="right" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0">
               <p className="font-medium">ObelixIA Copilot</p>
               <p className="text-xs opacity-80">Asistente contable IA</p>
             </TooltipContent>
@@ -102,12 +104,28 @@ export function ObelixiaAccountingHelpButton({
 
       {/* Dialog with Copilot Panel */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 gap-0 overflow-hidden">
+        <DialogContent 
+          className={cn(
+            "p-0 gap-0 overflow-hidden transition-all duration-300",
+            isExpanded 
+              ? "sm:max-w-[90vw] sm:max-h-[90vh] w-[90vw] h-[90vh]" 
+              : "sm:max-w-[520px] sm:max-h-[700px] w-[520px] h-[680px]"
+          )}
+          aria-describedby="copilot-description"
+        >
+          <VisuallyHidden>
+            <DialogTitle>ObelixIA Copilot - Asistente Contable</DialogTitle>
+            <DialogDescription id="copilot-description">
+              Asistente de inteligencia artificial para contabilidad y gestión fiscal
+            </DialogDescription>
+          </VisuallyHidden>
           <ObelixiaAccountingCopilotPanel
             fiscalConfigId={fiscalConfigId}
             accountId={accountId}
             entryId={entryId}
             onClose={() => setIsOpen(false)}
+            isExpanded={isExpanded}
+            onToggleExpand={() => setIsExpanded(!isExpanded)}
           />
         </DialogContent>
       </Dialog>
