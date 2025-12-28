@@ -124,6 +124,12 @@ const MarketIntelligencePage = lazy(() => import('@/pages/admin/MarketIntelligen
 const CRMMigrationPage = lazy(() => import('@/pages/admin/CRMMigrationPage'));
 const DemoRequestsPage = lazy(() => import('@/pages/admin/DemoRequestsPage'));
 const ModuleStudioPage = lazy(() => import('@/pages/admin/ModuleStudioPage'));
+const ModuleStudioHubPage = lazy(() => import('@/pages/admin/module-studio/ModuleStudioHubPage'));
+const ModuleDevelopmentPage = lazy(() => import('@/pages/admin/module-studio/ModuleDevelopmentPage'));
+const ModuleOperationsPage = lazy(() => import('@/pages/admin/module-studio/ModuleOperationsPage'));
+const ModuleAnalyticsPage = lazy(() => import('@/pages/admin/module-studio/ModuleAnalyticsPage'));
+const ModuleGovernancePage = lazy(() => import('@/pages/admin/module-studio/ModuleGovernancePage'));
+const ModuleEcosystemPage = lazy(() => import('@/pages/admin/module-studio/ModuleEcosystemPage'));
 const AutomationEnginePage = lazy(() => import('@/pages/admin/AutomationEnginePage'));
 const AILocalPage = lazy(() => import('@/pages/admin/AILocalPage'));
 const LicenseManagementPage = lazy(() => import('@/pages/admin/LicenseManagementPage'));
@@ -287,7 +293,12 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/market-intelligence', component: MarketIntelligencePage, layout: 'none', priority: 'high', meta: { title: 'Market Intelligence', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/crm-migration', component: CRMMigrationPage, layout: 'none', priority: 'high', meta: { title: 'Migración de CRM', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/demo-requests', component: DemoRequestsPage, layout: 'none', priority: 'high', meta: { title: 'Solicitudes de Demo', requiresAuth: true, roles: ['admin', 'superadmin'] } },
-  { path: '/obelixia-admin/module-studio', component: ModuleStudioPage, layout: 'none', priority: 'high', meta: { title: 'Module Studio', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio', component: ModuleStudioHubPage, layout: 'none', priority: 'high', meta: { title: 'Module Studio Hub', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio/development', component: ModuleDevelopmentPage, layout: 'none', priority: 'high', meta: { title: 'Module Development', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio/operations', component: ModuleOperationsPage, layout: 'none', priority: 'high', meta: { title: 'Module Operations', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio/analytics', component: ModuleAnalyticsPage, layout: 'none', priority: 'high', meta: { title: 'Module Analytics', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio/governance', component: ModuleGovernancePage, layout: 'none', priority: 'high', meta: { title: 'Module Governance', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/module-studio/ecosystem', component: ModuleEcosystemPage, layout: 'none', priority: 'high', meta: { title: 'Module Ecosystem', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/automation-engine', component: AutomationEnginePage, layout: 'none', priority: 'high', meta: { title: 'Motor de Automatización', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/ai-local', component: AILocalPage, layout: 'none', priority: 'high', meta: { title: 'IA Local', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/licenses', component: LicenseManagementPage, layout: 'none', priority: 'high', meta: { title: 'Sistema de Licencias Enterprise', requiresAuth: true, roles: ['admin', 'superadmin'] } },
