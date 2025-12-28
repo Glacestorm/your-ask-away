@@ -77,3 +77,13 @@ export type {
   AutomationRule,
   ScheduledNotification
 } from './useLicenseReporting';
+
+export { useLicenseSystem } from './useLicenseSystem';
+export type {
+  LicenseSystemConfig,
+  SystemHealth,
+  ComponentHealth,
+  AuditLogEntry,
+  APIKey,
+  IntegrationEndpoint
+} from './useLicenseSystem';

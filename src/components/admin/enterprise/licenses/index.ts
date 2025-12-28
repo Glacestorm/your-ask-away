@@ -16,3 +16,6 @@ export { LicenseStatus } from './LicenseStatus';
 // Phase 6: Reporting & Automation
 export { LicenseReportingDashboard } from './LicenseReportingDashboard';
 export { LicenseAutomation } from './LicenseAutomation';
+
+// Phase 7: System Integration
+export { LicenseSystemPanel } from './LicenseSystemPanel';
