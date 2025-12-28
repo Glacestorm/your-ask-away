@@ -1,7 +1,8 @@
 import React, { Suspense, ReactNode, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ObelixiaLogo, ObelixiaLoadingSpinner } from '@/components/ui/ObelixiaLogo';
+import { ObelixiaLogo, ObelixiaLoadingSpinner, ObelixiaFullscreenLoader } from '@/components/ui/ObelixiaLogo';
+
 
 interface StreamingBoundaryProps {
   children: ReactNode;
@@ -128,37 +129,12 @@ export function DashboardStreamingSkeleton({ cards = 4 }: { cards?: number }) {
 }
 
 /**
- * Full page streaming skeleton with ObelixIA branding
+ * Full page streaming skeleton with ObelixIA branding (Brain + "ObelixIA" + Symbol)
  */
 export function PageStreamingSkeleton() {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
-      </div>
-
-      {/* Logo */}
-      <div className="relative z-10 flex flex-col items-center gap-8">
-        <ObelixiaLogo size="xl" variant="full" animated />
-        
-        <div className="mt-4">
-          <ObelixiaLoadingSpinner size="lg" text="Cargando..." />
-        </div>
-      </div>
-
-      {/* Animated corner accents */}
-      <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-emerald-500/20 animate-pulse" />
-      <div className="absolute bottom-0 right-0 w-24 h-24 border-r-2 border-b-2 border-cyan-500/20 animate-pulse" />
-    </div>
-  );
+  return <ObelixiaFullscreenLoader text="Cargando ObelixIA..." />;
 }
+
 
 /**
  * Inline loading indicator for streaming content
