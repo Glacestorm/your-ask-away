@@ -91,6 +91,10 @@ export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
     children,
     ...props 
   }, ref) => {
+    // React 19 + Radix "asChild" can pass `ref` as a normal prop; make sure we don't
+    // forward that `ref` prop to the DOM element (we already set ref explicitly).
+    const { ref: _refProp, ...buttonProps } = (props as unknown as { ref?: unknown });
+
     return (
       <button
         ref={ref}
@@ -109,7 +113,7 @@ export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
           active && 'ring-2 ring-primary/50 ring-offset-1',
           className
         )}
-        {...props}
+        {...(buttonProps as Omit<typeof props, 'ref'>)}
       >
         {icon && <span className="flex-shrink-0">{icon}</span>}
         {label && showLabel && <span className="hidden sm:inline">{label}</span>}
