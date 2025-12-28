@@ -127,6 +127,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
       navigate('/admin/marketplace');
       return;
     }
+    if (tab === 'licenses') {
+      navigate('/obelixia-admin/licenses');
+      return;
+    }
     setActiveTab(tab);
     setSearchParams({ tab });
   };
@@ -178,6 +182,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
       'module-performance': 'Performance',
       'metrics-explorer': 'Metrics Explorer',
       'automation-engine': 'Automation Engine',
+      'licenses': 'Licencias Enterprise',
     };
     return labels[tab] || tab;
   };

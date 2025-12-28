@@ -150,6 +150,7 @@ const categories: NavCategory[] = [
       { id: 'dora-compliance', label: 'DORA Compliance', icon: Shield },
       { id: 'adaptive-auth', label: 'Adaptive Auth', icon: Key },
       { id: 'advanced-ml', label: 'Advanced ML', icon: Brain },
+      { id: 'licenses', label: 'Licencias Enterprise', icon: Key },
     ]
   }
 ];
