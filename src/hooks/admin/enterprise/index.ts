@@ -66,3 +66,14 @@ export type {
   ActivationResult,
   FeatureAccess
 } from './useLicenseClient';
+
+export { useLicenseReporting } from './useLicenseReporting';
+export type {
+  LicenseMetrics,
+  LicenseUsageTrend,
+  LicenseTierDistribution,
+  ExpirationForecast,
+  LicenseReport,
+  AutomationRule,
+  ScheduledNotification
+} from './useLicenseReporting';
