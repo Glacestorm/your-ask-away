@@ -112,11 +112,11 @@ export function TaxDeclarations() {
 
   const getCalendarStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-emerald-100 border-emerald-300 dark:bg-emerald-950 dark:border-emerald-800';
-      case 'pending': return 'bg-amber-100 border-amber-300 dark:bg-amber-950 dark:border-amber-800';
-      case 'overdue': return 'bg-red-100 border-red-300 dark:bg-red-950 dark:border-red-800';
-      case 'upcoming': return 'bg-blue-100 border-blue-300 dark:bg-blue-950 dark:border-blue-800';
-      default: return 'bg-muted';
+      case 'completed': return 'bg-emerald-100 border-emerald-300 text-emerald-900 dark:bg-emerald-950/50 dark:border-emerald-700 dark:text-emerald-100';
+      case 'pending': return 'bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-950/50 dark:border-amber-700 dark:text-amber-100';
+      case 'overdue': return 'bg-red-100 border-red-300 text-red-900 dark:bg-red-950/50 dark:border-red-700 dark:text-red-100';
+      case 'upcoming': return 'bg-blue-100 border-blue-300 text-blue-900 dark:bg-blue-950/50 dark:border-blue-700 dark:text-blue-100';
+      default: return 'bg-muted text-foreground';
     }
   };
 

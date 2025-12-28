@@ -275,60 +275,97 @@ export function ObelixiaLogo({
 }
 
 /**
- * Cinematic Loading Spinner with Spherical Brain Symbol
+ * Cinematic Loading Spinner with Large Brain & Synaptic Connections
  */
 export function ObelixiaLoadingSpinner({ 
   size = "md",
   text = "Cargando...",
   showText = true 
 }: { 
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   text?: string;
   showText?: boolean;
 }) {
   const sizeClasses = {
-    sm: { width: 50, height: 50, text: "text-sm" },
-    md: { width: 80, height: 80, text: "text-base" },
-    lg: { width: 120, height: 120, text: "text-lg" },
+    sm: { width: 60, height: 60, text: "text-sm" },
+    md: { width: 100, height: 100, text: "text-base" },
+    lg: { width: 180, height: 180, text: "text-lg" },
+    xl: { width: 280, height: 280, text: "text-xl" },
   };
 
   const current = sizeClasses[size];
 
-  // Neural nodes distributed on sphere
+  // Neural nodes distributed on brain surface with more density
   const nodes = [
-    { cx: 50, cy: 12, delay: 0 },
-    { cx: 25, cy: 25, delay: 0.2 },
-    { cx: 75, cy: 25, delay: 0.4 },
-    { cx: 12, cy: 50, delay: 0.6 },
-    { cx: 88, cy: 50, delay: 0.8 },
-    { cx: 25, cy: 75, delay: 1.0 },
-    { cx: 75, cy: 75, delay: 0.3 },
-    { cx: 50, cy: 88, delay: 0.5 },
+    // Outer ring
+    { cx: 50, cy: 10, delay: 0 },
+    { cx: 22, cy: 22, delay: 0.15 },
+    { cx: 78, cy: 22, delay: 0.3 },
+    { cx: 10, cy: 50, delay: 0.45 },
+    { cx: 90, cy: 50, delay: 0.6 },
+    { cx: 22, cy: 78, delay: 0.75 },
+    { cx: 78, cy: 78, delay: 0.9 },
+    { cx: 50, cy: 90, delay: 1.05 },
+    // Middle ring
+    { cx: 35, cy: 30, delay: 0.2 },
+    { cx: 65, cy: 30, delay: 0.35 },
+    { cx: 28, cy: 50, delay: 0.5 },
+    { cx: 72, cy: 50, delay: 0.65 },
+    { cx: 35, cy: 70, delay: 0.8 },
+    { cx: 65, cy: 70, delay: 0.95 },
+    // Inner core
+    { cx: 50, cy: 40, delay: 0.1 },
+    { cx: 42, cy: 50, delay: 0.25 },
+    { cx: 58, cy: 50, delay: 0.4 },
+    { cx: 50, cy: 60, delay: 0.55 },
+    { cx: 50, cy: 50, delay: 0 }, // Center
+    // Additional synaptic points
     { cx: 38, cy: 38, delay: 0.7 },
-    { cx: 62, cy: 38, delay: 0.9 },
-    { cx: 50, cy: 50, delay: 0.1 },
-    { cx: 38, cy: 62, delay: 0.4 },
-    { cx: 62, cy: 62, delay: 0.6 },
+    { cx: 62, cy: 38, delay: 0.85 },
+    { cx: 38, cy: 62, delay: 1.0 },
+    { cx: 62, cy: 62, delay: 0.45 },
   ];
 
-  // Connections between nodes
+  // More complex synaptic connections
   const connections = [
-    { x1: 50, y1: 12, x2: 25, y2: 25 },
-    { x1: 50, y1: 12, x2: 75, y2: 25 },
-    { x1: 25, y1: 25, x2: 12, y2: 50 },
-    { x1: 75, y1: 25, x2: 88, y2: 50 },
-    { x1: 12, y1: 50, x2: 25, y2: 75 },
-    { x1: 88, y1: 50, x2: 75, y2: 75 },
-    { x1: 25, y1: 75, x2: 50, y2: 88 },
-    { x1: 75, y1: 75, x2: 50, y2: 88 },
+    // Outer to middle
+    { x1: 50, y1: 10, x2: 35, y2: 30 },
+    { x1: 50, y1: 10, x2: 65, y2: 30 },
+    { x1: 22, y1: 22, x2: 35, y2: 30 },
+    { x1: 78, y1: 22, x2: 65, y2: 30 },
+    { x1: 10, y1: 50, x2: 28, y2: 50 },
+    { x1: 90, y1: 50, x2: 72, y2: 50 },
+    { x1: 22, y1: 78, x2: 35, y2: 70 },
+    { x1: 78, y1: 78, x2: 65, y2: 70 },
+    { x1: 50, y1: 90, x2: 35, y2: 70 },
+    { x1: 50, y1: 90, x2: 65, y2: 70 },
+    // Middle to inner
+    { x1: 35, y1: 30, x2: 50, y2: 40 },
+    { x1: 65, y1: 30, x2: 50, y2: 40 },
+    { x1: 28, y1: 50, x2: 42, y2: 50 },
+    { x1: 72, y1: 50, x2: 58, y2: 50 },
+    { x1: 35, y1: 70, x2: 50, y2: 60 },
+    { x1: 65, y1: 70, x2: 50, y2: 60 },
+    // Inner core connections (synaptic)
+    { x1: 50, y1: 40, x2: 42, y2: 50 },
+    { x1: 50, y1: 40, x2: 58, y2: 50 },
+    { x1: 42, y1: 50, x2: 50, y2: 60 },
+    { x1: 58, y1: 50, x2: 50, y2: 60 },
+    { x1: 50, y1: 40, x2: 50, y2: 50 },
+    { x1: 42, y1: 50, x2: 50, y2: 50 },
+    { x1: 58, y1: 50, x2: 50, y2: 50 },
+    { x1: 50, y1: 60, x2: 50, y2: 50 },
+    // Cross connections (neural pathways)
     { x1: 38, y1: 38, x2: 50, y2: 50 },
     { x1: 62, y1: 38, x2: 50, y2: 50 },
     { x1: 38, y1: 62, x2: 50, y2: 50 },
     { x1: 62, y1: 62, x2: 50, y2: 50 },
-    { x1: 25, y1: 25, x2: 38, y2: 38 },
-    { x1: 75, y1: 25, x2: 62, y2: 38 },
-    { x1: 25, y1: 75, x2: 38, y2: 62 },
-    { x1: 75, y1: 75, x2: 62, y2: 62 },
+    { x1: 38, y1: 38, x2: 62, y2: 62 },
+    { x1: 62, y1: 38, x2: 38, y2: 62 },
+    // Horizontal synaptic bridges
+    { x1: 35, y1: 30, x2: 65, y2: 30 },
+    { x1: 28, y1: 50, x2: 72, y2: 50 },
+    { x1: 35, y1: 70, x2: 65, y2: 70 },
   ];
 
   return (
@@ -468,16 +505,16 @@ export function ObelixiaFullscreenLoader({ text = "Cargando ObelixIA..." }: { te
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
       {/* Animated background particles */}
       <div className="absolute inset-0 pointer-events-none">
-        {Array.from({ length: 30 }).map((_, i) => (
+        {Array.from({ length: 40 }).map((_, i) => (
           <div
             key={i}
             className="absolute rounded-full"
             style={{
-              width: Math.random() * 4 + 2,
-              height: Math.random() * 4 + 2,
+              width: Math.random() * 6 + 2,
+              height: Math.random() * 6 + 2,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              background: i % 2 === 0 ? '#10b981' : '#06b6d4',
+              background: i % 3 === 0 ? '#10b981' : i % 3 === 1 ? '#06b6d4' : '#8b5cf6',
               opacity: 0,
               animation: `particleFloat ${4 + Math.random() * 4}s ease-in-out infinite`,
               animationDelay: `${Math.random() * 3}s`,
@@ -486,20 +523,21 @@ export function ObelixiaFullscreenLoader({ text = "Cargando ObelixIA..." }: { te
         ))}
       </div>
       
-      {/* Radial glow */}
+      {/* Radial glow - larger for big brain */}
       <div 
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-40"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.3) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.4) 0%, rgba(139,92,246,0.2) 30%, transparent 60%)',
         }}
       />
 
-      {/* Logo */}
-      <div className="relative z-10 flex flex-col items-center gap-8">
+      {/* Logo with XL brain */}
+      <div className="relative z-10 flex flex-col items-center gap-6">
         <ObelixiaLogo size="hero" variant="full" animated />
         
-        <div className="mt-6">
-          <ObelixiaLoadingSpinner size="lg" text={text} />
+        {/* LARGE BRAIN with synaptic connections */}
+        <div className="mt-4">
+          <ObelixiaLoadingSpinner size="xl" text={text} />
         </div>
 
         {/* Tagline */}
