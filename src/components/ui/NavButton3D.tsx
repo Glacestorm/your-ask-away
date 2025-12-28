@@ -1,4 +1,4 @@
-import { forwardRef, ButtonHTMLAttributes, ReactNode, useCallback } from 'react';
+import { forwardRef, ButtonHTMLAttributes, ReactNode, useCallback, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -97,14 +97,21 @@ export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
       Object.entries(props).filter(([key]) => key !== 'ref')
     );
 
-    // Use a stable callback ref to prevent re-render loops
-    const setRef = useCallback((node: HTMLButtonElement | null) => {
-      if (typeof forwardedRef === 'function') {
-        forwardedRef(node);
-      } else if (forwardedRef) {
-        forwardedRef.current = node;
-      }
+    // Keep a stable ref callback so Radix Slot/Tooltip "asChild" doesn't
+    // trigger a ref detach/attach loop (which can cause maximum update depth errors).
+    const forwardedRefRef = useRef(forwardedRef);
+    useEffect(() => {
+      forwardedRefRef.current = forwardedRef;
     }, [forwardedRef]);
+
+    const setRef = useCallback((node: HTMLButtonElement | null) => {
+      const current = forwardedRefRef.current;
+      if (typeof current === 'function') {
+        current(node);
+      } else if (current) {
+        current.current = node;
+      }
+    }, []);
 
     return (
       <button
