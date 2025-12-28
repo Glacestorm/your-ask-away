@@ -12,10 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { 
-  Package, 
-  GitBranch, 
+import {
+  Package,
+  GitBranch,
   Network,
   Search,
   RefreshCw,
@@ -30,7 +29,7 @@ import {
   Store,
   ChevronRight,
   Star,
-  Keyboard
+  Keyboard,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
@@ -218,35 +217,30 @@ function ModuleStudioLayoutContent({
       <div className="space-y-3">
         {/* Quick Navigation Bar */}
         <div className="flex items-center gap-1 p-1 bg-muted/30 rounded-lg border border-border/50">
-          <TooltipProvider delayDuration={0}>
-            {navSections.map((section) => {
-              const Icon = section.icon;
-              const isActive = location.pathname === section.path;
-              
-              return (
-                <Tooltip key={section.id}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={isActive ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => navigate(section.path + (selectedModuleKey ? `?module=${selectedModuleKey}` : ''))}
-                      className={cn(
-                        'h-9 gap-2',
-                        isActive && 'shadow-sm'
-                      )}
-                    >
-                      <Icon className={cn('h-4 w-4', !isActive && section.color)} />
-                      <span className="hidden sm:inline">{section.label}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{section.label}</p>
-                  </TooltipContent>
-                </Tooltip>
-              );
-            })}
-          </TooltipProvider>
-          
+          {navSections.map((section) => {
+            const Icon = section.icon;
+            const isActive = location.pathname === section.path;
+
+            return (
+              <Button
+                key={section.id}
+                variant={isActive ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() =>
+                  navigate(
+                    section.path + (selectedModuleKey ? `?module=${selectedModuleKey}` : '')
+                  )
+                }
+                className={cn('h-9 gap-2', isActive && 'shadow-sm')}
+                aria-label={section.label}
+                title={section.label}
+              >
+                <Icon className={cn('h-4 w-4', !isActive && section.color)} />
+                <span className="hidden sm:inline">{section.label}</span>
+              </Button>
+            );
+          })}
+
           {/* Breadcrumb */}
           <div className="flex-1 flex items-center justify-end gap-1 text-sm text-muted-foreground px-2">
             <span>Module Studio</span>
