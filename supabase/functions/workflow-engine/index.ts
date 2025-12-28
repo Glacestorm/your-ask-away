@@ -9,7 +9,7 @@ import {
 import { secureAICall, getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
 interface WorkflowRequest {
-  action: 'get_workflows' | 'create_workflow' | 'execute_workflow' | 'pause_workflow' | 'resume_workflow' | 'generate_workflow' | 'create_rule';
+  action: 'get_workflows' | 'list_workflows' | 'create_workflow' | 'execute_workflow' | 'pause_workflow' | 'resume_workflow' | 'generate_workflow' | 'create_rule';
   context?: Record<string, unknown>;
   params?: Record<string, unknown>;
 }
@@ -73,6 +73,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'get_workflows':
+      case 'list_workflows':
         systemPrompt = `Eres un motor de automatización de workflows empresariales.
 
 CONTEXTO DEL ROL:
