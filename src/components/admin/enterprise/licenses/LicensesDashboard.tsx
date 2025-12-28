@@ -3,7 +3,7 @@
  * Fase 3 del Sistema de Licencias Enterprise
  */
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -33,14 +33,24 @@ export function LicensesDashboard() {
     fetchPlans
   } = useLicenseManager();
 
-  const fetchLicenses = async () => {
-    const { data } = await import('@/integrations/supabase/client').then(m => 
+  const fetchLicenses = useCallback(async () => {
+    const { data, error } = await import('@/integrations/supabase/client').then(m => 
       m.supabase.from('licenses').select('*').order('created_at', { ascending: false })
     );
-    setLicenses(data || []);
-  };
 
-  useState(() => { fetchLicenses(); });
+    if (error) {
+      console.error('[LicensesDashboard] fetchLicenses error:', error);
+      setLicenses([]);
+      return;
+    }
+
+    setLicenses(data || []);
+  }, []);
+
+  useEffect(() => {
+    fetchPlans();
+    fetchLicenses();
+  }, [fetchPlans, fetchLicenses]);
 
   // Calculate stats
   const activeLicenses = licenses.filter(l => l.status === 'active').length;

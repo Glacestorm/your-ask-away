@@ -9,10 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Key, 
   Copy, 
@@ -192,12 +189,12 @@ IMPORTANT: Keep this license key secure. Do not share it publicly.
                 >
                   {plans.map(plan => (
                     <SelectItem key={plan.id} value={plan.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{plan.name}</span>
-                        <Badge variant="outline" className="text-xs">
+                      <span className="inline-flex w-full items-center justify-between gap-2">
+                        <span className="truncate">{plan.name}</span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
                           €{plan.price_yearly}/año
-                        </Badge>
-                      </div>
+                        </span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
