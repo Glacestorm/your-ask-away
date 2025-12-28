@@ -737,3 +737,6 @@ verify_jwt = true
 
 [functions.predictive-analytics]
 verify_jwt = true
+
+[functions.license-validate]
+verify_jwt = false
