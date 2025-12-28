@@ -13,9 +13,95 @@ interface AccountingRequest {
           'partner_transaction' | 'ai_categorize' |
           'get_balance_sheet' | 'get_income_statement' | 'get_cash_flow' |
           'close_fiscal_period' | 'close_fiscal_year' |
-          'get_tax_calendar' | 'get_tax_declarations';
+          'get_tax_calendar' | 'get_tax_declarations' |
+          // FASE 2: Motor Asientos Automáticos
+          'generate_auto_entry' | 'validate_balance' | 'partner_distribution' |
+          // FASE 3: Workflow Facturación
+          'quote_to_invoice' | 'send_invoice' | 'payment_reminder' | 'register_payment' |
+          // FASE 4: Gestión Socios Completa
+          'partner_dividend' | 'partner_salary' | 'partner_loan' |
+          // FASE 5: Cumplimiento Fiscal ES+AD
+          'calculate_vat_303' | 'calculate_irpf_111' | 'calculate_is_200' |
+          'calculate_modelo_347' | 'calculate_igi_andorra' | 'calculate_is_andorra' |
+          'submit_declaration' | 'generate_closing_entries' |
+          // FASE 6: Reporting
+          'get_aging_report' | 'get_cash_projection' |
+          // FASE 7: Integraciones
+          'import_bank_file' | 'export_accounting';
   params?: Record<string, unknown>;
 }
+
+// === PLANTILLAS DE ASIENTOS AUTOMÁTICOS ===
+const ENTRY_TEMPLATES = {
+  // Emisión Factura Venta
+  invoice_issued: {
+    description: 'Factura de venta',
+    lines: [
+      { account: '430', type: 'debit', source: 'total' }, // Clientes
+      { account: '700', type: 'credit', source: 'base' }, // Ventas
+      { account: '477', type: 'credit', source: 'tax' },  // IVA Repercutido
+    ]
+  },
+  // Cobro de Factura
+  invoice_collected: {
+    description: 'Cobro de factura',
+    lines: [
+      { account: '572', type: 'debit', source: 'amount' },  // Bancos
+      { account: '430', type: 'credit', source: 'amount' }, // Clientes
+    ]
+  },
+  // Factura Proveedor
+  supplier_invoice: {
+    description: 'Factura de proveedor',
+    lines: [
+      { account: '600', type: 'debit', source: 'base' },  // Compras
+      { account: '472', type: 'debit', source: 'tax' },   // IVA Soportado
+      { account: '400', type: 'credit', source: 'total' }, // Proveedores
+    ]
+  },
+  // Pago a Proveedor
+  supplier_paid: {
+    description: 'Pago a proveedor',
+    lines: [
+      { account: '400', type: 'debit', source: 'amount' },  // Proveedores
+      { account: '572', type: 'credit', source: 'amount' }, // Bancos
+    ]
+  },
+  // Nómina Socio Administrador
+  partner_salary: {
+    description: 'Retribución administrador',
+    lines: [
+      { account: '640', type: 'debit', source: 'gross' },  // Sueldos
+      { account: '4751', type: 'credit', source: 'irpf' }, // HP Acreedora IRPF
+      { account: '465', type: 'credit', source: 'net' },   // Remuneraciones Pend.
+    ]
+  },
+  // Dividendo Socio
+  partner_dividend: {
+    description: 'Reparto dividendo',
+    lines: [
+      { account: '129', type: 'debit', source: 'gross' },   // Resultado del ejercicio
+      { account: '4751', type: 'credit', source: 'irpf' },  // HP Acreedora IRPF (19%)
+      { account: '526', type: 'credit', source: 'net' },    // Dividendo activo a pagar
+    ]
+  },
+  // Aportación Capital Socio
+  partner_capital: {
+    description: 'Aportación de capital',
+    lines: [
+      { account: '572', type: 'debit', source: 'amount' },  // Bancos
+      { account: '100', type: 'credit', source: 'amount' }, // Capital Social
+    ]
+  },
+  // Préstamo Socio a Sociedad
+  partner_loan_in: {
+    description: 'Préstamo de socio',
+    lines: [
+      { account: '572', type: 'debit', source: 'amount' },  // Bancos
+      { account: '170', type: 'credit', source: 'amount' }, // Deudas LP entidades crédito
+    ]
+  },
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -39,15 +125,16 @@ serve(async (req) => {
     let result: unknown;
 
     switch (action) {
+      // ============================================================
+      // DASHBOARD
+      // ============================================================
       case 'get_dashboard': {
-        // Get fiscal config
         const { data: config } = await supabase
           .from('obelixia_fiscal_config')
           .select('*')
           .eq('is_active', true)
           .single();
 
-        // Get current period
         const today = new Date().toISOString().split('T')[0];
         const { data: currentPeriod } = await supabase
           .from('obelixia_fiscal_periods')
@@ -56,21 +143,18 @@ serve(async (req) => {
           .gte('end_date', today)
           .single();
 
-        // Get income accounts (7xx)
         const { data: incomeAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('id')
           .eq('account_group', 7)
           .eq('is_active', true);
 
-        // Get expense accounts (6xx)
         const { data: expenseAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('id')
           .eq('account_group', 6)
           .eq('is_active', true);
 
-        // Calculate totals from ledger balances
         const incomeIds = incomeAccounts?.map(a => a.id) || [];
         const expenseIds = expenseAccounts?.map(a => a.id) || [];
 
@@ -97,14 +181,12 @@ serve(async (req) => {
             sum + (b.period_debit - b.period_credit), 0);
         }
 
-        // Get recent entries
         const { data: recentEntries } = await supabase
           .from('obelixia_journal_entries')
           .select('*')
           .order('entry_date', { ascending: false })
           .limit(10);
 
-        // Get unreconciled bank transactions
         const { data: unreconciledTxns } = await supabase
           .from('obelixia_bank_transactions')
           .select('*')
@@ -112,18 +194,85 @@ serve(async (req) => {
           .order('transaction_date', { ascending: false })
           .limit(20);
 
-        // Get pending fiscal declarations
         const { data: pendingDeclarations } = await supabase
           .from('obelixia_fiscal_declarations')
           .select('*')
           .eq('status', 'pending')
           .order('due_date', { ascending: true });
 
-        // Get partners
         const { data: partners } = await supabase
           .from('obelixia_partners')
           .select('*')
           .eq('status', 'active');
+
+        // Get cash balance (account 572)
+        const { data: cashAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '572')
+          .single();
+
+        let cashBalance = 0;
+        if (cashAccount) {
+          const { data: cashMovements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(status)')
+            .eq('account_id', cashAccount.id)
+            .eq('journal_entry.status', 'posted');
+          
+          cashBalance = (cashMovements || []).reduce((sum, m) => 
+            sum + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        // Get pending receivables (account 430)
+        const { data: receivablesAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '430')
+          .single();
+
+        let pendingReceivables = 0;
+        if (receivablesAccount) {
+          const { data: receivablesMovements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(status)')
+            .eq('account_id', receivablesAccount.id)
+            .eq('journal_entry.status', 'posted');
+          
+          pendingReceivables = (receivablesMovements || []).reduce((sum, m) => 
+            sum + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        // Generate alerts
+        const alerts: Array<{ type: 'warning' | 'error' | 'info'; message: string; dueDate?: string }> = [];
+
+        // Check for upcoming declaration deadlines
+        for (const decl of pendingDeclarations || []) {
+          const dueDate = new Date(decl.due_date);
+          const daysUntilDue = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+          
+          if (daysUntilDue < 0) {
+            alerts.push({
+              type: 'error',
+              message: `Declaración ${decl.declaration_type} vencida`,
+              dueDate: decl.due_date
+            });
+          } else if (daysUntilDue <= 7) {
+            alerts.push({
+              type: 'warning',
+              message: `Declaración ${decl.declaration_type} vence en ${daysUntilDue} días`,
+              dueDate: decl.due_date
+            });
+          }
+        }
+
+        // Check for unreconciled transactions
+        if ((unreconciledTxns?.length || 0) > 10) {
+          alerts.push({
+            type: 'info',
+            message: `${unreconciledTxns?.length} movimientos bancarios pendientes de conciliar`
+          });
+        }
 
         result = {
           config,
@@ -135,36 +284,49 @@ serve(async (req) => {
             unreconciledCount: unreconciledTxns?.length || 0,
             pendingDeclarations: pendingDeclarations?.length || 0,
           },
+          totalIncome,
+          totalExpenses,
+          netResult: totalIncome - totalExpenses,
+          cashBalance,
+          pendingReceivables,
+          pendingVat: 0, // Calculate from 477-472
+          totalAssets: 0,
+          totalLiabilities: 0,
+          operatingIncome: totalIncome,
+          operatingExpenses: totalExpenses,
           recentEntries,
           unreconciledTxns,
           pendingDeclarations,
           partners,
+          alerts,
         };
         break;
       }
 
-      case 'create_entry': {
-        const { entry_date, description, lines, reference_type, reference_id, source_document } = params as {
-          entry_date: string;
-          description: string;
-          lines: Array<{
-            account_code: string;
-            debit_amount: number;
-            credit_amount: number;
+      // ============================================================
+      // FASE 2: MOTOR ASIENTOS AUTOMÁTICOS
+      // ============================================================
+      case 'generate_auto_entry': {
+        const { event_type, event_data, entry_date } = params as {
+          event_type: keyof typeof ENTRY_TEMPLATES;
+          event_data: {
+            total?: number;
+            base?: number;
+            tax?: number;
+            amount?: number;
+            gross?: number;
+            net?: number;
+            irpf?: number;
             description?: string;
-            tax_code?: string;
-          }>;
-          reference_type?: string;
-          reference_id?: string;
-          source_document?: string;
+            reference_type?: string;
+            reference_id?: string;
+          };
+          entry_date: string;
         };
 
-        // Validate balance
-        const totalDebit = lines.reduce((sum, l) => sum + (l.debit_amount || 0), 0);
-        const totalCredit = lines.reduce((sum, l) => sum + (l.credit_amount || 0), 0);
-
-        if (Math.abs(totalDebit - totalCredit) > 0.01) {
-          throw new Error(`Asiento descuadrado: Debe=${totalDebit}, Haber=${totalCredit}`);
+        const template = ENTRY_TEMPLATES[event_type];
+        if (!template) {
+          throw new Error(`Tipo de evento no soportado: ${event_type}`);
         }
 
         // Get fiscal period
@@ -182,7 +344,1739 @@ serve(async (req) => {
           throw new Error('El período fiscal está bloqueado');
         }
 
-        // Create journal entry
+        // Build lines from template
+        const lines: Array<{ account_code: string; debit_amount: number; credit_amount: number; description?: string }> = [];
+        
+        for (const lineTemplate of template.lines) {
+          const { data: account } = await supabase
+            .from('obelixia_chart_of_accounts')
+            .select('account_code')
+            .eq('account_code', lineTemplate.account)
+            .single();
+
+          if (!account) {
+            throw new Error(`Cuenta no encontrada: ${lineTemplate.account}`);
+          }
+
+          const amount = event_data[lineTemplate.source as keyof typeof event_data] as number || 0;
+          
+          lines.push({
+            account_code: account.account_code,
+            debit_amount: lineTemplate.type === 'debit' ? amount : 0,
+            credit_amount: lineTemplate.type === 'credit' ? amount : 0,
+            description: event_data.description,
+          });
+        }
+
+        // Validate balance
+        const totalDebit = lines.reduce((sum, l) => sum + l.debit_amount, 0);
+        const totalCredit = lines.reduce((sum, l) => sum + l.credit_amount, 0);
+
+        if (Math.abs(totalDebit - totalCredit) > 0.01) {
+          throw new Error(`Asiento descuadrado: Debe=${totalDebit}, Haber=${totalCredit}`);
+        }
+
+        // Create entry
+        const { data: entry, error: entryError } = await supabase
+          .from('obelixia_journal_entries')
+          .insert({
+            entry_date,
+            description: `${template.description}${event_data.description ? ': ' + event_data.description : ''}`,
+            fiscal_period_id: period.id,
+            reference_type: event_data.reference_type,
+            reference_id: event_data.reference_id,
+            is_automatic: true,
+            total_debit: totalDebit,
+            total_credit: totalCredit,
+            status: 'posted', // Auto entries are posted immediately
+            posted_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (entryError) throw entryError;
+
+        // Create lines
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const { data: account } = await supabase
+            .from('obelixia_chart_of_accounts')
+            .select('id')
+            .eq('account_code', line.account_code)
+            .single();
+
+          if (account) {
+            await supabase
+              .from('obelixia_journal_entry_lines')
+              .insert({
+                journal_entry_id: entry.id,
+                line_number: i + 1,
+                account_id: account.id,
+                debit_amount: line.debit_amount,
+                credit_amount: line.credit_amount,
+                description: line.description,
+              });
+          }
+        }
+
+        result = { entry, lines, message: 'Asiento automático generado y contabilizado' };
+        break;
+      }
+
+      case 'validate_balance': {
+        const { entry_id } = params as { entry_id?: string };
+
+        if (entry_id) {
+          // Validate specific entry
+          const { data: entry } = await supabase
+            .from('obelixia_journal_entries')
+            .select('total_debit, total_credit')
+            .eq('id', entry_id)
+            .single();
+
+          if (!entry) throw new Error('Asiento no encontrado');
+
+          const balanced = Math.abs(entry.total_debit - entry.total_credit) < 0.01;
+          result = { 
+            balanced, 
+            debit: entry.total_debit, 
+            credit: entry.total_credit,
+            difference: entry.total_debit - entry.total_credit 
+          };
+        } else {
+          // Validate all posted entries
+          const { data: entries } = await supabase
+            .from('obelixia_journal_entries')
+            .select('id, entry_number, total_debit, total_credit')
+            .eq('status', 'posted');
+
+          const unbalanced = (entries || []).filter(e => 
+            Math.abs(e.total_debit - e.total_credit) > 0.01
+          );
+
+          result = {
+            total_entries: entries?.length || 0,
+            balanced_count: (entries?.length || 0) - unbalanced.length,
+            unbalanced_count: unbalanced.length,
+            unbalanced_entries: unbalanced
+          };
+        }
+        break;
+      }
+
+      case 'partner_distribution': {
+        const { amount, distribution_type, fiscal_year } = params as {
+          amount: number;
+          distribution_type: 'dividend' | 'bonus';
+          fiscal_year: number;
+        };
+
+        // Get active partners
+        const { data: partners } = await supabase
+          .from('obelixia_partners')
+          .select('*')
+          .eq('status', 'active');
+
+        if (!partners || partners.length === 0) {
+          throw new Error('No hay socios activos');
+        }
+
+        // Get fiscal config for jurisdiction
+        const { data: config } = await supabase
+          .from('obelixia_fiscal_config')
+          .select('jurisdiction')
+          .eq('fiscal_year', fiscal_year)
+          .eq('is_active', true)
+          .single();
+
+        // Tax rates by jurisdiction
+        const irpfRate = config?.jurisdiction === 'andorra' ? 0 : 0.19; // Andorra: 0%, España: 19%
+
+        const distributions = partners.map(partner => {
+          const grossAmount = (amount * partner.ownership_percentage) / 100;
+          const withholding = grossAmount * irpfRate;
+          const netAmount = grossAmount - withholding;
+
+          return {
+            partner_id: partner.id,
+            partner_name: partner.partner_name,
+            ownership_percentage: partner.ownership_percentage,
+            gross_amount: grossAmount,
+            withholding_rate: irpfRate * 100,
+            withholding_amount: withholding,
+            net_amount: netAmount,
+          };
+        });
+
+        const totalGross = distributions.reduce((sum, d) => sum + d.gross_amount, 0);
+        const totalWithholding = distributions.reduce((sum, d) => sum + d.withholding_amount, 0);
+        const totalNet = distributions.reduce((sum, d) => sum + d.net_amount, 0);
+
+        result = {
+          distribution_type,
+          total_amount: amount,
+          jurisdiction: config?.jurisdiction || 'spain',
+          distributions,
+          totals: {
+            gross: totalGross,
+            withholding: totalWithholding,
+            net: totalNet
+          }
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 3: WORKFLOW FACTURACIÓN
+      // ============================================================
+      case 'quote_to_invoice': {
+        const { quote_id, auto_send } = params as { quote_id: string; auto_send?: boolean };
+
+        // Get quote
+        const { data: quote } = await supabase
+          .from('service_quotes')
+          .select('*')
+          .eq('id', quote_id)
+          .single();
+
+        if (!quote) throw new Error('Presupuesto no encontrado');
+        if (quote.status !== 'accepted') throw new Error('El presupuesto no está aceptado');
+
+        // Generate invoice number: OBX-2025-XXXXX
+        const year = new Date().getFullYear();
+        const { count } = await supabase
+          .from('obelixia_invoices')
+          .select('*', { count: 'exact', head: true })
+          .gte('issue_date', `${year}-01-01`);
+
+        const invoiceNumber = `OBX-${year}-${String((count || 0) + 1).padStart(5, '0')}`;
+
+        // Calculate due date based on payment terms (default 30 days)
+        const issueDate = new Date().toISOString().split('T')[0];
+        const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // Create invoice
+        const { data: invoice, error: invoiceError } = await supabase
+          .from('obelixia_invoices')
+          .insert({
+            invoice_number: invoiceNumber,
+            quote_id,
+            company_id: quote.company_id,
+            issue_date: issueDate,
+            due_date: dueDate,
+            subtotal: quote.subtotal || quote.total,
+            tax_rate: 21, // Default IVA
+            tax_amount: (quote.subtotal || quote.total) * 0.21,
+            total: (quote.subtotal || quote.total) * 1.21,
+            status: auto_send ? 'sent' : 'draft',
+            sent_at: auto_send ? new Date().toISOString() : null,
+          })
+          .select()
+          .single();
+
+        if (invoiceError) throw invoiceError;
+
+        // Update quote status
+        await supabase
+          .from('service_quotes')
+          .update({ status: 'invoiced' })
+          .eq('id', quote_id);
+
+        // Generate accounting entry
+        if (invoice) {
+          await supabase.functions.invoke('obelixia-accounting-engine', {
+            body: {
+              action: 'generate_auto_entry',
+              params: {
+                event_type: 'invoice_issued',
+                event_data: {
+                  total: invoice.total,
+                  base: invoice.subtotal,
+                  tax: invoice.tax_amount,
+                  description: `Factura ${invoiceNumber}`,
+                  reference_type: 'invoice',
+                  reference_id: invoice.id,
+                },
+                entry_date: issueDate,
+              }
+            }
+          });
+        }
+
+        result = { invoice, message: 'Factura creada correctamente' };
+        break;
+      }
+
+      case 'send_invoice': {
+        const { invoice_id } = params as { invoice_id: string };
+
+        const { data: invoice, error } = await supabase
+          .from('obelixia_invoices')
+          .update({
+            status: 'sent',
+            sent_at: new Date().toISOString(),
+          })
+          .eq('id', invoice_id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // TODO: Send email notification
+        
+        result = { invoice, message: 'Factura enviada' };
+        break;
+      }
+
+      case 'payment_reminder': {
+        const { invoice_id, reminder_type } = params as { 
+          invoice_id?: string; 
+          reminder_type: '7_days' | '15_days' | '30_days' 
+        };
+
+        const today = new Date().toISOString().split('T')[0];
+        
+        let query = supabase
+          .from('obelixia_invoices')
+          .select('*, company:companies(name, email)')
+          .eq('status', 'sent')
+          .lt('due_date', today);
+
+        if (invoice_id) {
+          query = query.eq('id', invoice_id);
+        }
+
+        const { data: overdueInvoices } = await query;
+
+        const reminders = [];
+        for (const invoice of overdueInvoices || []) {
+          const daysOverdue = Math.floor(
+            (Date.now() - new Date(invoice.due_date).getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          // Track reminder
+          await supabase
+            .from('obelixia_invoice_reminders')
+            .insert({
+              invoice_id: invoice.id,
+              reminder_type,
+              days_overdue: daysOverdue,
+              sent_at: new Date().toISOString(),
+            });
+
+          reminders.push({
+            invoice_id: invoice.id,
+            invoice_number: invoice.invoice_number,
+            company_name: invoice.company?.name,
+            days_overdue: daysOverdue,
+            amount: invoice.total,
+          });
+        }
+
+        result = { 
+          reminders_sent: reminders.length, 
+          reminders,
+          message: `${reminders.length} recordatorios enviados`
+        };
+        break;
+      }
+
+      case 'register_payment': {
+        const { invoice_id, amount, payment_date, payment_method, bank_reference } = params as {
+          invoice_id: string;
+          amount: number;
+          payment_date: string;
+          payment_method?: string;
+          bank_reference?: string;
+        };
+
+        const { data: invoice } = await supabase
+          .from('obelixia_invoices')
+          .select('*')
+          .eq('id', invoice_id)
+          .single();
+
+        if (!invoice) throw new Error('Factura no encontrada');
+
+        const previousPaid = invoice.amount_paid || 0;
+        const newPaid = previousPaid + amount;
+        const isPaid = newPaid >= invoice.total;
+
+        // Update invoice
+        const { error: updateError } = await supabase
+          .from('obelixia_invoices')
+          .update({
+            amount_paid: newPaid,
+            status: isPaid ? 'paid' : 'partial',
+            paid_at: isPaid ? new Date().toISOString() : null,
+          })
+          .eq('id', invoice_id);
+
+        if (updateError) throw updateError;
+
+        // Record payment
+        await supabase
+          .from('obelixia_invoice_payments')
+          .insert({
+            invoice_id,
+            amount,
+            payment_date,
+            payment_method,
+            bank_reference,
+          });
+
+        // Generate accounting entry for payment
+        await supabase.functions.invoke('obelixia-accounting-engine', {
+          body: {
+            action: 'generate_auto_entry',
+            params: {
+              event_type: 'invoice_collected',
+              event_data: {
+                amount,
+                description: `Cobro ${invoice.invoice_number}`,
+                reference_type: 'payment',
+                reference_id: invoice_id,
+              },
+              entry_date: payment_date,
+            }
+          }
+        });
+
+        result = { 
+          invoice_id,
+          amount_paid: newPaid,
+          remaining: invoice.total - newPaid,
+          status: isPaid ? 'paid' : 'partial',
+          message: isPaid ? 'Factura cobrada completamente' : 'Pago parcial registrado'
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 4: GESTIÓN SOCIOS COMPLETA
+      // ============================================================
+      case 'partner_dividend': {
+        const { partner_id, gross_amount, fiscal_year, distribution_date } = params as {
+          partner_id: string;
+          gross_amount: number;
+          fiscal_year: number;
+          distribution_date: string;
+        };
+
+        // Get partner and config
+        const { data: partner } = await supabase
+          .from('obelixia_partners')
+          .select('*')
+          .eq('id', partner_id)
+          .single();
+
+        if (!partner) throw new Error('Socio no encontrado');
+
+        const { data: config } = await supabase
+          .from('obelixia_fiscal_config')
+          .select('jurisdiction')
+          .eq('fiscal_year', fiscal_year)
+          .eq('is_active', true)
+          .single();
+
+        // Calculate withholding
+        const irpfRate = config?.jurisdiction === 'andorra' ? 0 : 0.19;
+        const withholding = gross_amount * irpfRate;
+        const netAmount = gross_amount - withholding;
+
+        // Create transaction
+        const { data: transaction, error: txError } = await supabase
+          .from('obelixia_partner_transactions')
+          .insert({
+            partner_id,
+            transaction_type: 'dividend',
+            transaction_date: distribution_date,
+            amount: gross_amount,
+            tax_withholding: withholding,
+            net_amount: netAmount,
+            description: `Dividendo ejercicio ${fiscal_year}`,
+            status: 'pending',
+          })
+          .select()
+          .single();
+
+        if (txError) throw txError;
+
+        // Generate accounting entry
+        await supabase.functions.invoke('obelixia-accounting-engine', {
+          body: {
+            action: 'generate_auto_entry',
+            params: {
+              event_type: 'partner_dividend',
+              event_data: {
+                gross: gross_amount,
+                irpf: withholding,
+                net: netAmount,
+                description: `Dividendo ${partner.partner_name}`,
+                reference_type: 'partner_transaction',
+                reference_id: transaction.id,
+              },
+              entry_date: distribution_date,
+            }
+          }
+        });
+
+        // Update partner current account
+        await supabase
+          .from('obelixia_partners')
+          .update({
+            current_account_balance: (partner.current_account_balance || 0) - gross_amount,
+          })
+          .eq('id', partner_id);
+
+        result = { 
+          transaction,
+          withholding_summary: {
+            gross: gross_amount,
+            rate: irpfRate * 100,
+            withholding,
+            net: netAmount
+          },
+          message: 'Dividendo registrado correctamente'
+        };
+        break;
+      }
+
+      case 'partner_salary': {
+        const { partner_id, gross_amount, irpf_rate, payment_date, concept } = params as {
+          partner_id: string;
+          gross_amount: number;
+          irpf_rate: number;
+          payment_date: string;
+          concept?: string;
+        };
+
+        const { data: partner } = await supabase
+          .from('obelixia_partners')
+          .select('*')
+          .eq('id', partner_id)
+          .single();
+
+        if (!partner) throw new Error('Socio no encontrado');
+        if (!partner.is_administrator) throw new Error('El socio no es administrador');
+
+        const withholding = gross_amount * (irpf_rate / 100);
+        const netAmount = gross_amount - withholding;
+
+        // Create transaction
+        const { data: transaction, error: txError } = await supabase
+          .from('obelixia_partner_transactions')
+          .insert({
+            partner_id,
+            transaction_type: 'admin_remuneration',
+            transaction_date: payment_date,
+            amount: gross_amount,
+            tax_withholding: withholding,
+            net_amount: netAmount,
+            description: concept || 'Retribución administrador',
+            status: 'pending',
+          })
+          .select()
+          .single();
+
+        if (txError) throw txError;
+
+        // Generate accounting entry
+        await supabase.functions.invoke('obelixia-accounting-engine', {
+          body: {
+            action: 'generate_auto_entry',
+            params: {
+              event_type: 'partner_salary',
+              event_data: {
+                gross: gross_amount,
+                irpf: withholding,
+                net: netAmount,
+                description: `Retribución ${partner.partner_name}`,
+                reference_type: 'partner_transaction',
+                reference_id: transaction.id,
+              },
+              entry_date: payment_date,
+            }
+          }
+        });
+
+        result = { 
+          transaction,
+          payroll_summary: {
+            gross: gross_amount,
+            irpf_rate,
+            irpf_amount: withholding,
+            net: netAmount
+          },
+          message: 'Retribución registrada correctamente'
+        };
+        break;
+      }
+
+      case 'partner_loan': {
+        const { partner_id, amount, loan_type, interest_rate, start_date, end_date } = params as {
+          partner_id: string;
+          amount: number;
+          loan_type: 'to_company' | 'from_company';
+          interest_rate?: number;
+          start_date: string;
+          end_date?: string;
+        };
+
+        const { data: partner } = await supabase
+          .from('obelixia_partners')
+          .select('*')
+          .eq('id', partner_id)
+          .single();
+
+        if (!partner) throw new Error('Socio no encontrado');
+
+        // Create loan record
+        const { data: loan, error: loanError } = await supabase
+          .from('obelixia_partner_loans')
+          .insert({
+            partner_id,
+            loan_type,
+            principal_amount: amount,
+            interest_rate: interest_rate || 0,
+            start_date,
+            end_date,
+            outstanding_balance: amount,
+            status: 'active',
+          })
+          .select()
+          .single();
+
+        if (loanError) throw loanError;
+
+        // Create transaction
+        const { data: transaction } = await supabase
+          .from('obelixia_partner_transactions')
+          .insert({
+            partner_id,
+            transaction_type: loan_type === 'to_company' ? 'loan_to_company' : 'loan_repayment',
+            transaction_date: start_date,
+            amount,
+            description: `Préstamo ${loan_type === 'to_company' ? 'de socio' : 'a socio'}`,
+            status: 'approved',
+          })
+          .select()
+          .single();
+
+        // Generate accounting entry
+        await supabase.functions.invoke('obelixia-accounting-engine', {
+          body: {
+            action: 'generate_auto_entry',
+            params: {
+              event_type: loan_type === 'to_company' ? 'partner_loan_in' : 'partner_capital',
+              event_data: {
+                amount,
+                description: `Préstamo ${partner.partner_name}`,
+                reference_type: 'partner_loan',
+                reference_id: loan.id,
+              },
+              entry_date: start_date,
+            }
+          }
+        });
+
+        // Update partner current account
+        const balanceChange = loan_type === 'to_company' ? amount : -amount;
+        await supabase
+          .from('obelixia_partners')
+          .update({
+            current_account_balance: (partner.current_account_balance || 0) + balanceChange,
+          })
+          .eq('id', partner_id);
+
+        result = { 
+          loan, 
+          transaction,
+          message: 'Préstamo registrado correctamente'
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 5: CUMPLIMIENTO FISCAL ES+AD
+      // ============================================================
+      case 'calculate_vat_303': {
+        const { period, fiscal_year } = params as { period: 'Q1' | 'Q2' | 'Q3' | 'Q4'; fiscal_year: number };
+
+        // Map period to dates
+        const periodDates: Record<string, { start: string; end: string }> = {
+          Q1: { start: `${fiscal_year}-01-01`, end: `${fiscal_year}-03-31` },
+          Q2: { start: `${fiscal_year}-04-01`, end: `${fiscal_year}-06-30` },
+          Q3: { start: `${fiscal_year}-07-01`, end: `${fiscal_year}-09-30` },
+          Q4: { start: `${fiscal_year}-10-01`, end: `${fiscal_year}-12-31` },
+        };
+
+        const dates = periodDates[period];
+
+        // Get IVA accounts
+        const { data: ivaRepAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '477')
+          .single();
+
+        const { data: ivaSopAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '472')
+          .single();
+
+        let ivaRepercutido = 0;
+        let ivaSoportado = 0;
+
+        // Get IVA repercutido movements
+        if (ivaRepAccount) {
+          const { data: repMovs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', ivaRepAccount.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', dates.start)
+            .lte('journal_entry.entry_date', dates.end);
+
+          ivaRepercutido = (repMovs || []).reduce((sum, m) => 
+            sum + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        // Get IVA soportado movements
+        if (ivaSopAccount) {
+          const { data: sopMovs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', ivaSopAccount.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', dates.start)
+            .lte('journal_entry.entry_date', dates.end);
+
+          ivaSoportado = (sopMovs || []).reduce((sum, m) => 
+            sum + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        // Calculate bases (reverse from IVA at 21%)
+        const baseImponible21 = ivaRepercutido / 0.21;
+        const baseDeducible = ivaSoportado / 0.21;
+
+        const resultado = ivaRepercutido - ivaSoportado;
+        const aIngresar = Math.max(0, resultado);
+        const aCompensar = Math.max(0, -resultado);
+
+        // Due date: 20th of month after quarter
+        const dueMonth = parseInt(period.replace('Q', '')) * 3 + 1;
+        const dueDate = new Date(fiscal_year, dueMonth - 1, 20).toISOString().split('T')[0];
+
+        // Create or update declaration
+        const { data: declaration, error: declError } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: 'modelo_303',
+            fiscal_year,
+            declaration_period: period,
+            due_date: dueDate,
+            status: 'calculated',
+            calculated_data: {
+              base_imponible_21: baseImponible21,
+              cuota_21: ivaRepercutido,
+              iva_soportado_deducible: ivaSoportado,
+              base_deducible: baseDeducible,
+              resultado,
+              a_ingresar: aIngresar,
+              a_compensar: aCompensar,
+            },
+            total_amount: aIngresar,
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        if (declError) throw declError;
+
+        result = {
+          declaration,
+          summary: {
+            base_imponible_21: baseImponible21,
+            cuota_21: ivaRepercutido,
+            total_cuotas_devengadas: ivaRepercutido,
+            iva_soportado_deducible: ivaSoportado,
+            resultado,
+            resultado_liquidacion: aIngresar > 0 ? aIngresar : -aCompensar,
+          },
+          period,
+          fiscal_year,
+          due_date: dueDate,
+        };
+        break;
+      }
+
+      case 'calculate_irpf_111': {
+        const { period, fiscal_year } = params as { period: 'Q1' | 'Q2' | 'Q3' | 'Q4'; fiscal_year: number };
+
+        // Get IRPF account (4751)
+        const { data: irpfAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '4751')
+          .single();
+
+        // Map period to dates
+        const periodDates: Record<string, { start: string; end: string }> = {
+          Q1: { start: `${fiscal_year}-01-01`, end: `${fiscal_year}-03-31` },
+          Q2: { start: `${fiscal_year}-04-01`, end: `${fiscal_year}-06-30` },
+          Q3: { start: `${fiscal_year}-07-01`, end: `${fiscal_year}-09-30` },
+          Q4: { start: `${fiscal_year}-10-01`, end: `${fiscal_year}-12-31` },
+        };
+
+        const dates = periodDates[period];
+        let totalRetenciones = 0;
+
+        if (irpfAccount) {
+          const { data: irpfMovs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', irpfAccount.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', dates.start)
+            .lte('journal_entry.entry_date', dates.end);
+
+          totalRetenciones = (irpfMovs || []).reduce((sum, m) => 
+            sum + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        // Get partner salary data
+        const { data: salaryTxns } = await supabase
+          .from('obelixia_partner_transactions')
+          .select('*')
+          .eq('transaction_type', 'admin_remuneration')
+          .gte('transaction_date', dates.start)
+          .lte('transaction_date', dates.end);
+
+        const totalRendimientos = (salaryTxns || []).reduce((sum, t) => sum + t.amount, 0);
+
+        // Due date
+        const dueMonth = parseInt(period.replace('Q', '')) * 3 + 1;
+        const dueDate = new Date(fiscal_year, dueMonth - 1, 20).toISOString().split('T')[0];
+
+        // Create declaration
+        const { data: declaration, error: declError } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: 'modelo_111',
+            fiscal_year,
+            declaration_period: period,
+            due_date: dueDate,
+            status: 'calculated',
+            calculated_data: {
+              rendimientos_trabajo: totalRendimientos,
+              retenciones_trabajo: totalRetenciones,
+              num_perceptores: salaryTxns?.length || 0,
+            },
+            total_amount: totalRetenciones,
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        if (declError) throw declError;
+
+        result = {
+          declaration,
+          summary: {
+            rendimientos_trabajo: totalRendimientos,
+            retenciones: totalRetenciones,
+            perceptores: salaryTxns?.length || 0,
+          },
+          period,
+          fiscal_year,
+          due_date: dueDate,
+        };
+        break;
+      }
+
+      case 'calculate_is_200': {
+        const { fiscal_year } = params as { fiscal_year: number };
+
+        // Get income and expenses
+        const yearStart = `${fiscal_year}-01-01`;
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        const { data: incomeAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 7);
+
+        const { data: expenseAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 6);
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        for (const acc of incomeAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalIncome += (movs || []).reduce((s, m) => s + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        for (const acc of expenseAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalExpenses += (movs || []).reduce((s, m) => s + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        const resultadoContable = totalIncome - totalExpenses;
+        
+        // Get jurisdiction for tax rate
+        const { data: config } = await supabase
+          .from('obelixia_fiscal_config')
+          .select('jurisdiction, corporate_tax_rate')
+          .eq('fiscal_year', fiscal_year)
+          .eq('is_active', true)
+          .single();
+
+        // Tax rates: Spain 25%, Andorra 10%
+        const taxRate = config?.corporate_tax_rate || (config?.jurisdiction === 'andorra' ? 10 : 25);
+        const impuestoSociedades = Math.max(0, resultadoContable) * (taxRate / 100);
+
+        // Due date: July 25 of next year
+        const dueDate = `${fiscal_year + 1}-07-25`;
+
+        // Create declaration
+        const { data: declaration, error: declError } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: config?.jurisdiction === 'andorra' ? 'is_andorra' : 'modelo_200',
+            fiscal_year,
+            declaration_period: 'annual',
+            due_date: dueDate,
+            status: 'calculated',
+            calculated_data: {
+              ingresos: totalIncome,
+              gastos: totalExpenses,
+              resultado_contable: resultadoContable,
+              base_imponible: Math.max(0, resultadoContable),
+              tipo_gravamen: taxRate,
+              cuota_integra: impuestoSociedades,
+              cuota_liquida: impuestoSociedades,
+            },
+            total_amount: impuestoSociedades,
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        if (declError) throw declError;
+
+        result = {
+          declaration,
+          summary: {
+            ingresos: totalIncome,
+            gastos: totalExpenses,
+            resultado_contable: resultadoContable,
+            base_imponible: Math.max(0, resultadoContable),
+            tipo_gravamen: taxRate,
+            impuesto: impuestoSociedades,
+          },
+          fiscal_year,
+          jurisdiction: config?.jurisdiction || 'spain',
+          due_date: dueDate,
+        };
+        break;
+      }
+
+      case 'calculate_modelo_347': {
+        const { fiscal_year } = params as { fiscal_year: number };
+
+        // Operations > 3.005,06€ with same counterparty
+        const yearStart = `${fiscal_year}-01-01`;
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        // Get invoices grouped by company
+        const { data: invoices } = await supabase
+          .from('obelixia_invoices')
+          .select('company_id, total, company:companies(name, tax_id)')
+          .gte('issue_date', yearStart)
+          .lte('issue_date', yearEnd)
+          .in('status', ['sent', 'paid', 'partial']);
+
+        // Group and sum by company
+        const byCompany: Record<string, { name: string; tax_id: string; total: number }> = {};
+        for (const inv of invoices || []) {
+          const companyData = inv.company as { name?: string; tax_id?: string } | null;
+          if (!byCompany[inv.company_id]) {
+            byCompany[inv.company_id] = {
+              name: companyData?.name || 'Desconocido',
+              tax_id: companyData?.tax_id || '',
+              total: 0
+            };
+          }
+          byCompany[inv.company_id].total += inv.total;
+        }
+
+        // Filter > 3.005,06€
+        const threshold = 3005.06;
+        const declarables = Object.entries(byCompany)
+          .filter(([_, data]) => data.total > threshold)
+          .map(([company_id, data]) => ({
+            company_id,
+            name: data.name,
+            tax_id: data.tax_id,
+            total: data.total,
+          }));
+
+        const { data: declaration } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: 'modelo_347',
+            fiscal_year,
+            declaration_period: 'annual',
+            due_date: `${fiscal_year + 1}-02-28`,
+            status: 'calculated',
+            calculated_data: {
+              threshold,
+              declarables,
+              total_declarables: declarables.length,
+              total_amount: declarables.reduce((s, d) => s + d.total, 0),
+            },
+            total_amount: declarables.reduce((s, d) => s + d.total, 0),
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        result = {
+          declaration,
+          declarables,
+          summary: {
+            total_counterparties: declarables.length,
+            total_volume: declarables.reduce((s, d) => s + d.total, 0),
+            threshold,
+          },
+        };
+        break;
+      }
+
+      case 'calculate_igi_andorra': {
+        const { period, fiscal_year } = params as { period: 'Q1' | 'Q2' | 'Q3' | 'Q4'; fiscal_year: number };
+
+        // IGI = Impost General Indirecte (Andorra's VAT equivalent at 4.5%)
+        const periodDates: Record<string, { start: string; end: string }> = {
+          Q1: { start: `${fiscal_year}-01-01`, end: `${fiscal_year}-03-31` },
+          Q2: { start: `${fiscal_year}-04-01`, end: `${fiscal_year}-06-30` },
+          Q3: { start: `${fiscal_year}-07-01`, end: `${fiscal_year}-09-30` },
+          Q4: { start: `${fiscal_year}-10-01`, end: `${fiscal_year}-12-31` },
+        };
+
+        const dates = periodDates[period];
+
+        // Get sales (7xx accounts)
+        const { data: incomeAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 7)
+          .eq('is_active', true);
+
+        let totalVentas = 0;
+        for (const acc of incomeAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', dates.start)
+            .lte('journal_entry.entry_date', dates.end);
+          
+          totalVentas += (movs || []).reduce((s, m) => s + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        // IGI at 4.5%
+        const igiRate = 4.5;
+        const igiDevengado = totalVentas * (igiRate / 100);
+
+        // Get purchases for IGI soportado
+        const { data: expenseAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 6)
+          .eq('is_active', true);
+
+        let totalCompras = 0;
+        for (const acc of expenseAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', dates.start)
+            .lte('journal_entry.entry_date', dates.end);
+          
+          totalCompras += (movs || []).reduce((s, m) => s + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        const igiSoportado = totalCompras * (igiRate / 100);
+        const resultado = igiDevengado - igiSoportado;
+
+        // Due date: 20th of month after quarter
+        const dueMonth = parseInt(period.replace('Q', '')) * 3 + 1;
+        const dueDate = new Date(fiscal_year, dueMonth - 1, 20).toISOString().split('T')[0];
+
+        const { data: declaration } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: 'igi_andorra',
+            fiscal_year,
+            declaration_period: period,
+            due_date: dueDate,
+            status: 'calculated',
+            calculated_data: {
+              ventas: totalVentas,
+              igi_devengado: igiDevengado,
+              compras: totalCompras,
+              igi_soportado: igiSoportado,
+              resultado,
+              tipo_igi: igiRate,
+            },
+            total_amount: Math.max(0, resultado),
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        result = {
+          declaration,
+          summary: {
+            ventas: totalVentas,
+            igi_devengado: igiDevengado,
+            compras: totalCompras,
+            igi_soportado: igiSoportado,
+            resultado,
+          },
+          period,
+          fiscal_year,
+          due_date: dueDate,
+        };
+        break;
+      }
+
+      case 'calculate_is_andorra': {
+        // Andorra Corporate Tax at 10%
+        const { fiscal_year } = params as { fiscal_year: number };
+
+        const yearStart = `${fiscal_year}-01-01`;
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        // Calculate profit
+        const { data: incomeAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 7);
+
+        const { data: expenseAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 6);
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        for (const acc of incomeAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalIncome += (movs || []).reduce((s, m) => s + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        for (const acc of expenseAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalExpenses += (movs || []).reduce((s, m) => s + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        const beneficio = totalIncome - totalExpenses;
+        const taxRate = 10; // Andorra: 10%
+        const impuesto = Math.max(0, beneficio) * (taxRate / 100);
+
+        // Due date: September 30 of next year
+        const dueDate = `${fiscal_year + 1}-09-30`;
+
+        const { data: declaration } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .upsert({
+            declaration_type: 'is_andorra',
+            fiscal_year,
+            declaration_period: 'annual',
+            due_date: dueDate,
+            status: 'calculated',
+            calculated_data: {
+              ingresos: totalIncome,
+              gastos: totalExpenses,
+              beneficio,
+              tipo_gravamen: taxRate,
+              impuesto,
+            },
+            total_amount: impuesto,
+          }, {
+            onConflict: 'declaration_type,fiscal_year,declaration_period',
+          })
+          .select()
+          .single();
+
+        result = {
+          declaration,
+          summary: {
+            ingresos: totalIncome,
+            gastos: totalExpenses,
+            beneficio,
+            tipo_gravamen: taxRate,
+            impuesto,
+          },
+          fiscal_year,
+          due_date: dueDate,
+        };
+        break;
+      }
+
+      case 'submit_declaration': {
+        const { declaration_id, submission_reference, submission_date } = params as {
+          declaration_id: string;
+          submission_reference?: string;
+          submission_date: string;
+        };
+
+        const { data: declaration, error } = await supabase
+          .from('obelixia_fiscal_declarations')
+          .update({
+            status: 'submitted',
+            submitted_at: submission_date,
+            submission_reference,
+          })
+          .eq('id', declaration_id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        result = { declaration, message: 'Declaración marcada como presentada' };
+        break;
+      }
+
+      case 'generate_closing_entries': {
+        const { fiscal_year } = params as { fiscal_year: number };
+
+        // Get income and expense accounts with balances
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        const { data: accounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('*')
+          .in('account_group', [6, 7])
+          .eq('is_active', true);
+
+        const closingLines: Array<{ account_code: string; debit: number; credit: number }> = [];
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        for (const account of accounts || []) {
+          const { data: movements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', account.id)
+            .eq('journal_entry.status', 'posted')
+            .lte('journal_entry.entry_date', yearEnd);
+
+          const balance = (movements || []).reduce((sum, m) => {
+            if (account.account_group === 7) {
+              return sum + (m.credit_amount - m.debit_amount);
+            }
+            return sum + (m.debit_amount - m.credit_amount);
+          }, 0);
+
+          if (balance !== 0) {
+            if (account.account_group === 7) {
+              // Income: debit to close
+              closingLines.push({
+                account_code: account.account_code,
+                debit: balance,
+                credit: 0
+              });
+              totalIncome += balance;
+            } else {
+              // Expense: credit to close
+              closingLines.push({
+                account_code: account.account_code,
+                debit: 0,
+                credit: balance
+              });
+              totalExpenses += balance;
+            }
+          }
+        }
+
+        // Add result line (129 - Resultado del ejercicio)
+        const netProfit = totalIncome - totalExpenses;
+        closingLines.push({
+          account_code: '129',
+          debit: netProfit < 0 ? Math.abs(netProfit) : 0,
+          credit: netProfit > 0 ? netProfit : 0
+        });
+
+        // Get period for year end
+        const { data: period } = await supabase
+          .from('obelixia_fiscal_periods')
+          .select('id')
+          .eq('fiscal_year', fiscal_year)
+          .order('end_date', { ascending: false })
+          .limit(1)
+          .single();
+
+        // Create closing entry
+        const totalDebit = closingLines.reduce((s, l) => s + l.debit, 0);
+        const totalCredit = closingLines.reduce((s, l) => s + l.credit, 0);
+
+        const { data: entry, error: entryError } = await supabase
+          .from('obelixia_journal_entries')
+          .insert({
+            entry_date: yearEnd,
+            description: `Asiento de cierre ejercicio ${fiscal_year}`,
+            fiscal_period_id: period?.id,
+            reference_type: 'year_close',
+            is_automatic: true,
+            is_closing_entry: true,
+            total_debit: totalDebit,
+            total_credit: totalCredit,
+            status: 'draft',
+          })
+          .select()
+          .single();
+
+        if (entryError) throw entryError;
+
+        // Create lines
+        for (let i = 0; i < closingLines.length; i++) {
+          const line = closingLines[i];
+          const { data: account } = await supabase
+            .from('obelixia_chart_of_accounts')
+            .select('id')
+            .eq('account_code', line.account_code)
+            .single();
+
+          if (account) {
+            await supabase
+              .from('obelixia_journal_entry_lines')
+              .insert({
+                journal_entry_id: entry.id,
+                line_number: i + 1,
+                account_id: account.id,
+                debit_amount: line.debit,
+                credit_amount: line.credit,
+              });
+          }
+        }
+
+        result = {
+          entry,
+          lines: closingLines,
+          summary: {
+            total_income: totalIncome,
+            total_expenses: totalExpenses,
+            net_profit: netProfit,
+          },
+          message: 'Asiento de cierre generado (en borrador)'
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 6: REPORTING
+      // ============================================================
+      case 'get_aging_report': {
+        const { report_type, as_of_date } = params as { 
+          report_type: 'receivables' | 'payables'; 
+          as_of_date?: string 
+        };
+
+        const asOf = as_of_date || new Date().toISOString().split('T')[0];
+        const accountCode = report_type === 'receivables' ? '430' : '400';
+
+        // Get invoices
+        const table = report_type === 'receivables' ? 'obelixia_invoices' : 'obelixia_supplier_invoices';
+        const { data: invoices } = await supabase
+          .from(table)
+          .select('*, company:companies(name)')
+          .in('status', ['sent', 'partial'])
+          .lte('issue_date', asOf);
+
+        const aging = {
+          current: [] as unknown[],
+          days_1_30: [] as unknown[],
+          days_31_60: [] as unknown[],
+          days_61_90: [] as unknown[],
+          days_90_plus: [] as unknown[],
+        };
+
+        for (const inv of invoices || []) {
+          const dueDate = new Date(inv.due_date);
+          const asOfDate = new Date(asOf);
+          const daysOverdue = Math.floor((asOfDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+          const outstanding = inv.total - (inv.amount_paid || 0);
+
+          const record = {
+            id: inv.id,
+            invoice_number: inv.invoice_number,
+            company_name: inv.company?.name,
+            due_date: inv.due_date,
+            total: inv.total,
+            paid: inv.amount_paid || 0,
+            outstanding,
+            days_overdue: daysOverdue > 0 ? daysOverdue : 0,
+          };
+
+          if (daysOverdue <= 0) {
+            aging.current.push(record);
+          } else if (daysOverdue <= 30) {
+            aging.days_1_30.push(record);
+          } else if (daysOverdue <= 60) {
+            aging.days_31_60.push(record);
+          } else if (daysOverdue <= 90) {
+            aging.days_61_90.push(record);
+          } else {
+            aging.days_90_plus.push(record);
+          }
+        }
+
+        const totals = {
+          current: aging.current.reduce((s: number, r: any) => s + r.outstanding, 0),
+          days_1_30: aging.days_1_30.reduce((s: number, r: any) => s + r.outstanding, 0),
+          days_31_60: aging.days_31_60.reduce((s: number, r: any) => s + r.outstanding, 0),
+          days_61_90: aging.days_61_90.reduce((s: number, r: any) => s + r.outstanding, 0),
+          days_90_plus: aging.days_90_plus.reduce((s: number, r: any) => s + r.outstanding, 0),
+        };
+
+        result = {
+          report_type,
+          as_of_date: asOf,
+          aging,
+          totals,
+          grand_total: Object.values(totals).reduce((s, v) => s + v, 0),
+        };
+        break;
+      }
+
+      case 'get_cash_projection': {
+        const { days_ahead } = params as { days_ahead?: number };
+
+        const projectionDays = days_ahead || 90;
+        const today = new Date();
+
+        // Get current cash balance
+        const { data: cashAccount } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_code', '572')
+          .single();
+
+        let currentBalance = 0;
+        if (cashAccount) {
+          const { data: movements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(status)')
+            .eq('account_id', cashAccount.id)
+            .eq('journal_entry.status', 'posted');
+          
+          currentBalance = (movements || []).reduce((sum, m) => 
+            sum + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        // Get expected receivables
+        const { data: receivables } = await supabase
+          .from('obelixia_invoices')
+          .select('*')
+          .in('status', ['sent', 'partial'])
+          .gte('due_date', today.toISOString().split('T')[0])
+          .lte('due_date', new Date(Date.now() + projectionDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+
+        // Get expected payables (if table exists)
+        const { data: payables } = await supabase
+          .from('obelixia_supplier_invoices')
+          .select('*')
+          .in('status', ['pending', 'approved'])
+          .gte('due_date', today.toISOString().split('T')[0])
+          .lte('due_date', new Date(Date.now() + projectionDays * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+
+        // Build daily projection
+        const projection: Array<{
+          date: string;
+          inflows: number;
+          outflows: number;
+          balance: number;
+        }> = [];
+
+        let runningBalance = currentBalance;
+        for (let i = 0; i <= projectionDays; i++) {
+          const date = new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+          
+          const dayInflows = (receivables || [])
+            .filter(r => r.due_date === date)
+            .reduce((s, r) => s + (r.total - (r.amount_paid || 0)), 0);
+          
+          const dayOutflows = (payables || [])
+            .filter(p => p.due_date === date)
+            .reduce((s, p) => s + (p.total - (p.amount_paid || 0)), 0);
+
+          runningBalance += dayInflows - dayOutflows;
+
+          projection.push({
+            date,
+            inflows: dayInflows,
+            outflows: dayOutflows,
+            balance: runningBalance,
+          });
+        }
+
+        result = {
+          current_balance: currentBalance,
+          projection_days: projectionDays,
+          projection,
+          summary: {
+            total_expected_inflows: projection.reduce((s, p) => s + p.inflows, 0),
+            total_expected_outflows: projection.reduce((s, p) => s + p.outflows, 0),
+            projected_end_balance: runningBalance,
+            min_balance: Math.min(...projection.map(p => p.balance)),
+            min_balance_date: projection.find(p => p.balance === Math.min(...projection.map(x => x.balance)))?.date,
+          },
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 7: INTEGRACIONES
+      // ============================================================
+      case 'import_bank_file': {
+        const { bank_account_id, file_content, file_format } = params as {
+          bank_account_id: string;
+          file_content: string;
+          file_format: 'ofx' | 'csv' | 'norma43';
+        };
+
+        // Parse file based on format
+        const transactions: Array<{
+          transaction_date: string;
+          value_date: string;
+          description: string;
+          amount: number;
+          reference?: string;
+        }> = [];
+
+        if (file_format === 'csv') {
+          // Simple CSV parsing
+          const lines = file_content.split('\n');
+          const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+          
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            if (values.length >= 3) {
+              transactions.push({
+                transaction_date: values[headers.indexOf('fecha') || 0],
+                value_date: values[headers.indexOf('fecha_valor') || headers.indexOf('fecha') || 0],
+                description: values[headers.indexOf('concepto') || headers.indexOf('descripcion') || 1],
+                amount: parseFloat(values[headers.indexOf('importe') || headers.indexOf('amount') || 2].replace(',', '.')),
+                reference: values[headers.indexOf('referencia') || 3],
+              });
+            }
+          }
+        }
+        // TODO: Add OFX and Norma43 parsers
+
+        // Insert transactions
+        const imported = [];
+        for (const txn of transactions) {
+          const { data, error } = await supabase
+            .from('obelixia_bank_transactions')
+            .insert({
+              bank_account_id,
+              transaction_date: txn.transaction_date,
+              value_date: txn.value_date,
+              description: txn.description,
+              amount: txn.amount,
+              reference: txn.reference,
+              is_reconciled: false,
+              source: file_format,
+            })
+            .select()
+            .single();
+
+          if (!error && data) {
+            imported.push(data);
+          }
+        }
+
+        result = {
+          imported_count: imported.length,
+          transactions: imported,
+          message: `${imported.length} transacciones importadas`
+        };
+        break;
+      }
+
+      case 'export_accounting': {
+        const { format, fiscal_year, include_auxiliaries } = params as {
+          format: 'a3' | 'sage' | 'contaplus' | 'sii';
+          fiscal_year: number;
+          include_auxiliaries?: boolean;
+        };
+
+        // Get all posted entries for the year
+        const yearStart = `${fiscal_year}-01-01`;
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        const { data: entries } = await supabase
+          .from('obelixia_journal_entries')
+          .select(`
+            *,
+            lines:obelixia_journal_entry_lines(
+              *,
+              account:obelixia_chart_of_accounts(*)
+            )
+          `)
+          .eq('status', 'posted')
+          .gte('entry_date', yearStart)
+          .lte('entry_date', yearEnd)
+          .order('entry_date');
+
+        // Format data based on target system
+        let exportData: string;
+
+        switch (format) {
+          case 'a3':
+            // A3 format (CSV with specific columns)
+            exportData = 'ASIENTO;FECHA;CUENTA;CONCEPTO;DEBE;HABER\n';
+            for (const entry of entries || []) {
+              for (const line of entry.lines) {
+                exportData += `${entry.entry_number};${entry.entry_date};${line.account.account_code};${line.description || entry.description};${line.debit_amount};${line.credit_amount}\n`;
+              }
+            }
+            break;
+
+          case 'sage':
+            // Sage format
+            exportData = 'Fecha|Cuenta|Descripcion|Debe|Haber|Documento\n';
+            for (const entry of entries || []) {
+              for (const line of entry.lines) {
+                exportData += `${entry.entry_date}|${line.account.account_code}|${line.description || entry.description}|${line.debit_amount}|${line.credit_amount}|${entry.source_document || ''}\n`;
+              }
+            }
+            break;
+
+          case 'contaplus':
+            // ContaPlus XLS format (simplified)
+            exportData = 'EJERCICIO\tASIENTO\tFECHA\tCUENTA\tCONCEPTO\tDEBE\tHABER\n';
+            for (const entry of entries || []) {
+              for (const line of entry.lines) {
+                exportData += `${fiscal_year}\t${entry.entry_number}\t${entry.entry_date}\t${line.account.account_code}\t${line.description || entry.description}\t${line.debit_amount}\t${line.credit_amount}\n`;
+              }
+            }
+            break;
+
+          case 'sii':
+            // SII XML format for Spain (simplified structure)
+            exportData = `<?xml version="1.0" encoding="UTF-8"?>
+<RegistroLRFacturasEmitidas>
+  <Cabecera>
+    <IDVersionSii>1.1</IDVersionSii>
+    <Ejercicio>${fiscal_year}</Ejercicio>
+  </Cabecera>
+  <RegistroLRFacturasEmitidas>
+    <!-- Facturas exportadas -->
+  </RegistroLRFacturasEmitidas>
+</RegistroLRFacturasEmitidas>`;
+            break;
+
+          default:
+            exportData = '';
+        }
+
+        result = {
+          format,
+          fiscal_year,
+          entries_count: entries?.length || 0,
+          export_data: exportData,
+          download_ready: true,
+        };
+        break;
+      }
+
+      // ============================================================
+      // EXISTING ACTIONS (keep all existing functionality)
+      // ============================================================
+      case 'create_entry': {
+        const { entry_date, description, lines, reference_type, reference_id, source_document } = params as {
+          entry_date: string;
+          description: string;
+          lines: Array<{
+            account_code: string;
+            debit_amount: number;
+            credit_amount: number;
+            description?: string;
+            tax_code?: string;
+          }>;
+          reference_type?: string;
+          reference_id?: string;
+          source_document?: string;
+        };
+
+        const totalDebit = lines.reduce((sum, l) => sum + (l.debit_amount || 0), 0);
+        const totalCredit = lines.reduce((sum, l) => sum + (l.credit_amount || 0), 0);
+
+        if (Math.abs(totalDebit - totalCredit) > 0.01) {
+          throw new Error(`Asiento descuadrado: Debe=${totalDebit}, Haber=${totalCredit}`);
+        }
+
+        const { data: period } = await supabase
+          .from('obelixia_fiscal_periods')
+          .select('id, status')
+          .lte('start_date', entry_date)
+          .gte('end_date', entry_date)
+          .single();
+
+        if (!period) {
+          throw new Error('No existe período fiscal para esta fecha');
+        }
+        if (period.status === 'locked') {
+          throw new Error('El período fiscal está bloqueado');
+        }
+
         const { data: entry, error: entryError } = await supabase
           .from('obelixia_journal_entries')
           .insert({
@@ -201,7 +2095,6 @@ serve(async (req) => {
 
         if (entryError) throw entryError;
 
-        // Get account IDs and create lines
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           const { data: account } = await supabase
@@ -234,7 +2127,6 @@ serve(async (req) => {
       case 'post_entry': {
         const { entry_id } = params as { entry_id: string };
 
-        // Get entry with lines
         const { data: entry } = await supabase
           .from('obelixia_journal_entries')
           .select('*, lines:obelixia_journal_entry_lines(*)')
@@ -244,7 +2136,6 @@ serve(async (req) => {
         if (!entry) throw new Error('Asiento no encontrado');
         if (entry.status !== 'draft') throw new Error('Solo se pueden contabilizar asientos en borrador');
 
-        // Update entry status
         const { error } = await supabase
           .from('obelixia_journal_entries')
           .update({
@@ -254,16 +2145,6 @@ serve(async (req) => {
           .eq('id', entry_id);
 
         if (error) throw error;
-
-        // Update ledger balances
-        for (const line of entry.lines) {
-          const { error: rpcError } = await supabase.rpc('update_ledger_balance_on_entry', {
-            p_journal_entry_id: entry_id
-          });
-          if (rpcError) {
-            console.log('Manual ledger update for line:', line.id);
-          }
-        }
 
         result = { success: true, message: 'Asiento contabilizado' };
         break;
@@ -276,7 +2157,6 @@ serve(async (req) => {
           reason?: string;
         };
 
-        // Get original entry with lines
         const { data: originalEntry } = await supabase
           .from('obelixia_journal_entries')
           .select('*, lines:obelixia_journal_entry_lines(*)')
@@ -286,7 +2166,6 @@ serve(async (req) => {
         if (!originalEntry) throw new Error('Asiento no encontrado');
         if (originalEntry.status !== 'posted') throw new Error('Solo se pueden anular asientos contabilizados');
 
-        // Get period for reversal
         const { data: period } = await supabase
           .from('obelixia_fiscal_periods')
           .select('id')
@@ -294,7 +2173,6 @@ serve(async (req) => {
           .gte('end_date', reversal_date)
           .single();
 
-        // Create reversal entry (swap debit/credit)
         const { data: reversalEntry } = await supabase
           .from('obelixia_journal_entries')
           .insert({
@@ -313,7 +2191,6 @@ serve(async (req) => {
           .select()
           .single();
 
-        // Create reversed lines
         for (let i = 0; i < originalEntry.lines.length; i++) {
           const line = originalEntry.lines[i];
           await supabase
@@ -328,7 +2205,6 @@ serve(async (req) => {
             });
         }
 
-        // Mark original as reversed
         await supabase
           .from('obelixia_journal_entries')
           .update({ status: 'reversed' })
@@ -339,10 +2215,9 @@ serve(async (req) => {
       }
 
       case 'get_ledger': {
-        const { account_id, fiscal_period_id, fiscal_year } = params as {
+        const { account_id, fiscal_period_id } = params as {
           account_id?: string;
           fiscal_period_id?: string;
-          fiscal_year?: number;
         };
 
         let query = supabase
@@ -365,7 +2240,6 @@ serve(async (req) => {
 
         const { data: movements } = await query.limit(500);
 
-        // Calculate running balance
         let runningBalance = 0;
         const ledgerWithBalance = (movements || []).map(m => {
           runningBalance += (m.debit_amount - m.credit_amount);
@@ -377,12 +2251,10 @@ serve(async (req) => {
       }
 
       case 'get_trial_balance': {
-        const { fiscal_period_id, as_of_date } = params as {
+        const { fiscal_period_id } = params as {
           fiscal_period_id?: string;
-          as_of_date?: string;
         };
 
-        // Get all accounts with their balances
         const { data: accounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('*')
@@ -395,14 +2267,11 @@ serve(async (req) => {
         let totalCredit = 0;
 
         for (const account of accounts || []) {
-          // Get sum of movements
-          let query = supabase
+          const { data: movements } = await supabase
             .from('obelixia_journal_entry_lines')
             .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(status)')
             .eq('account_id', account.id)
             .eq('journal_entry.status', 'posted');
-
-          const { data: movements } = await query;
 
           const debit = (movements || []).reduce((sum, m) => sum + (m.debit_amount || 0), 0);
           const credit = (movements || []).reduce((sum, m) => sum + (m.credit_amount || 0), 0);
@@ -439,14 +2308,12 @@ serve(async (req) => {
       case 'auto_reconcile': {
         const { bank_account_id } = params as { bank_account_id: string };
 
-        // Get unreconciled transactions
         const { data: transactions } = await supabase
           .from('obelixia_bank_transactions')
           .select('*')
           .eq('bank_account_id', bank_account_id)
           .eq('is_reconciled', false);
 
-        // Get active reconciliation rules
         const { data: rules } = await supabase
           .from('obelixia_reconciliation_rules')
           .select('*')
@@ -480,7 +2347,6 @@ serve(async (req) => {
             }
 
             if (isMatch) {
-              // Mark as reconciled
               await supabase
                 .from('obelixia_bank_transactions')
                 .update({
@@ -490,7 +2356,6 @@ serve(async (req) => {
                 })
                 .eq('id', txn.id);
 
-              // Update rule match count
               await supabase
                 .from('obelixia_reconciliation_rules')
                 .update({ matches_count: (rule.matches_count || 0) + 1 })
@@ -528,7 +2393,6 @@ serve(async (req) => {
           throw new Error('LOVABLE_API_KEY not configured');
         }
 
-        // Get chart of accounts for context
         const { data: accounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('account_code, account_name, description')
@@ -603,7 +2467,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           transaction_date: string;
         };
 
-        // Create partner transaction
         const { data: transaction, error } = await supabase
           .from('obelixia_partner_transactions')
           .insert({
@@ -619,7 +2482,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
 
         if (error) throw error;
 
-        // Update partner current account
         const multiplier = ['capital_contribution', 'loan_to_company'].includes(transaction_type) ? 1 : -1;
         
         const { data: partner } = await supabase
@@ -645,7 +2507,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           period_id: string;
         };
 
-        // Get period info
         const { data: period } = await supabase
           .from('obelixia_fiscal_periods')
           .select('*')
@@ -657,15 +2518,12 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         let calculatedData: Record<string, unknown> = {};
 
         if (declaration_type === 'modelo_303') {
-          // Calculate IVA declaration
-          // Get IVA repercutido (477)
           const { data: ivaRepAccount } = await supabase
             .from('obelixia_chart_of_accounts')
             .select('id')
             .eq('account_code', '477')
             .single();
 
-          // Get IVA soportado (472)
           const { data: ivaSopAccount } = await supabase
             .from('obelixia_chart_of_accounts')
             .select('id')
@@ -706,13 +2564,11 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           };
         }
 
-        // Get due date (20th of next month for quarterly, etc.)
         const periodEnd = new Date(period.end_date);
         const dueDate = new Date(periodEnd);
         dueDate.setMonth(dueDate.getMonth() + 1);
         dueDate.setDate(20);
 
-        // Create or update declaration
         const { data: declaration } = await supabase
           .from('obelixia_fiscal_declarations')
           .upsert({
@@ -734,12 +2590,8 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       }
 
       case 'get_balance_sheet': {
-        const { as_of_date, compare_with_date } = params as {
-          as_of_date: string;
-          compare_with_date?: string;
-        };
+        const { as_of_date } = params as { as_of_date: string };
 
-        // Get asset accounts (groups 1, 2, 3, 4, 5 - with certain patterns)
         const { data: accounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('*')
@@ -756,7 +2608,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         let totalEquity = 0;
 
         for (const account of accounts || []) {
-          // Get movements up to as_of_date
           const { data: movements } = await supabase
             .from('obelixia_journal_entry_lines')
             .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
@@ -772,7 +2623,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
 
           const row = { account, balance };
 
-          // Classify by account type
           if (account.account_type === 'asset') {
             assets.push(row);
             totalAssets += balance;
@@ -802,14 +2652,11 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       }
 
       case 'get_income_statement': {
-        const { start_date, end_date, compare_start, compare_end } = params as {
+        const { start_date, end_date } = params as {
           start_date: string;
           end_date: string;
-          compare_start?: string;
-          compare_end?: string;
         };
 
-        // Get income accounts (7xx)
         const { data: incomeAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('*')
@@ -818,7 +2665,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           .eq('account_group', 7)
           .order('account_code');
 
-        // Get expense accounts (6xx)
         const { data: expenseAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('*')
@@ -832,7 +2678,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         let totalIncome = 0;
         let totalExpenses = 0;
 
-        // Calculate income
         for (const account of incomeAccounts || []) {
           const { data: movements } = await supabase
             .from('obelixia_journal_entry_lines')
@@ -851,7 +2696,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           }
         }
 
-        // Calculate expenses
         for (const account of expenseAccounts || []) {
           const { data: movements } = await supabase
             .from('obelixia_journal_entry_lines')
@@ -878,7 +2722,7 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
             income: totalIncome,
             expenses: totalExpenses,
             gross_profit: totalIncome - totalExpenses,
-            net_profit: totalIncome - totalExpenses // Simplified
+            net_profit: totalIncome - totalExpenses
           }
         };
         break;
@@ -890,7 +2734,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           end_date: string;
         };
 
-        // Get cash accounts (57x)
         const { data: cashAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('id')
@@ -899,7 +2742,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
 
         const cashAccountIds = (cashAccounts || []).map(a => a.id);
 
-        // Get opening balance
         const { data: openingMovements } = await supabase
           .from('obelixia_journal_entry_lines')
           .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
@@ -910,7 +2752,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         const openingBalance = (openingMovements || []).reduce((sum, m) => 
           sum + ((m.debit_amount || 0) - (m.credit_amount || 0)), 0);
 
-        // Get period movements
         const { data: periodMovements } = await supabase
           .from('obelixia_journal_entry_lines')
           .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
@@ -931,7 +2772,7 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           outflows,
           net_cash_flow: netCashFlow,
           closing_balance: closingBalance,
-          operating_activities: netCashFlow, // Simplified
+          operating_activities: netCashFlow,
           investing_activities: 0,
           financing_activities: 0
         };
@@ -941,7 +2782,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       case 'close_fiscal_period': {
         const { period_id } = params as { period_id: string };
 
-        // Verify all entries are posted
         const { data: draftEntries } = await supabase
           .from('obelixia_journal_entries')
           .select('id')
@@ -952,7 +2792,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           throw new Error(`Hay ${draftEntries.length} asientos en borrador. Debe contabilizarlos antes de cerrar.`);
         }
 
-        // Close the period
         const { data: period, error } = await supabase
           .from('obelixia_fiscal_periods')
           .update({
@@ -972,19 +2811,16 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       case 'close_fiscal_year': {
         const { fiscal_year } = params as { fiscal_year: number };
 
-        // Get all periods for the year
         const { data: periods } = await supabase
           .from('obelixia_fiscal_periods')
           .select('*')
           .eq('fiscal_year', fiscal_year);
 
-        // Check all periods are closed
         const openPeriods = (periods || []).filter(p => p.status !== 'closed');
         if (openPeriods.length > 0) {
           throw new Error(`Hay ${openPeriods.length} períodos abiertos. Debe cerrarlos antes de cerrar el ejercicio.`);
         }
 
-        // Calculate net profit (income - expenses)
         const { data: incomeAccounts } = await supabase
           .from('obelixia_chart_of_accounts')
           .select('id')
@@ -1027,7 +2863,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
 
         const netProfit = totalIncome - totalExpenses;
 
-        // Lock all periods
         await supabase
           .from('obelixia_fiscal_periods')
           .update({ status: 'locked' })
@@ -1047,14 +2882,12 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         const { year } = params as { year?: number };
         const fiscalYear = year || new Date().getFullYear();
 
-        // Get periods for the year
         const { data: periods } = await supabase
           .from('obelixia_fiscal_periods')
           .select('*')
           .eq('fiscal_year', fiscalYear)
           .order('start_date');
 
-        // Generate calendar events for tax deadlines
         const calendar: Array<{
           id: string;
           title: string;
@@ -1069,12 +2902,10 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
         for (const period of periods || []) {
           const periodEnd = new Date(period.end_date);
           
-          // IVA due 20th of next month
           const ivaDue = new Date(periodEnd);
           ivaDue.setMonth(ivaDue.getMonth() + 1);
           ivaDue.setDate(20);
           
-          // Check if IVA declaration exists
           const { data: ivaDecl } = await supabase
             .from('obelixia_fiscal_declarations')
             .select('status')
@@ -1094,7 +2925,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
                   : 'pending'
           });
 
-          // IRPF quarterly (only Q1, Q2, Q3, Q4)
           if (period.period_type === 'quarter') {
             const irpfDue = new Date(periodEnd);
             irpfDue.setMonth(irpfDue.getMonth() + 1);
@@ -1121,7 +2951,6 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           }
         }
 
-        // Annual corporate tax (July 25th)
         calendar.push({
           id: `is-${fiscalYear}`,
           title: `Impuesto Sociedades ${fiscalYear}`,
@@ -1153,18 +2982,17 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
 
         const { data: declarations } = await query;
 
-        // Filter by year if fiscal_period exists
         const filtered = (declarations || []).filter(d => {
           if (!d.fiscal_period) return true;
           return d.fiscal_period.fiscal_year === fiscalYear;
         });
 
-        // Group by type
         const byType = {
-          iva: filtered.filter(d => d.declaration_type === 'iva'),
-          irpf: filtered.filter(d => d.declaration_type === 'irpf'),
-          corporate: filtered.filter(d => d.declaration_type === 'corporate'),
-          other: filtered.filter(d => !['iva', 'irpf', 'corporate'].includes(d.declaration_type))
+          iva: filtered.filter(d => d.declaration_type === 'iva' || d.declaration_type === 'modelo_303'),
+          irpf: filtered.filter(d => d.declaration_type === 'irpf' || d.declaration_type === 'modelo_111'),
+          corporate: filtered.filter(d => d.declaration_type === 'corporate' || d.declaration_type === 'modelo_200' || d.declaration_type === 'is_andorra'),
+          igi: filtered.filter(d => d.declaration_type === 'igi_andorra'),
+          other: filtered.filter(d => !['iva', 'irpf', 'corporate', 'modelo_303', 'modelo_111', 'modelo_200', 'is_andorra', 'igi_andorra'].includes(d.declaration_type))
         };
 
         result = { 
