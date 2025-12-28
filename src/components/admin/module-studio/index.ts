@@ -38,3 +38,10 @@ export { ModuleNotificationsPanel } from './ModuleNotificationsPanel';
 export { ModuleMonitoringPanel } from './ModuleMonitoringPanel';
 export { ModulePerformancePanel } from './ModulePerformancePanel';
 export { ModuleStudioHelpButton } from './ModuleStudioHelpButton';
+
+// Phase 11 Components - Enhanced Monitoring & Configuration
+export { ModuleHistoricalChartsPanel } from './ModuleHistoricalChartsPanel';
+export { ModuleResourceMetricsPanel } from './ModuleResourceMetricsPanel';
+export { ModuleConfigurationPanel } from './ModuleConfigurationPanel';
+export { ModuleAlertsConfigPanel } from './ModuleAlertsConfigPanel';
+export { ModuleLiveLogsPanel } from './ModuleLiveLogsPanel';
