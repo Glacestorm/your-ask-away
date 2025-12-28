@@ -19,3 +19,6 @@ export { LicenseAutomation } from './LicenseAutomation';
 
 // Phase 7: System Integration
 export { LicenseSystemPanel } from './LicenseSystemPanel';
+
+// Phase 8: Help & Copilot
+export { LicenseHelpButton } from './LicenseHelpButton';
