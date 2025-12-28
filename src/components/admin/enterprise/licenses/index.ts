@@ -9,3 +9,4 @@ export { LicensesList } from './LicensesList';
 export { DeviceActivationsList } from './DeviceActivationsList';
 export { LicenseUsageAnalytics } from './LicenseUsageAnalytics';
 export { LicenseAnomalyAlerts } from './LicenseAnomalyAlerts';
+export { AntiPiracyDashboard } from './AntiPiracyDashboard';

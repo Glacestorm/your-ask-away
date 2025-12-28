@@ -50,3 +50,12 @@ export { useLicenseValidation } from './useLicenseValidation';
 export type {
   LicenseValidationResult
 } from './useLicenseValidation';
+
+export { useLicenseAntiPiracy } from './useLicenseAntiPiracy';
+export type {
+  AnomalyPattern,
+  RiskAssessment,
+  RiskFactor,
+  SuspiciousActivity,
+  AntiPiracyConfig
+} from './useLicenseAntiPiracy';
