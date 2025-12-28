@@ -73,15 +73,13 @@ export function ModuleNotificationsPanel({ className, compact = false }: ModuleN
   if (compact) {
     return (
       <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-[10px] text-white flex items-center justify-center font-medium">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Button>
+        <PopoverTrigger className="relative inline-flex items-center justify-center rounded-md text-sm font-medium h-10 w-10 transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none">
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-[10px] text-white flex items-center justify-center font-medium">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align="end">
           <div className="p-3 border-b flex items-center justify-between">

@@ -327,16 +327,9 @@ const SectionRenderer = memo(function SectionRenderer({
                 </Badge>
               </div>
               {section.description && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">{section.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <span title={section.description}>
+                  <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                </span>
               )}
             </Button>
           </CollapsibleTrigger>

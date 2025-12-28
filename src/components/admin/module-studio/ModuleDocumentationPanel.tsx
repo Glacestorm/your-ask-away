@@ -180,31 +180,25 @@ export function ModuleDocumentationPanel({ context, className }: ModuleDocumenta
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={handleGenerateAll}
-                    disabled={isLoading}
-                    className="h-8 w-8"
-                  >
-                    {isLoading ? (
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Generar con IA</TooltipContent>
-              </Tooltip>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleGenerateAll}
+                disabled={isLoading}
+                className="h-8 w-8"
+                title="Generar con IA"
+              >
+                {isLoading ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+              </Button>
 
               {/* Export Dropdown */}
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Download className="h-4 w-4" />
-                  </Button>
+                <DropdownMenuTrigger className="h-8 w-8 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50">
+                  <Download className="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Exportar como</DropdownMenuLabel>
@@ -224,19 +218,15 @@ export function ModuleDocumentationPanel({ context, className }: ModuleDocumenta
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="h-8 w-8"
-                  >
-                    {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{isExpanded ? 'Minimizar' : 'Expandir'}</TooltipContent>
-              </Tooltip>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-8 w-8"
+                title={isExpanded ? 'Minimizar' : 'Expandir'}
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -369,23 +359,19 @@ export function ModuleDocumentationPanel({ context, className }: ModuleDocumenta
                             <div className="flex items-center gap-1">
                               <Badge variant="secondary" className="text-xs">{api.type}</Badge>
                               {api.signature && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-6 w-6"
-                                      onClick={() => handleCopy(api.signature, api.id)}
-                                    >
-                                      {copiedId === api.id ? (
-                                        <Check className="h-3 w-3 text-green-500" />
-                                      ) : (
-                                        <Copy className="h-3 w-3" />
-                                      )}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Copiar firma</TooltipContent>
-                                </Tooltip>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6"
+                                  onClick={() => handleCopy(api.signature, api.id)}
+                                  title="Copiar firma"
+                                >
+                                  {copiedId === api.id ? (
+                                    <Check className="h-3 w-3 text-green-500" />
+                                  ) : (
+                                    <Copy className="h-3 w-3" />
+                                  )}
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -423,23 +409,19 @@ export function ModuleDocumentationPanel({ context, className }: ModuleDocumenta
                         >
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-medium">{example.title}</span>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-6 w-6"
-                                  onClick={() => handleCopy(example.code, example.id)}
-                                >
-                                  {copiedId === example.id ? (
-                                    <Check className="h-3 w-3 text-green-500" />
-                                  ) : (
-                                    <Copy className="h-3 w-3" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Copiar código</TooltipContent>
-                            </Tooltip>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6"
+                              onClick={() => handleCopy(example.code, example.id)}
+                              title="Copiar código"
+                            >
+                              {copiedId === example.id ? (
+                                <Check className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </Button>
                           </div>
                           <pre className="text-xs p-2 bg-muted/50 rounded font-mono overflow-x-auto max-h-32">
                             {example.code}

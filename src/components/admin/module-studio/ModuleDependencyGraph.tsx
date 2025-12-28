@@ -204,39 +204,26 @@ export function ModuleDependencyGraph({
                                node.dependents.includes(selectedModule || '');
 
               return (
-                <Tooltip key={node.module_key}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onModuleSelect?.(node.module_key)}
-                      className={cn(
-                        "absolute flex items-center justify-center rounded-full transition-all duration-200",
-                        "bg-gradient-to-br shadow-lg hover:scale-110",
-                        getNodeColor(node),
-                        isSelected && "ring-2 ring-primary ring-offset-2",
-                        isRelated && "ring-1 ring-amber-500"
-                      )}
-                      style={{
-                        left: pos.x - 20,
-                        top: pos.y - 20,
-                        width: isSelected ? 48 : 40,
-                        height: isSelected ? 48 : 40,
-                      }}
-                    >
-                      <Package className="h-4 w-4 text-white" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-xs">
-                    <div className="space-y-1">
-                      <p className="font-medium">{node.module_key}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Nivel: {node.level} · 
-                        Deps: {node.dependencies.length} · 
-                        Dependientes: {node.dependents.length}
-                      </p>
-                      {node.isCore && <Badge variant="secondary">Core</Badge>}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
+                <button
+                  key={node.module_key}
+                  onClick={() => onModuleSelect?.(node.module_key)}
+                  className={cn(
+                    "absolute flex items-center justify-center rounded-full transition-all duration-200",
+                    "bg-gradient-to-br shadow-lg hover:scale-110",
+                    getNodeColor(node),
+                    isSelected && "ring-2 ring-primary ring-offset-2",
+                    isRelated && "ring-1 ring-amber-500"
+                  )}
+                  style={{
+                    left: pos.x - 20,
+                    top: pos.y - 20,
+                    width: isSelected ? 48 : 40,
+                    height: isSelected ? 48 : 40,
+                  }}
+                  title={`${node.module_key} - Nivel: ${node.level}, Deps: ${node.dependencies.length}, Dependientes: ${node.dependents.length}${node.isCore ? ' (Core)' : ''}`}
+                >
+                  <Package className="h-4 w-4 text-white" />
+                </button>
               );
             })}
 
