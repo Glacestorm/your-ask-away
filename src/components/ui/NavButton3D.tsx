@@ -1,4 +1,4 @@
-import { forwardRef, ButtonHTMLAttributes, ReactNode, useCallback, useEffect, useRef } from 'react';
+import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -78,67 +78,42 @@ const sizeStyles = {
   lg: 'h-10 min-w-10 px-3 text-sm gap-2 rounded-xl',
 };
 
-export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
-  ({ 
-    className, 
-    variant = 'default', 
-    size = 'md', 
-    icon, 
-    label, 
-    showLabel = true,
-    active = false,
-    disabled,
-    children,
-    ...props 
-  }, forwardedRef) => {
-    // React 19 + Radix "asChild" passes ref as a prop which can cause infinite loops.
-    // Filter out any ref prop that might have been passed through spread props.
-    const safeProps = Object.fromEntries(
-      Object.entries(props).filter(([key]) => key !== 'ref')
-    );
+export function NavButton3D({ 
+  className, 
+  variant = 'default', 
+  size = 'md', 
+  icon, 
+  label, 
+  showLabel = true,
+  active = false,
+  disabled,
+  children,
+  ...props 
+}: NavButton3DProps) {
+  return (
+    <button
+      disabled={disabled}
+      className={cn(
+        // Base styles
+        'relative inline-flex items-center justify-center font-medium',
+        'border transition-all duration-150 ease-out',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'disabled:pointer-events-none disabled:opacity-50',
+        // Variant styles
+        variantStyles[variant],
+        // Size styles
+        sizeStyles[size],
+        // Active state
+        active && 'ring-2 ring-primary/50 ring-offset-1',
+        className
+      )}
+      {...props}
+    >
+      {icon && <span className="flex-shrink-0">{icon}</span>}
+      {label && showLabel && <span className="hidden sm:inline">{label}</span>}
+      {children}
+    </button>
+  );
+}
 
-    // Keep a stable ref callback so Radix Slot/Tooltip "asChild" doesn't
-    // trigger a ref detach/attach loop (which can cause maximum update depth errors).
-    const forwardedRefRef = useRef(forwardedRef);
-    useEffect(() => {
-      forwardedRefRef.current = forwardedRef;
-    }, [forwardedRef]);
-
-    const setRef = useCallback((node: HTMLButtonElement | null) => {
-      const current = forwardedRefRef.current;
-      if (typeof current === 'function') {
-        current(node);
-      } else if (current) {
-        current.current = node;
-      }
-    }, []);
-
-    return (
-      <button
-        ref={setRef}
-        disabled={disabled}
-        className={cn(
-          // Base styles
-          'relative inline-flex items-center justify-center font-medium',
-          'border transition-all duration-150 ease-out',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          'disabled:pointer-events-none disabled:opacity-50',
-          // Variant styles
-          variantStyles[variant],
-          // Size styles
-          sizeStyles[size],
-          // Active state
-          active && 'ring-2 ring-primary/50 ring-offset-1',
-          className
-        )}
-        {...safeProps}
-      >
-        {icon && <span className="flex-shrink-0">{icon}</span>}
-        {label && showLabel && <span className="hidden sm:inline">{label}</span>}
-        {children}
-      </button>
-    );
-  }
-);
-
-NavButton3D.displayName = 'NavButton3D';
+export default NavButton3D;
