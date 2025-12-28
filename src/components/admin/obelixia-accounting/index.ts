@@ -18,3 +18,6 @@ export { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 // Fase 2: Multimodal AI - Vision & Voice
 export { DocumentScannerPanel } from './DocumentScannerPanel';
 export { VoiceCommandInterface } from './VoiceCommandInterface';
+
+// Fase 3: Autonomous Bookkeeping Engine
+// AutonomousAgentPanel - pending implementation
