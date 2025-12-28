@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   FileText,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Bot
 } from 'lucide-react';
 
 // License components
@@ -28,7 +29,8 @@ import {
   LicenseReportingDashboard,
   LicenseAutomation,
   LicenseSystemPanel,
-  LicenseHelpButton
+  LicenseHelpButton,
+  LicenseAIAgentPanel
 } from '@/components/admin/enterprise/licenses';
 
 export default function LicenseManagementPage() {
@@ -87,13 +89,20 @@ export default function LicenseManagementPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tab Navigation */}
           <div className="bg-card rounded-lg border p-1">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-4 gap-1 bg-transparent">
+            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5 gap-1 bg-transparent">
               <TabsTrigger
                 value="dashboard"
                 className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <Shield className="h-4 w-4" />
                 <span className="hidden sm:inline">Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="ai-agent"
+                className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <Bot className="h-4 w-4" />
+                <span className="hidden sm:inline">Agente IA</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
@@ -122,6 +131,11 @@ export default function LicenseManagementPage() {
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-6 mt-6">
             <LicensesDashboard />
+          </TabsContent>
+
+          {/* AI Agent Tab */}
+          <TabsContent value="ai-agent" className="space-y-6 mt-6">
+            <LicenseAIAgentPanel />
           </TabsContent>
 
           {/* Analytics Tab */}

@@ -87,3 +87,14 @@ export type {
   APIKey,
   IntegrationEndpoint
 } from './useLicenseSystem';
+
+export { useLicenseAIAgent } from './useLicenseAIAgent';
+export type {
+  AgentConfig,
+  LicensePrediction,
+  LicenseAnomaly,
+  AgentAction,
+  AgentInsight,
+  AgentMetrics,
+  NLQueryResult
+} from './useLicenseAIAgent';
