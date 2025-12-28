@@ -76,3 +76,6 @@ export { useObelixiaAccountingAgent } from './useObelixiaAccountingAgent';
 
 // Fase 4: Predictive Analytics & Financial Forecasting
 export { useObelixiaFinancialForecasting } from './useObelixiaFinancialForecasting';
+
+// Fase 5: Compliance & Audit AI
+export { useObelixiaComplianceAudit } from './useObelixiaComplianceAudit';

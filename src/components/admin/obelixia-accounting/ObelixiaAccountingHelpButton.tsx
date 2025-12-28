@@ -81,18 +81,50 @@ export function ObelixiaAccountingHelpButton({
                     )}
                   </AnimatePresence>
 
-                  {/* Pulse animation */}
+                  {/* Pulse & Expanding Waves */}
                   {!isOpen && (
-                    <motion.span
-                      className="absolute inset-0 rounded-lg bg-violet-400/30"
-                      initial={{ scale: 1, opacity: 0.5 }}
-                      animate={{ scale: 1.1, opacity: 0 }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: 'easeOut'
-                      }}
-                    />
+                    <>
+                      {/* Primary pulse */}
+                      <motion.span
+                        className="absolute inset-0 rounded-lg bg-violet-400/40"
+                        animate={{
+                          scale: [1, 1.15, 1],
+                          opacity: [0.6, 0, 0.6],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      />
+                      {/* First expanding wave */}
+                      <motion.span
+                        className="absolute inset-0 rounded-lg bg-violet-500/30"
+                        animate={{
+                          scale: [1, 1.4],
+                          opacity: [0.4, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeOut',
+                        }}
+                      />
+                      {/* Second expanding wave (delayed) */}
+                      <motion.span
+                        className="absolute inset-0 rounded-lg bg-purple-500/25"
+                        animate={{
+                          scale: [1, 1.6],
+                          opacity: [0.3, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeOut',
+                          delay: 0.4,
+                        }}
+                      />
+                    </>
                   )}
                 </Button>
               </motion.div>
