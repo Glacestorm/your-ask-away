@@ -98,3 +98,22 @@ export type {
   AgentMetrics,
   NLQueryResult
 } from './useLicenseAIAgent';
+
+// New License Enhancement Hooks
+export { useLicenseWebhooks } from './useLicenseWebhooks';
+export type { LicenseWebhook, WebhookLog, CreateWebhookParams } from './useLicenseWebhooks';
+
+export { useLicenseAudit } from './useLicenseAudit';
+export type { LicenseAuditLog, AuditFilters } from './useLicenseAudit';
+
+export { useLicenseGrace } from './useLicenseGrace';
+export type { LicenseGracePeriod, CreateGracePeriodParams } from './useLicenseGrace';
+
+export { useLicenseTransfer } from './useLicenseTransfer';
+export type { LicenseTransfer, InitiateTransferParams } from './useLicenseTransfer';
+
+export { useLicenseBulkOperations } from './useLicenseBulkOperations';
+export type { BulkGenerateParams, BulkImportRow, BulkOperationResult } from './useLicenseBulkOperations';
+
+export { useLicenseScheduledReports } from './useLicenseScheduledReports';
+export type { ScheduledReport, ReportHistory, CreateScheduledReportParams } from './useLicenseScheduledReports';

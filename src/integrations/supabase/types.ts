@@ -11757,6 +11757,51 @@ export type Database = {
           },
         ]
       }
+      license_audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          actor_type: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          license_id: string | null
+          new_values: Json | null
+          old_values: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_type?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          license_id?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_type?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          license_id?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       license_entitlements: {
         Row: {
           created_at: string | null
@@ -11816,6 +11861,48 @@ export type Database = {
           },
         ]
       }
+      license_grace_periods: {
+        Row: {
+          activated_by: string | null
+          created_at: string | null
+          features_restricted: string[] | null
+          grace_days: number
+          grace_end_date: string
+          id: string
+          license_id: string
+          original_expiry: string
+          reason: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activated_by?: string | null
+          created_at?: string | null
+          features_restricted?: string[] | null
+          grace_days: number
+          grace_end_date: string
+          id?: string
+          license_id: string
+          original_expiry: string
+          reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activated_by?: string | null
+          created_at?: string | null
+          features_restricted?: string[] | null
+          grace_days?: number
+          grace_end_date?: string
+          id?: string
+          license_id?: string
+          original_expiry?: string
+          reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       license_plans: {
         Row: {
           code: string
@@ -11866,6 +11953,158 @@ export type Database = {
           price_monthly?: number | null
           price_yearly?: number | null
           trial_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      license_report_history: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          file_size_bytes: number | null
+          file_url: string | null
+          generated_by: string | null
+          id: string
+          metadata: Json | null
+          recipients: string[] | null
+          report_type: string
+          scheduled_report_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          generated_by?: string | null
+          id?: string
+          metadata?: Json | null
+          recipients?: string[] | null
+          report_type: string
+          scheduled_report_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          file_url?: string | null
+          generated_by?: string | null
+          id?: string
+          metadata?: Json | null
+          recipients?: string[] | null
+          report_type?: string
+          scheduled_report_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_report_history_scheduled_report_id_fkey"
+            columns: ["scheduled_report_id"]
+            isOneToOne: false
+            referencedRelation: "license_scheduled_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_scheduled_reports: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          filters: Json | null
+          format: string | null
+          id: string
+          is_active: boolean | null
+          last_sent_at: string | null
+          name: string
+          next_send_at: string | null
+          recipients: string[]
+          report_type: string
+          schedule: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          filters?: Json | null
+          format?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          name: string
+          next_send_at?: string | null
+          recipients?: string[]
+          report_type: string
+          schedule: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          filters?: Json | null
+          format?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          name?: string
+          next_send_at?: string | null
+          recipients?: string[]
+          report_type?: string
+          schedule?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      license_transfers: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          completed_at: string | null
+          created_at: string | null
+          from_email: string
+          from_organization_id: string
+          id: string
+          initiated_by: string | null
+          license_id: string
+          metadata: Json | null
+          status: string | null
+          to_email: string
+          to_organization_id: string
+          transfer_reason: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          from_email: string
+          from_organization_id: string
+          id?: string
+          initiated_by?: string | null
+          license_id: string
+          metadata?: Json | null
+          status?: string | null
+          to_email: string
+          to_organization_id: string
+          transfer_reason?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          from_email?: string
+          from_organization_id?: string
+          id?: string
+          initiated_by?: string | null
+          license_id?: string
+          metadata?: Json | null
+          status?: string | null
+          to_email?: string
+          to_organization_id?: string
+          transfer_reason?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -11979,6 +12218,107 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      license_webhook_logs: {
+        Row: {
+          attempt_number: number | null
+          created_at: string | null
+          delivered_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          webhook_id: string | null
+        }
+        Insert: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          webhook_id?: string | null
+        }
+        Update: {
+          attempt_number?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          webhook_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_webhook_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "license_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          id: string
+          is_active: boolean | null
+          last_status: number | null
+          last_triggered_at: string | null
+          metadata: Json | null
+          name: string
+          organization_id: string
+          retry_count: number | null
+          secret_key: string | null
+          timeout_seconds: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          last_status?: number | null
+          last_triggered_at?: string | null
+          metadata?: Json | null
+          name: string
+          organization_id: string
+          retry_count?: number | null
+          secret_key?: string | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean | null
+          last_status?: number | null
+          last_triggered_at?: string | null
+          metadata?: Json | null
+          name?: string
+          organization_id?: string
+          retry_count?: number | null
+          secret_key?: string | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
       }
       licenses: {
         Row: {
