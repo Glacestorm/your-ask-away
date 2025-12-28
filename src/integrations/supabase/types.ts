@@ -8796,6 +8796,92 @@ export type Database = {
           },
         ]
       }
+      device_activations: {
+        Row: {
+          cpu_hash: string | null
+          created_at: string | null
+          deactivated_at: string | null
+          deactivation_reason: string | null
+          device_fingerprint: string
+          device_fingerprint_hash: string
+          device_name: string | null
+          device_type: string | null
+          first_activated_at: string | null
+          gpu_hash: string | null
+          hardware_info: Json | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          last_ip_address: unknown
+          last_seen_at: string | null
+          license_id: string
+          locale: string | null
+          screen_hash: string | null
+          session_count: number | null
+          timezone: string | null
+          updated_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          cpu_hash?: string | null
+          created_at?: string | null
+          deactivated_at?: string | null
+          deactivation_reason?: string | null
+          device_fingerprint: string
+          device_fingerprint_hash: string
+          device_name?: string | null
+          device_type?: string | null
+          first_activated_at?: string | null
+          gpu_hash?: string | null
+          hardware_info?: Json | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_ip_address?: unknown
+          last_seen_at?: string | null
+          license_id: string
+          locale?: string | null
+          screen_hash?: string | null
+          session_count?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          cpu_hash?: string | null
+          created_at?: string | null
+          deactivated_at?: string | null
+          deactivation_reason?: string | null
+          device_fingerprint?: string
+          device_fingerprint_hash?: string
+          device_name?: string | null
+          device_type?: string | null
+          first_activated_at?: string | null
+          gpu_hash?: string | null
+          hardware_info?: Json | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          last_ip_address?: unknown
+          last_seen_at?: string | null
+          license_id?: string
+          locale?: string | null
+          screen_hash?: string | null
+          session_count?: number | null
+          timezone?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_activations_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       digital_signatures: {
         Row: {
           certificate_issuer: string | null
@@ -11617,6 +11703,392 @@ export type Database = {
           utm_source?: string | null
         }
         Relationships: []
+      }
+      license_anomaly_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          description: string | null
+          details: Json | null
+          id: string
+          license_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          id?: string
+          license_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          id?: string
+          license_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_anomaly_alerts_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_entitlements: {
+        Row: {
+          created_at: string | null
+          feature_key: string
+          feature_name: string | null
+          id: string
+          is_enabled: boolean | null
+          last_reset_at: string | null
+          license_id: string
+          metadata: Json | null
+          reset_period: string | null
+          updated_at: string | null
+          usage_current: number | null
+          usage_limit: number | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_key: string
+          feature_name?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_reset_at?: string | null
+          license_id: string
+          metadata?: Json | null
+          reset_period?: string | null
+          updated_at?: string | null
+          usage_current?: number | null
+          usage_limit?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_key?: string
+          feature_name?: string | null
+          id?: string
+          is_enabled?: boolean | null
+          last_reset_at?: string | null
+          license_id?: string
+          metadata?: Json | null
+          reset_period?: string | null
+          updated_at?: string | null
+          usage_current?: number | null
+          usage_limit?: number | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_entitlements_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_plans: {
+        Row: {
+          code: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          features: Json
+          id: string
+          is_active: boolean | null
+          max_api_calls_month: number | null
+          max_devices_default: number | null
+          max_users_default: number | null
+          name: string
+          price_monthly: number | null
+          price_yearly: number | null
+          trial_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          max_api_calls_month?: number | null
+          max_devices_default?: number | null
+          max_users_default?: number | null
+          name: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json
+          id?: string
+          is_active?: boolean | null
+          max_api_calls_month?: number | null
+          max_devices_default?: number | null
+          max_users_default?: number | null
+          name?: string
+          price_monthly?: number | null
+          price_yearly?: number | null
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      license_usage_logs: {
+        Row: {
+          action: string
+          device_fingerprint_hash: string | null
+          entitlement_id: string | null
+          feature_key: string
+          id: string
+          ip_address: unknown
+          license_id: string | null
+          logged_at: string | null
+          metadata: Json | null
+          quantity: number | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          device_fingerprint_hash?: string | null
+          entitlement_id?: string | null
+          feature_key: string
+          id?: string
+          ip_address?: unknown
+          license_id?: string | null
+          logged_at?: string | null
+          metadata?: Json | null
+          quantity?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          device_fingerprint_hash?: string | null
+          entitlement_id?: string | null
+          feature_key?: string
+          id?: string
+          ip_address?: unknown
+          license_id?: string | null
+          logged_at?: string | null
+          metadata?: Json | null
+          quantity?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_usage_logs_entitlement_id_fkey"
+            columns: ["entitlement_id"]
+            isOneToOne: false
+            referencedRelation: "license_entitlements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "license_usage_logs_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      license_validations: {
+        Row: {
+          device_fingerprint_hash: string | null
+          geo_city: string | null
+          geo_country: string | null
+          id: string
+          ip_address: unknown
+          license_id: string | null
+          license_key_hash: string | null
+          user_agent: string | null
+          validated_at: string | null
+          validation_details: Json | null
+          validation_duration_ms: number | null
+          validation_result: string
+        }
+        Insert: {
+          device_fingerprint_hash?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: unknown
+          license_id?: string | null
+          license_key_hash?: string | null
+          user_agent?: string | null
+          validated_at?: string | null
+          validation_details?: Json | null
+          validation_duration_ms?: number | null
+          validation_result: string
+        }
+        Update: {
+          device_fingerprint_hash?: string | null
+          geo_city?: string | null
+          geo_country?: string | null
+          id?: string
+          ip_address?: unknown
+          license_id?: string | null
+          license_key_hash?: string | null
+          user_agent?: string | null
+          validated_at?: string | null
+          validation_details?: Json | null
+          validation_duration_ms?: number | null
+          validation_result?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_validations_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "licenses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      licenses: {
+        Row: {
+          allowed_countries: string[] | null
+          blocked_ips: unknown[] | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          issued_at: string | null
+          last_heartbeat_at: string | null
+          last_validated_at: string | null
+          license_key: string
+          license_key_hash: string
+          license_type: string
+          licensee_company: string | null
+          licensee_email: string
+          licensee_name: string | null
+          max_api_calls_month: number | null
+          max_concurrent_sessions: number | null
+          max_devices: number | null
+          max_users: number | null
+          metadata: Json | null
+          notes: string | null
+          organization_id: string | null
+          plan_id: string | null
+          public_key: string
+          revocation_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          signature: string
+          signed_data: Json
+          status: string | null
+          updated_at: string | null
+          valid_from: string | null
+        }
+        Insert: {
+          allowed_countries?: string[] | null
+          blocked_ips?: unknown[] | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          last_heartbeat_at?: string | null
+          last_validated_at?: string | null
+          license_key: string
+          license_key_hash: string
+          license_type: string
+          licensee_company?: string | null
+          licensee_email: string
+          licensee_name?: string | null
+          max_api_calls_month?: number | null
+          max_concurrent_sessions?: number | null
+          max_devices?: number | null
+          max_users?: number | null
+          metadata?: Json | null
+          notes?: string | null
+          organization_id?: string | null
+          plan_id?: string | null
+          public_key: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          signature: string
+          signed_data: Json
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+        }
+        Update: {
+          allowed_countries?: string[] | null
+          blocked_ips?: unknown[] | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          issued_at?: string | null
+          last_heartbeat_at?: string | null
+          last_validated_at?: string | null
+          license_key?: string
+          license_key_hash?: string
+          license_type?: string
+          licensee_company?: string | null
+          licensee_email?: string
+          licensee_name?: string | null
+          max_api_calls_month?: number | null
+          max_concurrent_sessions?: number | null
+          max_devices?: number | null
+          max_users?: number | null
+          metadata?: Json | null
+          notes?: string | null
+          organization_id?: string | null
+          plan_id?: string | null
+          public_key?: string
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          signature?: string
+          signed_data?: Json
+          status?: string | null
+          updated_at?: string | null
+          valid_from?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "licenses_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "license_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       low_usage_alerts: {
         Row: {
@@ -26350,12 +26822,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_license_key: { Args: { p_key: string }; Returns: string }
       increment_knowledge_article_view: {
         Args: { article_id: string }
         Returns: undefined
       }
       increment_read_count: { Args: { article_id: string }; Returns: undefined }
       is_admin_or_superadmin: { Args: { _user_id: string }; Returns: boolean }
+      is_license_valid: { Args: { p_license_id: string }; Returns: boolean }
       is_mfa_required_for_role: {
         Args: { p_user_id: string }
         Returns: boolean

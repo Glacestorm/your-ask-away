@@ -27,3 +27,15 @@ export type {
   BIDashboard, 
   BIContext 
 } from './useBusinessIntelligence';
+
+export { useLicenseManager } from './useLicenseManager';
+export type {
+  LicensePlan,
+  License,
+  LicenseEntitlement,
+  DeviceActivation,
+  DeviceFingerprint,
+  GenerateLicenseParams,
+  ValidationResult,
+  FeatureCheckResult
+} from './useLicenseManager';
