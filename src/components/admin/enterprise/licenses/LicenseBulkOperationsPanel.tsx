@@ -41,43 +41,29 @@ import {
   Zap,
   Info
 } from 'lucide-react';
-import { useLicenseBulkOperations, BulkOperationResult } from '@/hooks/admin/enterprise/useLicenseBulkOperations';
+import { useLicenseBulkOperations } from '@/hooks/admin/enterprise/useLicenseBulkOperations';
 import { toast } from 'sonner';
 
-type OperationType = 'activate' | 'deactivate' | 'suspend' | 'renew' | 'revoke' | 'export';
+type OperationType = 'activate' | 'suspend' | 'revoke' | 'export';
 
 const OPERATIONS = [
   { 
     id: 'activate' as OperationType, 
     label: 'Activar Licencias', 
-    description: 'Activar múltiples licencias pendientes',
+    description: 'Cambiar estado a activo',
     icon: <CheckCircle2 className="h-5 w-5 text-green-500" />,
     color: 'bg-green-500/10 border-green-500/20',
-    dangerous: false
-  },
-  { 
-    id: 'deactivate' as OperationType, 
-    label: 'Desactivar Licencias', 
-    description: 'Desactivar temporalmente licencias activas',
-    icon: <PauseCircle className="h-5 w-5 text-amber-500" />,
-    color: 'bg-amber-500/10 border-amber-500/20',
-    dangerous: true
+    dangerous: false,
+    status: 'active'
   },
   { 
     id: 'suspend' as OperationType, 
     label: 'Suspender Licencias', 
-    description: 'Suspender licencias por incumplimiento',
-    icon: <XCircle className="h-5 w-5 text-red-500" />,
-    color: 'bg-red-500/10 border-red-500/20',
-    dangerous: true
-  },
-  { 
-    id: 'renew' as OperationType, 
-    label: 'Renovar Licencias', 
-    description: 'Extender fecha de expiración',
-    icon: <RefreshCw className="h-5 w-5 text-blue-500" />,
-    color: 'bg-blue-500/10 border-blue-500/20',
-    dangerous: false
+    description: 'Suspender licencias temporalmente',
+    icon: <PauseCircle className="h-5 w-5 text-amber-500" />,
+    color: 'bg-amber-500/10 border-amber-500/20',
+    dangerous: true,
+    status: 'suspended'
   },
   { 
     id: 'revoke' as OperationType, 
@@ -85,15 +71,17 @@ const OPERATIONS = [
     description: 'Revocar permanentemente licencias',
     icon: <Trash2 className="h-5 w-5 text-red-500" />,
     color: 'bg-red-500/10 border-red-500/20',
-    dangerous: true
+    dangerous: true,
+    status: 'revoked'
   },
   { 
     id: 'export' as OperationType, 
     label: 'Exportar Licencias', 
-    description: 'Descargar datos de licencias seleccionadas',
+    description: 'Descargar datos de licencias',
     icon: <Download className="h-5 w-5 text-purple-500" />,
     color: 'bg-purple-500/10 border-purple-500/20',
-    dangerous: false
+    dangerous: false,
+    status: ''
   },
 ];
 
@@ -101,18 +89,15 @@ export function LicenseBulkOperationsPanel() {
   const [selectedOperation, setSelectedOperation] = useState<OperationType | null>(null);
   const [licenseIds, setLicenseIds] = useState('');
   const [confirmText, setConfirmText] = useState('');
-  const [renewDays, setRenewDays] = useState(365);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [results, setResults] = useState<BulkOperationResult | null>(null);
 
   const {
     loading,
-    bulkActivate,
-    bulkDeactivate,
-    bulkSuspend,
-    bulkRenew,
-    bulkRevoke,
-    bulkExport
+    progress,
+    operationResult,
+    bulkUpdateStatus,
+    exportLicenses,
+    resetProgress
   } = useLicenseBulkOperations();
 
   const parseLicenseIds = (): string[] => {
@@ -142,32 +127,12 @@ export function LicenseBulkOperationsPanel() {
     
     if (!selectedOperation) return;
 
-    let result: BulkOperationResult | null = null;
+    const operation = OPERATIONS.find(o => o.id === selectedOperation);
 
-    switch (selectedOperation) {
-      case 'activate':
-        result = await bulkActivate(ids);
-        break;
-      case 'deactivate':
-        result = await bulkDeactivate(ids);
-        break;
-      case 'suspend':
-        result = await bulkSuspend(ids);
-        break;
-      case 'renew':
-        result = await bulkRenew(ids, renewDays);
-        break;
-      case 'revoke':
-        result = await bulkRevoke(ids);
-        break;
-      case 'export':
-        await bulkExport(ids, 'csv');
-        result = { success: ids.length, failed: 0, errors: [] };
-        break;
-    }
-
-    if (result) {
-      setResults(result);
+    if (selectedOperation === 'export') {
+      await exportLicenses('csv');
+    } else if (operation?.status) {
+      await bulkUpdateStatus(ids, operation.status);
     }
 
     setIsConfirmOpen(false);
@@ -188,7 +153,7 @@ export function LicenseBulkOperationsPanel() {
   return (
     <div className="space-y-6">
       {/* Operation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {OPERATIONS.map(operation => (
           <Card
             key={operation.id}
@@ -237,7 +202,7 @@ export function LicenseBulkOperationsPanel() {
               <div className="space-y-2">
                 <Label>IDs de Licencias</Label>
                 <Textarea
-                  placeholder={`Ingrese los IDs de licencia (uno por línea o separados por comas)\n\nEjemplo:\nlic_abc123...\nlic_def456...\nlic_ghi789...`}
+                  placeholder={`Ingrese los IDs de licencia (uno por línea o separados por comas)\n\nEjemplo:\nlic_abc123...\nlic_def456...`}
                   value={licenseIds}
                   onChange={e => setLicenseIds(e.target.value)}
                   rows={8}
@@ -245,45 +210,16 @@ export function LicenseBulkOperationsPanel() {
                 />
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>{licenseCount} licencias detectadas</span>
-                  <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" className="h-7 text-xs">
-                      <Upload className="h-3 w-3 mr-1" />
-                      Importar CSV
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-7 text-xs"
-                      onClick={() => setLicenseIds('')}
-                    >
-                      Limpiar
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs"
+                    onClick={() => setLicenseIds('')}
+                  >
+                    Limpiar
+                  </Button>
                 </div>
               </div>
-
-              {/* Additional Options for Renew */}
-              {selectedOperation === 'renew' && (
-                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                  <Label>Días a Extender</Label>
-                  <Select
-                    value={String(renewDays)}
-                    onValueChange={v => setRenewDays(Number(v))}
-                  >
-                    <SelectTrigger>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 días</SelectItem>
-                      <SelectItem value="90">90 días</SelectItem>
-                      <SelectItem value="180">180 días</SelectItem>
-                      <SelectItem value="365">1 año</SelectItem>
-                      <SelectItem value="730">2 años</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
 
             {/* Preview & Status */}
@@ -303,7 +239,7 @@ export function LicenseBulkOperationsPanel() {
                     <div className="flex items-start gap-2 p-3 bg-destructive/10 rounded-lg mt-3">
                       <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                       <p className="text-xs text-destructive">
-                        Esta operación es irreversible. Asegúrese de seleccionar las licencias correctas.
+                        Esta operación puede ser irreversible.
                       </p>
                     </div>
                   )}
@@ -315,29 +251,30 @@ export function LicenseBulkOperationsPanel() {
                 <div className="p-4 bg-muted/50 rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Procesando...</span>
+                    <span className="text-sm">{progress}%</span>
                   </div>
-                  <Progress value={50} className="animate-pulse" />
+                  <Progress value={progress} />
                 </div>
               )}
 
               {/* Results */}
-              {results && !loading && (
+              {operationResult && !loading && (
                 <div className="space-y-2">
                   <Label>Resultados</Label>
                   <div className="p-4 border rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm text-green-500">Exitosos:</span>
-                      <span className="font-medium">{results.success}</span>
+                      <span className="font-medium">{operationResult.success}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-red-500">Fallidos:</span>
-                      <span className="font-medium">{results.failed}</span>
+                      <span className="font-medium">{operationResult.failed}</span>
                     </div>
-                    {results.errors.length > 0 && (
+                    {operationResult.errors.length > 0 && (
                       <ScrollArea className="h-[100px] mt-2">
-                        {results.errors.map((error, idx) => (
+                        {operationResult.errors.map((error, idx) => (
                           <div key={idx} className="text-xs text-muted-foreground p-1">
-                            {error}
+                            Fila {error.row}: {error.error}
                           </div>
                         ))}
                       </ScrollArea>
@@ -353,7 +290,7 @@ export function LicenseBulkOperationsPanel() {
                   <div className="text-sm text-muted-foreground">
                     <p className="font-medium mb-1">Seleccione una operación</p>
                     <p className="text-xs">
-                      Elija el tipo de operación que desea realizar sobre las licencias seleccionadas.
+                      Elija el tipo de operación que desea realizar.
                     </p>
                   </div>
                 </div>
@@ -368,17 +305,17 @@ export function LicenseBulkOperationsPanel() {
               onClick={() => {
                 setLicenseIds('');
                 setSelectedOperation(null);
-                setResults(null);
+                resetProgress();
               }}
             >
               Limpiar Todo
             </Button>
             <Button
               onClick={handleStartOperation}
-              disabled={!selectedOperation || licenseCount === 0 || loading}
+              disabled={!selectedOperation || (selectedOperation !== 'export' && licenseCount === 0) || loading}
             >
               <Zap className="h-4 w-4 mr-2" />
-              Ejecutar Operación ({licenseCount})
+              Ejecutar ({licenseCount})
             </Button>
           </div>
         </CardContent>
@@ -390,11 +327,10 @@ export function LicenseBulkOperationsPanel() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
-              Confirmar Operación Peligrosa
+              Confirmar Operación
             </DialogTitle>
             <DialogDescription>
               Está a punto de {selectedOp?.label.toLowerCase()} {licenseCount} licencias.
-              Esta acción puede ser irreversible.
             </DialogDescription>
           </DialogHeader>
 
@@ -402,10 +338,6 @@ export function LicenseBulkOperationsPanel() {
             <div className="p-4 bg-destructive/10 rounded-lg">
               <p className="text-sm font-medium text-destructive mb-2">
                 Licencias afectadas: {licenseCount}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Esta operación afectará permanentemente las licencias seleccionadas.
-                Asegúrese de haber verificado la lista antes de continuar.
               </p>
             </div>
 
@@ -428,7 +360,7 @@ export function LicenseBulkOperationsPanel() {
               onClick={handleConfirm}
               disabled={confirmText.toLowerCase() !== 'confirmar'}
             >
-              Confirmar Operación
+              Confirmar
             </Button>
           </DialogFooter>
         </DialogContent>

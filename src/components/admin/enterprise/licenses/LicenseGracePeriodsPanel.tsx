@@ -51,8 +51,8 @@ import {
   Play,
   Info
 } from 'lucide-react';
-import { useLicenseGrace, LicenseGracePeriod } from '@/hooks/admin/enterprise/useLicenseGrace';
-import { format, formatDistanceToNow, differenceInDays, addDays } from 'date-fns';
+import { useLicenseGrace } from '@/hooks/admin/enterprise/useLicenseGrace';
+import { format, formatDistanceToNow, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 
@@ -70,8 +70,7 @@ export function LicenseGracePeriodsPanel() {
     loading,
     fetchGracePeriods,
     createGracePeriod,
-    extendGracePeriod,
-    endGracePeriod
+    cancelGracePeriod
   } = useLicenseGrace();
 
   useEffect(() => {
@@ -101,13 +100,9 @@ export function LicenseGracePeriodsPanel() {
     }
   };
 
-  const handleExtend = async (graceId: string, days: number) => {
-    await extendGracePeriod(graceId, days);
-  };
-
-  const handleEnd = async (graceId: string) => {
-    if (confirm('¿Está seguro de terminar este período de gracia?')) {
-      await endGracePeriod(graceId);
+  const handleCancel = async (graceId: string) => {
+    if (confirm('¿Está seguro de cancelar este período de gracia?')) {
+      await cancelGracePeriod(graceId);
     }
   };
 
@@ -119,16 +114,14 @@ export function LicenseGracePeriodsPanel() {
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Expirado</Badge>;
       case 'cancelled':
         return <Badge variant="secondary"><Pause className="h-3 w-3 mr-1" />Cancelado</Badge>;
-      case 'converted':
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20"><CheckCircle2 className="h-3 w-3 mr-1" />Convertido</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const calculateProgress = (grace: LicenseGracePeriod) => {
-    const start = new Date(grace.starts_at);
-    const end = new Date(grace.ends_at);
+  const calculateProgress = (grace: typeof gracePeriods[0]) => {
+    const start = new Date(grace.created_at);
+    const end = new Date(grace.grace_end_date);
     const now = new Date();
     
     const totalDays = differenceInDays(end, start);
@@ -136,17 +129,17 @@ export function LicenseGracePeriodsPanel() {
     const daysRemaining = Math.max(0, differenceInDays(end, now));
     
     return {
-      totalDays,
+      totalDays: totalDays || 1,
       daysElapsed,
       daysRemaining,
-      percentage: Math.min(100, Math.max(0, (daysElapsed / totalDays) * 100))
+      percentage: Math.min(100, Math.max(0, (daysElapsed / (totalDays || 1)) * 100))
     };
   };
 
   const activeCount = gracePeriods.filter(g => g.status === 'active').length;
   const expiringCount = gracePeriods.filter(g => {
     if (g.status !== 'active') return false;
-    const days = differenceInDays(new Date(g.ends_at), new Date());
+    const days = differenceInDays(new Date(g.grace_end_date), new Date());
     return days <= 3 && days >= 0;
   }).length;
 
@@ -178,14 +171,14 @@ export function LicenseGracePeriodsPanel() {
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+        <Card className="bg-gradient-to-br from-gray-500/10 to-gray-500/5 border-gray-500/20">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Convertidos</p>
-                <p className="text-2xl font-bold">{gracePeriods.filter(g => g.status === 'converted').length}</p>
+                <p className="text-sm text-muted-foreground">Cancelados</p>
+                <p className="text-2xl font-bold">{gracePeriods.filter(g => g.status === 'cancelled').length}</p>
               </div>
-              <CheckCircle2 className="h-8 w-8 text-blue-500" />
+              <Pause className="h-8 w-8 text-gray-500" />
             </div>
           </CardContent>
         </Card>
@@ -213,7 +206,7 @@ export function LicenseGracePeriodsPanel() {
                 Períodos de Gracia
               </CardTitle>
               <CardDescription>
-                Gestione períodos de gracia para licencias expiradas o próximas a expirar
+                Gestione períodos de gracia para licencias expiradas
               </CardDescription>
             </div>
             <div className="flex gap-2">
@@ -232,7 +225,7 @@ export function LicenseGracePeriodsPanel() {
                   <DialogHeader>
                     <DialogTitle>Crear Período de Gracia</DialogTitle>
                     <DialogDescription>
-                      Otorgue tiempo adicional a una licencia expirada o próxima a expirar
+                      Otorgue tiempo adicional a una licencia expirada
                     </DialogDescription>
                   </DialogHeader>
 
@@ -261,8 +254,6 @@ export function LicenseGracePeriodsPanel() {
                           <SelectItem value="7">7 días</SelectItem>
                           <SelectItem value="14">14 días</SelectItem>
                           <SelectItem value="30">30 días</SelectItem>
-                          <SelectItem value="60">60 días</SelectItem>
-                          <SelectItem value="90">90 días</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -271,31 +262,17 @@ export function LicenseGracePeriodsPanel() {
                       <Label htmlFor="reason">Motivo</Label>
                       <Textarea
                         id="reason"
-                        placeholder="Describa el motivo del período de gracia..."
+                        placeholder="Describa el motivo..."
                         value={formData.reason}
                         onChange={e => setFormData({ ...formData, reason: e.target.value })}
                         rows={3}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="space-y-0.5">
-                        <Label>Notificar al Cliente</Label>
-                        <p className="text-xs text-muted-foreground">
-                          Enviar email informando del período de gracia
-                        </p>
-                      </div>
-                      <Switch
-                        checked={formData.notify_customer}
-                        onCheckedChange={v => setFormData({ ...formData, notify_customer: v })}
-                      />
-                    </div>
-
                     <div className="p-3 bg-blue-500/10 rounded-lg flex items-start gap-2">
                       <Info className="h-4 w-4 text-blue-500 mt-0.5" />
                       <p className="text-xs text-muted-foreground">
-                        El período de gracia comenzará inmediatamente y la licencia permanecerá funcional
-                        durante el tiempo especificado.
+                        El período comenzará inmediatamente.
                       </p>
                     </div>
                   </div>
@@ -330,7 +307,7 @@ export function LicenseGracePeriodsPanel() {
                 {gracePeriods.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No hay períodos de gracia configurados
+                      No hay períodos de gracia
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -352,21 +329,15 @@ export function LicenseGracePeriodsPanel() {
                           <div className="text-sm">
                             <div className="flex items-center gap-1">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
-                              <span>{format(new Date(grace.starts_at), 'dd/MM/yy')}</span>
+                              <span>{format(new Date(grace.created_at), 'dd/MM/yy')}</span>
                               <span className="text-muted-foreground">→</span>
-                              <span>{format(new Date(grace.ends_at), 'dd/MM/yy')}</span>
+                              <span>{format(new Date(grace.grace_end_date), 'dd/MM/yy')}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {progress.totalDays} días totales
-                            </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="w-32 space-y-1">
-                            <Progress 
-                              value={progress.percentage} 
-                              className="h-2"
-                            />
+                            <Progress value={progress.percentage} className="h-2" />
                             <p className="text-xs text-muted-foreground">
                               {grace.status === 'active' 
                                 ? `${progress.daysRemaining} días restantes`
@@ -386,28 +357,15 @@ export function LicenseGracePeriodsPanel() {
                         <TableCell>{getStatusBadge(grace.status)}</TableCell>
                         <TableCell className="text-right">
                           {grace.status === 'active' && (
-                            <div className="flex items-center justify-end gap-1">
-                              <Select onValueChange={v => handleExtend(grace.id, Number(v))}>
-                                <SelectTrigger className="w-20 h-8">
-                                  <Plus className="h-3 w-3" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="3">+3 días</SelectItem>
-                                  <SelectItem value="7">+7 días</SelectItem>
-                                  <SelectItem value="14">+14 días</SelectItem>
-                                  <SelectItem value="30">+30 días</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={() => handleEnd(grace.id)}
-                                title="Terminar período"
-                              >
-                                <XCircle className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleCancel(grace.id)}
+                              title="Cancelar período"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
                           )}
                         </TableCell>
                       </TableRow>
