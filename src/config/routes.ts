@@ -133,7 +133,7 @@ const ModuleEcosystemPage = lazy(() => import('@/pages/admin/module-studio/Modul
 const AutomationEnginePage = lazy(() => import('@/pages/admin/AutomationEnginePage'));
 const AILocalPage = lazy(() => import('@/pages/admin/AILocalPage'));
 const LicenseManagementPage = lazy(() => import('@/pages/admin/LicenseManagementPage'));
-
+const ObelixiaAccountingPage = lazy(() => import('@/pages/admin/ObelixiaAccountingPage'));
 // Settings
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
 
@@ -302,6 +302,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/obelixia-admin/automation-engine', component: AutomationEnginePage, layout: 'none', priority: 'high', meta: { title: 'Motor de Automatización', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/ai-local', component: AILocalPage, layout: 'none', priority: 'high', meta: { title: 'IA Local', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/licenses', component: LicenseManagementPage, layout: 'none', priority: 'high', meta: { title: 'Sistema de Licencias Enterprise', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/accounting', component: ObelixiaAccountingPage, layout: 'none', priority: 'high', meta: { title: 'ObelixIA Accounting', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
