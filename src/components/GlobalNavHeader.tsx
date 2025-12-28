@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, ChevronLeft, ChevronRight, Map, Globe } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Map } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
 import { OfflineSyncIndicator } from '@/components/dashboard/OfflineSyncIndicator';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
-import { NavButton3D } from '@/components/ui/NavButton3D';
+import { navButton3DClassName } from '@/components/ui/NavButton3D';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -63,27 +63,39 @@ export function GlobalNavHeader({
           <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <NavButton3D
-                  variant={canGoBack ? 'default' : 'ghost'}
-                  size="sm"
+                <button
+                  type="button"
+                  className={navButton3DClassName({
+                    variant: canGoBack ? 'default' : 'ghost',
+                    size: 'sm',
+                  })}
                   onClick={onGoBack}
                   disabled={!canGoBack}
-                  icon={<ChevronLeft className="h-4 w-4" />}
                   aria-label="Atrás"
-                />
+                >
+                  <span className="flex-shrink-0">
+                    <ChevronLeft className="h-4 w-4" />
+                  </span>
+                </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">Atrás</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <NavButton3D
-                  variant={canGoForward ? 'default' : 'ghost'}
-                  size="sm"
+                <button
+                  type="button"
+                  className={navButton3DClassName({
+                    variant: canGoForward ? 'default' : 'ghost',
+                    size: 'sm',
+                  })}
                   onClick={onGoForward}
                   disabled={!canGoForward}
-                  icon={<ChevronRight className="h-4 w-4" />}
                   aria-label="Adelante"
-                />
+                >
+                  <span className="flex-shrink-0">
+                    <ChevronRight className="h-4 w-4" />
+                  </span>
+                </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">Adelante</TooltipContent>
             </Tooltip>
@@ -107,14 +119,17 @@ export function GlobalNavHeader({
         {/* Map Button */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <NavButton3D
-              variant="primary"
-              size="md"
+            <button
+              type="button"
+              className={navButton3DClassName({ variant: 'primary', size: 'md' })}
               onClick={() => navigate('/admin?section=map')}
-              icon={<Map className="h-4 w-4" />}
-              label="Mapa"
               aria-label="Mapa de empresas"
-            />
+            >
+              <span className="flex-shrink-0">
+                <Map className="h-4 w-4" />
+              </span>
+              <span className="hidden sm:inline">Mapa</span>
+            </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">Mapa de empresas</TooltipContent>
         </Tooltip>
