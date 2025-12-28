@@ -210,7 +210,7 @@ serve(async (req) => {
       // GENERATE LICENSE
       // ============================================
       case 'generate': {
-        const p = (params || {}) as GenerateLicenseParams;
+        const p = (params || {}) as unknown as GenerateLicenseParams;
         
         if (!p.licenseeEmail) {
           throw new Error('licenseeEmail is required');
@@ -329,7 +329,7 @@ serve(async (req) => {
       // VALIDATE LICENSE
       // ============================================
       case 'validate': {
-        const p = (params || {}) as ValidateLicenseParams;
+        const p = (params || {}) as unknown as ValidateLicenseParams;
         
         if (!p.licenseKey) {
           throw new Error('licenseKey is required');
@@ -432,7 +432,7 @@ serve(async (req) => {
       // ACTIVATE DEVICE
       // ============================================
       case 'activate_device': {
-        const p = (params || {}) as ActivateDeviceParams;
+        const p = (params || {}) as unknown as ActivateDeviceParams;
         
         if (!p.licenseKey || !p.deviceFingerprint) {
           throw new Error('licenseKey and deviceFingerprint are required');
@@ -574,7 +574,7 @@ serve(async (req) => {
       // REVOKE LICENSE
       // ============================================
       case 'revoke': {
-        const p = (params || {}) as RevokeLicenseParams;
+        const p = (params || {}) as unknown as RevokeLicenseParams;
         
         if (!p.licenseId || !p.reason) {
           throw new Error('licenseId and reason are required');
