@@ -180,10 +180,16 @@ IMPORTANT: Keep this license key secure. Do not share it publicly.
                   }));
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecciona un plan" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent 
+                  position="popper" 
+                  side="bottom" 
+                  align="start"
+                  sideOffset={4}
+                  className="max-h-[300px] overflow-y-auto"
+                >
                   {plans.map(plan => (
                     <SelectItem key={plan.id} value={plan.id}>
                       <div className="flex items-center gap-2">
@@ -205,10 +211,15 @@ IMPORTANT: Keep this license key secure. Do not share it publicly.
                 value={formData.licenseType} 
                 onValueChange={(v) => setFormData(prev => ({ ...prev, licenseType: v as GenerateLicenseParams['licenseType'] }))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent 
+                  position="popper" 
+                  side="bottom" 
+                  align="start"
+                  sideOffset={4}
+                >
                   <SelectItem value="trial">Trial (14 días)</SelectItem>
                   <SelectItem value="subscription">Suscripción</SelectItem>
                   <SelectItem value="perpetual">Perpetua</SelectItem>
