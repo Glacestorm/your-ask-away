@@ -10,7 +10,9 @@ interface AccountingRequest {
   action: 'get_dashboard' | 'create_entry' | 'post_entry' | 'reverse_entry' | 
           'get_ledger' | 'get_trial_balance' | 'close_period' | 
           'reconcile_bank' | 'auto_reconcile' | 'generate_fiscal_declaration' |
-          'partner_transaction' | 'ai_categorize';
+          'partner_transaction' | 'ai_categorize' |
+          'get_balance_sheet' | 'get_income_statement' | 'get_cash_flow' |
+          'close_fiscal_period' | 'close_fiscal_year';
   params?: Record<string, unknown>;
 }
 
@@ -727,6 +729,316 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
           .single();
 
         result = { declaration, calculatedData };
+        break;
+      }
+
+      case 'get_balance_sheet': {
+        const { as_of_date, compare_with_date } = params as {
+          as_of_date: string;
+          compare_with_date?: string;
+        };
+
+        // Get asset accounts (groups 1, 2, 3, 4, 5 - with certain patterns)
+        const { data: accounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('*')
+          .eq('is_active', true)
+          .eq('is_detail', true)
+          .order('account_code');
+
+        const assets: Array<{account: unknown; balance: number}> = [];
+        const liabilities: Array<{account: unknown; balance: number}> = [];
+        const equity: Array<{account: unknown; balance: number}> = [];
+
+        let totalAssets = 0;
+        let totalLiabilities = 0;
+        let totalEquity = 0;
+
+        for (const account of accounts || []) {
+          // Get movements up to as_of_date
+          const { data: movements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', account.id)
+            .eq('journal_entry.status', 'posted')
+            .lte('journal_entry.entry_date', as_of_date);
+
+          const debit = (movements || []).reduce((sum, m) => sum + (m.debit_amount || 0), 0);
+          const credit = (movements || []).reduce((sum, m) => sum + (m.credit_amount || 0), 0);
+          const balance = account.normal_balance === 'debit' ? debit - credit : credit - debit;
+
+          if (balance === 0) continue;
+
+          const row = { account, balance };
+
+          // Classify by account type
+          if (account.account_type === 'asset') {
+            assets.push(row);
+            totalAssets += balance;
+          } else if (account.account_type === 'liability') {
+            liabilities.push(row);
+            totalLiabilities += balance;
+          } else if (account.account_type === 'equity') {
+            equity.push(row);
+            totalEquity += balance;
+          }
+        }
+
+        result = {
+          as_of_date,
+          assets,
+          liabilities,
+          equity,
+          totals: {
+            assets: totalAssets,
+            liabilities: totalLiabilities,
+            equity: totalEquity,
+            liabilities_and_equity: totalLiabilities + totalEquity,
+            balanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01
+          }
+        };
+        break;
+      }
+
+      case 'get_income_statement': {
+        const { start_date, end_date, compare_start, compare_end } = params as {
+          start_date: string;
+          end_date: string;
+          compare_start?: string;
+          compare_end?: string;
+        };
+
+        // Get income accounts (7xx)
+        const { data: incomeAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('*')
+          .eq('is_active', true)
+          .eq('is_detail', true)
+          .eq('account_group', 7)
+          .order('account_code');
+
+        // Get expense accounts (6xx)
+        const { data: expenseAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('*')
+          .eq('is_active', true)
+          .eq('is_detail', true)
+          .eq('account_group', 6)
+          .order('account_code');
+
+        const income: Array<{account: unknown; amount: number}> = [];
+        const expenses: Array<{account: unknown; amount: number}> = [];
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        // Calculate income
+        for (const account of incomeAccounts || []) {
+          const { data: movements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', account.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', start_date)
+            .lte('journal_entry.entry_date', end_date);
+
+          const amount = (movements || []).reduce((sum, m) => 
+            sum + ((m.credit_amount || 0) - (m.debit_amount || 0)), 0);
+
+          if (amount !== 0) {
+            income.push({ account, amount });
+            totalIncome += amount;
+          }
+        }
+
+        // Calculate expenses
+        for (const account of expenseAccounts || []) {
+          const { data: movements } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', account.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', start_date)
+            .lte('journal_entry.entry_date', end_date);
+
+          const amount = (movements || []).reduce((sum, m) => 
+            sum + ((m.debit_amount || 0) - (m.credit_amount || 0)), 0);
+
+          if (amount !== 0) {
+            expenses.push({ account, amount });
+            totalExpenses += amount;
+          }
+        }
+
+        result = {
+          period: { start_date, end_date },
+          income,
+          expenses,
+          totals: {
+            income: totalIncome,
+            expenses: totalExpenses,
+            gross_profit: totalIncome - totalExpenses,
+            net_profit: totalIncome - totalExpenses // Simplified
+          }
+        };
+        break;
+      }
+
+      case 'get_cash_flow': {
+        const { start_date, end_date } = params as {
+          start_date: string;
+          end_date: string;
+        };
+
+        // Get cash accounts (57x)
+        const { data: cashAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('is_active', true)
+          .like('account_code', '57%');
+
+        const cashAccountIds = (cashAccounts || []).map(a => a.id);
+
+        // Get opening balance
+        const { data: openingMovements } = await supabase
+          .from('obelixia_journal_entry_lines')
+          .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+          .in('account_id', cashAccountIds)
+          .eq('journal_entry.status', 'posted')
+          .lt('journal_entry.entry_date', start_date);
+
+        const openingBalance = (openingMovements || []).reduce((sum, m) => 
+          sum + ((m.debit_amount || 0) - (m.credit_amount || 0)), 0);
+
+        // Get period movements
+        const { data: periodMovements } = await supabase
+          .from('obelixia_journal_entry_lines')
+          .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+          .in('account_id', cashAccountIds)
+          .eq('journal_entry.status', 'posted')
+          .gte('journal_entry.entry_date', start_date)
+          .lte('journal_entry.entry_date', end_date);
+
+        const inflows = (periodMovements || []).reduce((sum, m) => sum + (m.debit_amount || 0), 0);
+        const outflows = (periodMovements || []).reduce((sum, m) => sum + (m.credit_amount || 0), 0);
+        const netCashFlow = inflows - outflows;
+        const closingBalance = openingBalance + netCashFlow;
+
+        result = {
+          period: { start_date, end_date },
+          opening_balance: openingBalance,
+          inflows,
+          outflows,
+          net_cash_flow: netCashFlow,
+          closing_balance: closingBalance,
+          operating_activities: netCashFlow, // Simplified
+          investing_activities: 0,
+          financing_activities: 0
+        };
+        break;
+      }
+
+      case 'close_fiscal_period': {
+        const { period_id } = params as { period_id: string };
+
+        // Verify all entries are posted
+        const { data: draftEntries } = await supabase
+          .from('obelixia_journal_entries')
+          .select('id')
+          .eq('fiscal_period_id', period_id)
+          .eq('status', 'draft');
+
+        if (draftEntries && draftEntries.length > 0) {
+          throw new Error(`Hay ${draftEntries.length} asientos en borrador. Debe contabilizarlos antes de cerrar.`);
+        }
+
+        // Close the period
+        const { data: period, error } = await supabase
+          .from('obelixia_fiscal_periods')
+          .update({
+            status: 'closed',
+            closed_at: new Date().toISOString()
+          })
+          .eq('id', period_id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        result = { period, message: 'Período cerrado correctamente' };
+        break;
+      }
+
+      case 'close_fiscal_year': {
+        const { fiscal_year } = params as { fiscal_year: number };
+
+        // Get all periods for the year
+        const { data: periods } = await supabase
+          .from('obelixia_fiscal_periods')
+          .select('*')
+          .eq('fiscal_year', fiscal_year);
+
+        // Check all periods are closed
+        const openPeriods = (periods || []).filter(p => p.status !== 'closed');
+        if (openPeriods.length > 0) {
+          throw new Error(`Hay ${openPeriods.length} períodos abiertos. Debe cerrarlos antes de cerrar el ejercicio.`);
+        }
+
+        // Calculate net profit (income - expenses)
+        const { data: incomeAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 7);
+
+        const { data: expenseAccounts } = await supabase
+          .from('obelixia_chart_of_accounts')
+          .select('id')
+          .eq('account_group', 6);
+
+        const yearStart = `${fiscal_year}-01-01`;
+        const yearEnd = `${fiscal_year}-12-31`;
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        for (const acc of incomeAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('credit_amount, debit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalIncome += (movs || []).reduce((s, m) => s + (m.credit_amount - m.debit_amount), 0);
+        }
+
+        for (const acc of expenseAccounts || []) {
+          const { data: movs } = await supabase
+            .from('obelixia_journal_entry_lines')
+            .select('debit_amount, credit_amount, journal_entry:obelixia_journal_entries!inner(*)')
+            .eq('account_id', acc.id)
+            .eq('journal_entry.status', 'posted')
+            .gte('journal_entry.entry_date', yearStart)
+            .lte('journal_entry.entry_date', yearEnd);
+          
+          totalExpenses += (movs || []).reduce((s, m) => s + (m.debit_amount - m.credit_amount), 0);
+        }
+
+        const netProfit = totalIncome - totalExpenses;
+
+        // Lock all periods
+        await supabase
+          .from('obelixia_fiscal_periods')
+          .update({ status: 'locked' })
+          .eq('fiscal_year', fiscal_year);
+
+        result = {
+          fiscal_year,
+          total_income: totalIncome,
+          total_expenses: totalExpenses,
+          net_profit: netProfit,
+          message: `Ejercicio ${fiscal_year} cerrado. Resultado: ${netProfit.toFixed(2)}€`
+        };
         break;
       }
 
