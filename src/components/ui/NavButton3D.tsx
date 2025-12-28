@@ -1,7 +1,7 @@
-import { ButtonHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   icon?: ReactNode;
@@ -78,42 +78,69 @@ const sizeStyles = {
   lg: 'h-10 min-w-10 px-3 text-sm gap-2 rounded-xl',
 };
 
-export function NavButton3D({ 
-  className, 
-  variant = 'default', 
-  size = 'md', 
-  icon, 
-  label, 
-  showLabel = true,
-  active = false,
-  disabled,
-  children,
-  ...props 
-}: NavButton3DProps) {
-  return (
-    <button
-      disabled={disabled}
-      className={cn(
-        // Base styles
-        'relative inline-flex items-center justify-center font-medium',
-        'border transition-all duration-150 ease-out',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        'disabled:pointer-events-none disabled:opacity-50',
-        // Variant styles
-        variantStyles[variant],
-        // Size styles
-        sizeStyles[size],
-        // Active state
-        active && 'ring-2 ring-primary/50 ring-offset-1',
-        className
-      )}
-      {...props}
-    >
-      {icon && <span className="flex-shrink-0">{icon}</span>}
-      {label && showLabel && <span className="hidden sm:inline">{label}</span>}
-      {children}
-    </button>
+export function navButton3DClassName(opts?: {
+  variant?: NavButton3DProps['variant'];
+  size?: NavButton3DProps['size'];
+  active?: boolean;
+  className?: string;
+}) {
+  const variant = opts?.variant ?? 'default';
+  const size = opts?.size ?? 'md';
+  const active = opts?.active ?? false;
+  const className = opts?.className;
+
+  return cn(
+    // Base styles
+    'relative inline-flex items-center justify-center font-medium',
+    'border transition-all duration-150 ease-out',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'disabled:pointer-events-none disabled:opacity-50',
+    // Variant styles
+    variantStyles[variant],
+    // Size styles
+    sizeStyles[size],
+    // Active state
+    active && 'ring-2 ring-primary/50 ring-offset-1',
+    className
   );
 }
+
+export const NavButton3D = forwardRef<HTMLButtonElement, NavButton3DProps>(
+  (
+    {
+      className,
+      variant = 'default',
+      size = 'md',
+      icon,
+      label,
+      showLabel = true,
+      active = false,
+      disabled,
+      children,
+      ...props
+    },
+    forwardedRef
+  ) => {
+    // React 19 can pass `ref` as a normal prop; never spread it.
+    const safeProps = Object.fromEntries(
+      Object.entries(props).filter(([key]) => key !== 'ref')
+    );
+
+    return (
+      <button
+        ref={forwardedRef}
+        disabled={disabled}
+        className={navButton3DClassName({ variant, size, active, className })}
+        {...safeProps}
+      >
+        {icon && <span className="flex-shrink-0">{icon}</span>}
+        {label && showLabel && <span className="hidden sm:inline">{label}</span>}
+        {children}
+      </button>
+    );
+  }
+);
+
+NavButton3D.displayName = 'NavButton3D';
 
 export default NavButton3D;

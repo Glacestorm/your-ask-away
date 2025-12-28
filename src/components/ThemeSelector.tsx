@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { NavButton3D } from '@/components/ui/NavButton3D';
+import { navButton3DClassName } from '@/components/ui/NavButton3D';
 
 const themes: { value: ThemeMode; labelKey: string; icon: typeof Sun }[] = [
   { value: 'system', labelKey: 'theme.system', icon: Monitor },
@@ -32,12 +32,15 @@ export function ThemeSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <NavButton3D
-          variant="default"
-          size="md"
-          icon={<Icon className="h-4 w-4" />}
+        <button
+          type="button"
+          className={navButton3DClassName({ variant: 'default', size: 'md' })}
           aria-label="Cambiar tema"
-        />
+        >
+          <span className="flex-shrink-0">
+            <Icon className="h-4 w-4" />
+          </span>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-popover border-border min-w-[160px]">
         {themes.map((themeOption) => {

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Languages, Check, Globe } from 'lucide-react';
-import { NavButton3D } from '@/components/ui/NavButton3D';
+import { navButton3DClassName } from '@/components/ui/NavButton3D';
 import { useSupportedLanguages } from '@/hooks/useSupportedLanguages';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -70,14 +70,20 @@ export const LanguageSelector = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <NavButton3D
-          variant="primary"
-          size="md"
-          className={`bg-gradient-to-r ${getLanguageGradient(language)} border-0 text-white shadow-md`}
-          icon={<Languages className="h-4 w-4" />}
-          label={`${currentFlag} ${currentName}`}
+        <button
+          type="button"
+          className={navButton3DClassName({
+            variant: 'primary',
+            size: 'md',
+            className: `bg-gradient-to-r ${getLanguageGradient(language)} border-0 text-white shadow-md`,
+          })}
           aria-label="Change language"
-        />
+        >
+          <span className="flex-shrink-0">
+            <Languages className="h-4 w-4" />
+          </span>
+          <span className="hidden sm:inline">{`${currentFlag} ${currentName}`}</span>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="bg-popover border-border w-[240px] p-0">
         <ScrollArea className="h-[400px]">
