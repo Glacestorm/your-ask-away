@@ -45,3 +45,9 @@ export { ModuleResourceMetricsPanel } from './ModuleResourceMetricsPanel';
 export { ModuleConfigurationPanel } from './ModuleConfigurationPanel';
 export { ModuleAlertsConfigPanel } from './ModuleAlertsConfigPanel';
 export { ModuleLiveLogsPanel } from './ModuleLiveLogsPanel';
+
+// Phase 12 - UX Improvements
+export { ModuleCardSkeleton, ModuleSelectorSkeleton, StatsGridSkeleton, TabContentSkeleton } from './ModuleStudioSkeleton';
+export { ModuleFavoritesPanel } from './ModuleFavoritesPanel';
+export { ModuleSearchCommand } from './ModuleSearchCommand';
+export { ModuleStudioKeyboardHelp } from './ModuleStudioKeyboardHelp';

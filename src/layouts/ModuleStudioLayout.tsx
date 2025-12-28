@@ -1,9 +1,10 @@
 /**
  * ModuleStudioLayout - Layout compartido para todas las páginas del Module Studio
  * Incluye selector de módulos, navegación rápida y paneles de Copilot/Agent
+ * Con mejoras de UX: animaciones, favoritos, atajos de teclado
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,11 +28,19 @@ import {
   BarChart3,
   Shield,
   Store,
-  ChevronRight
+  ChevronRight,
+  Star,
+  Keyboard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ModuleStudioProvider, useModuleStudioContext } from '@/contexts/ModuleStudioContext';
+import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { ModuleCopilotPanel, ModuleAutonomousAgentPanel, ModulePreviewPanel, ModuleStudioHelpButton } from '@/components/admin/module-studio';
+import { ModuleSelectorSkeleton } from '@/components/admin/module-studio/ModuleStudioSkeleton';
+import { ModuleSearchCommand } from '@/components/admin/module-studio/ModuleSearchCommand';
+import { ModuleStudioKeyboardHelp } from '@/components/admin/module-studio/ModuleStudioKeyboardHelp';
+import { useModuleStudioKeyboard } from '@/hooks/admin/useModuleStudioKeyboard';
+import { useModuleStudioFavorites } from '@/hooks/admin/useModuleStudioFavorites';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavSection {
   id: string;
@@ -61,7 +70,9 @@ function ModuleStudioLayoutContent({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
   
   const {
     selectedModuleKey,
@@ -80,6 +91,29 @@ function ModuleStudioLayoutContent({
     showPreview,
     setShowPreview,
   } = useModuleStudioContext();
+
+  // Favorites hook
+  const { isFavorite, toggleFavorite, addRecent } = useModuleStudioFavorites();
+
+  // Track module selection in recent
+  useEffect(() => {
+    if (selectedModule && selectedModuleKey) {
+      const sectionId = navSections.find(s => location.pathname === s.path)?.label;
+      addRecent(selectedModuleKey, selectedModule.module_name, sectionId);
+    }
+  }, [selectedModuleKey, selectedModule, location.pathname, addRecent]);
+
+  // Keyboard shortcuts
+  useModuleStudioKeyboard({
+    selectedModuleKey,
+    onToggleCopilot: () => setShowCopilot(!showCopilot),
+    onToggleAgent: () => setShowAgent(!showAgent),
+    onTogglePreview: () => setShowPreview(!showPreview),
+    onRefresh: refreshAll,
+    onSearch: () => {
+      setShowSearch(true);
+    },
+  });
 
   // Filtrar módulos
   const filteredModules = useMemo(() => {
@@ -107,7 +141,7 @@ function ModuleStudioLayoutContent({
         {dependencies.length} deps
       </Badge>
       {selectedModule && (
-        <Badge variant="secondary" className="gap-1">
+        <Badge variant="secondary" className="gap-1 animate-in fade-in duration-200">
           <Package className="h-3 w-3" />
           {selectedModule.module_name}
         </Badge>
@@ -118,7 +152,19 @@ function ModuleStudioLayoutContent({
   // Header right slot
   const headerRightSlot = (
     <div className="flex items-center gap-1.5">
+      <ModuleStudioKeyboardHelp />
       <ModuleStudioHelpButton />
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => setShowSearch(true)} 
+        className="h-8 gap-1.5"
+      >
+        <Search className="h-3.5 w-3.5" />
+        <kbd className="hidden sm:inline text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+          ⌘K
+        </kbd>
+      </Button>
       <Button variant="outline" size="sm" onClick={refreshAll} className="h-8">
         <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
         Refrescar
@@ -127,7 +173,7 @@ function ModuleStudioLayoutContent({
         variant={showPreview ? 'default' : 'outline'} 
         size="sm" 
         onClick={() => setShowPreview(!showPreview)}
-        className="h-8"
+        className="h-8 transition-all"
       >
         <Eye className="h-3.5 w-3.5 mr-1.5" />
         Preview
@@ -136,7 +182,7 @@ function ModuleStudioLayoutContent({
         variant={showCopilot ? 'default' : 'outline'} 
         size="sm" 
         onClick={() => setShowCopilot(!showCopilot)}
-        className="h-8"
+        className="h-8 transition-all"
       >
         <Bot className="h-3.5 w-3.5 mr-1.5" />
         Copilot
@@ -145,7 +191,7 @@ function ModuleStudioLayoutContent({
         variant={showAgent ? 'default' : 'outline'} 
         size="sm" 
         onClick={() => setShowAgent(!showAgent)}
-        className="h-8"
+        className="h-8 transition-all"
       >
         <Sparkles className="h-3.5 w-3.5 mr-1.5" />
         Agent
@@ -315,6 +361,15 @@ function ModuleStudioLayoutContent({
             </div>
           )}
         </div>
+
+        {/* Search Command Palette */}
+        <ModuleSearchCommand
+          modules={modules}
+          selectedModuleKey={selectedModuleKey}
+          onSelectModule={setSelectedModuleKey}
+          open={showSearch}
+          onOpenChange={setShowSearch}
+        />
       </div>
     </DashboardLayout>
   );
