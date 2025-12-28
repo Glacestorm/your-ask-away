@@ -22,3 +22,6 @@ export { LicenseSystemPanel } from './LicenseSystemPanel';
 
 // Phase 8: Help & Copilot
 export { LicenseHelpButton } from './LicenseHelpButton';
+
+// Phase 9: AI Agent
+export { LicenseAIAgentPanel } from './LicenseAIAgentPanel';
