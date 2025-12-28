@@ -1,3 +1,6 @@
+// Phase 3: Autonomous Agent Panel
+export { AutonomousAgentPanel } from './AutonomousAgentPanel';
+
 /**
  * ObelixIA Accounting Components - Barrel Export
  * Fase 11 - Enterprise SaaS 2025-2026
