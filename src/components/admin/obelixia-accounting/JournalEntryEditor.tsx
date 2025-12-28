@@ -154,20 +154,19 @@ export function JournalEntryEditor() {
       return;
     }
 
-    const entry = {
-      entry_date: format(entryDate, 'yyyy-MM-dd'),
-      description,
-      reference,
-      lines: validLines.map((line, index) => ({
-        line_number: index + 1,
-        account_id: line.accountId,
-        debit_amount: line.debit,
-        credit_amount: line.credit,
-        description: line.description || description
-      }))
-    };
+    const entryLines: JournalEntryLine[] = validLines.map((line) => ({
+      account_code: line.accountCode,
+      debit_amount: line.debit,
+      credit_amount: line.credit,
+      description: line.description || description
+    }));
 
-    const result = await createJournalEntry(entry);
+    const result = await createJournalEntry(
+      format(entryDate, 'yyyy-MM-dd'),
+      description,
+      entryLines,
+      { sourceDocument: reference || undefined }
+    );
     if (result) {
       toast.success('Asiento guardado correctamente');
       // Reset form

@@ -71,17 +71,30 @@ export interface FiscalPeriod {
 export interface DashboardData {
   config: FiscalConfig | null;
   currentPeriod: FiscalPeriod | null;
-  kpis: {
-    totalIncome: number;
-    totalExpenses: number;
-    netProfit: number;
-    unreconciledCount: number;
-    pendingDeclarations: number;
-  };
+  // KPIs principales
+  totalIncome: number;
+  previousIncome: number;
+  totalExpenses: number;
+  previousExpenses: number;
+  netResult: number;
+  pendingVat: number;
+  cashBalance: number;
+  pendingReceivables: number;
+  // Balance
+  totalAssets: number;
+  totalLiabilities: number;
+  operatingIncome: number;
+  operatingExpenses: number;
+  // Listas
   recentEntries: JournalEntry[];
   unreconciledTxns: unknown[];
   pendingDeclarations: unknown[];
   partners: unknown[];
+  alerts: Array<{
+    type: 'warning' | 'error' | 'info';
+    message: string;
+    dueDate?: string;
+  }>;
 }
 
 export interface TrialBalanceRow {
