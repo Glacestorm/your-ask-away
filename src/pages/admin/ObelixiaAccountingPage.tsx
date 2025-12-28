@@ -1,6 +1,7 @@
 /**
  * ObelixIA Accounting Page
  * Página principal del módulo de contabilidad interna
+ * Fase 2: Reportes Financieros, Declaraciones Fiscales, Cierres
  */
 
 import { useState } from 'react';
@@ -11,14 +12,18 @@ import {
   ChartOfAccountsManager,
   JournalEntryEditor,
   PartnerManager,
-  BankReconciliation
+  BankReconciliation,
+  FinancialReports,
+  TaxDeclarations
 } from '@/components/admin/obelixia-accounting';
 import { 
   LayoutDashboard, 
   FolderTree, 
   FileText, 
   Users, 
-  Building2 
+  Building2,
+  PieChart,
+  Receipt
 } from 'lucide-react';
 
 export default function ObelixiaAccountingPage() {
@@ -28,7 +33,7 @@ export default function ObelixiaAccountingPage() {
     <DashboardLayout title="ObelixIA Accounting">
       <div className="container mx-auto py-6 px-4 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <LayoutDashboard className="h-4 w-4" />
               <span className="hidden sm:inline">Dashboard</span>
@@ -48,6 +53,14 @@ export default function ObelixiaAccountingPage() {
             <TabsTrigger value="banking" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Bancos</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <PieChart className="h-4 w-4" />
+              <span className="hidden sm:inline">Reportes</span>
+            </TabsTrigger>
+            <TabsTrigger value="fiscal" className="flex items-center gap-2">
+              <Receipt className="h-4 w-4" />
+              <span className="hidden sm:inline">Fiscal</span>
             </TabsTrigger>
           </TabsList>
 
@@ -69,6 +82,14 @@ export default function ObelixiaAccountingPage() {
 
           <TabsContent value="banking">
             <BankReconciliation />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <FinancialReports />
+          </TabsContent>
+
+          <TabsContent value="fiscal">
+            <TaxDeclarations />
           </TabsContent>
         </Tabs>
       </div>

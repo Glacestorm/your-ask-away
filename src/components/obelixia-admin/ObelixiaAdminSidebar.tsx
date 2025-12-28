@@ -50,6 +50,7 @@ const categories: NavCategory[] = [
       { id: 'pricing', label: 'Precios', icon: Euro },
       { id: 'demo-requests', label: 'Solicitudes Demo', icon: ClipboardList },
       { id: 'crm-migration', label: 'CRM Migration', icon: Users },
+      { id: 'accounting', label: 'Contabilidad Interna', icon: Euro },
     ]
   },
   {
