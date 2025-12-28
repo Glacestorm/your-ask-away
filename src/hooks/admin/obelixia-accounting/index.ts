@@ -70,3 +70,9 @@ export type {
   CopilotSuggestion,
   CopilotContext
 } from './useObelixiaAccountingCopilot';
+
+// Fase 3: Autonomous Bookkeeping Engine
+export { useObelixiaAccountingAgent } from './useObelixiaAccountingAgent';
+
+// Fase 4: Predictive Analytics & Financial Forecasting
+export { useObelixiaFinancialForecasting } from './useObelixiaFinancialForecasting';
