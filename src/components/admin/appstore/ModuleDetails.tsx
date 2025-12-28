@@ -151,7 +151,7 @@ export const ModuleDetails: React.FC<ModuleDetailsProps> = ({
                 </div>
 
                 {/* Features */}
-                {module.features && (
+                {module.features && Array.isArray(module.features) && module.features.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-2 flex items-center gap-2">
                       <Zap className="h-4 w-4" />
@@ -161,7 +161,7 @@ export const ModuleDetails: React.FC<ModuleDetailsProps> = ({
                       {(module.features as string[]).map((feature: string, i: number) => (
                         <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
                           <Check className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                          {feature}
+                          {typeof feature === 'string' ? feature : JSON.stringify(feature)}
                         </li>
                       ))}
                     </ul>
