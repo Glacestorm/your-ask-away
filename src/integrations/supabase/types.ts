@@ -15536,6 +15536,292 @@ export type Database = {
           },
         ]
       }
+      obelixia_automation_log: {
+        Row: {
+          action_taken: string | null
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          result_data: Json | null
+          result_status: string | null
+          rule_id: string | null
+          source_entity_id: string | null
+          source_entity_type: string | null
+          trigger_event: string
+        }
+        Insert: {
+          action_taken?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          result_data?: Json | null
+          result_status?: string | null
+          rule_id?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          trigger_event: string
+        }
+        Update: {
+          action_taken?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          result_data?: Json | null
+          result_status?: string | null
+          rule_id?: string | null
+          source_entity_id?: string | null
+          source_entity_type?: string | null
+          trigger_event?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_automation_log_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_automation_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          created_at: string | null
+          delay_hours: number | null
+          executions_count: number | null
+          id: string
+          is_active: boolean | null
+          last_execution_at: string | null
+          rule_name: string
+          trigger_event: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_config: Json
+          action_type: string
+          created_at?: string | null
+          delay_hours?: number | null
+          executions_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_execution_at?: string | null
+          rule_name: string
+          trigger_event: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          created_at?: string | null
+          delay_hours?: number | null
+          executions_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_execution_at?: string | null
+          rule_name?: string
+          trigger_event?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      obelixia_bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string | null
+          bank_name: string
+          chart_account_id: string | null
+          created_at: string | null
+          currency: string | null
+          current_balance: number | null
+          iban: string | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          last_reconciled_balance: number | null
+          last_reconciled_date: string | null
+          notes: string | null
+          swift_bic: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_name: string
+          account_number?: string | null
+          bank_name: string
+          chart_account_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_balance?: number | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_reconciled_balance?: number | null
+          last_reconciled_date?: string | null
+          notes?: string | null
+          swift_bic?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_name?: string
+          account_number?: string | null
+          bank_name?: string
+          chart_account_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          current_balance?: number | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_reconciled_balance?: number | null
+          last_reconciled_date?: string | null
+          notes?: string | null
+          swift_bic?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_bank_accounts_chart_account_id_fkey"
+            columns: ["chart_account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_bank_transactions: {
+        Row: {
+          amount: number
+          balance_after: number | null
+          bank_account_id: string
+          category: string | null
+          counterparty_iban: string | null
+          counterparty_name: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          import_batch_id: string | null
+          is_reconciled: boolean | null
+          raw_data: Json | null
+          reconciled_at: string | null
+          reconciled_by: string | null
+          reconciled_entry_id: string | null
+          reference: string | null
+          transaction_date: string
+          transaction_type: string | null
+          updated_at: string | null
+          value_date: string | null
+        }
+        Insert: {
+          amount: number
+          balance_after?: number | null
+          bank_account_id: string
+          category?: string | null
+          counterparty_iban?: string | null
+          counterparty_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          import_batch_id?: string | null
+          is_reconciled?: boolean | null
+          raw_data?: Json | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          reconciled_entry_id?: string | null
+          reference?: string | null
+          transaction_date: string
+          transaction_type?: string | null
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Update: {
+          amount?: number
+          balance_after?: number | null
+          bank_account_id?: string
+          category?: string | null
+          counterparty_iban?: string | null
+          counterparty_name?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          import_batch_id?: string | null
+          is_reconciled?: boolean | null
+          raw_data?: Json | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          reconciled_entry_id?: string | null
+          reference?: string | null
+          transaction_date?: string
+          transaction_type?: string | null
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_bank_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obelixia_bank_transactions_reconciled_entry_id_fkey"
+            columns: ["reconciled_entry_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_chart_of_accounts: {
+        Row: {
+          accepts_entries: boolean | null
+          account_code: string
+          account_group: number
+          account_name: string
+          account_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_detail: boolean | null
+          normal_balance: string | null
+          parent_account_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepts_entries?: boolean | null
+          account_code: string
+          account_group: number
+          account_name: string
+          account_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_detail?: boolean | null
+          normal_balance?: string | null
+          parent_account_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepts_entries?: boolean | null
+          account_code?: string
+          account_group?: number
+          account_name?: string
+          account_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_detail?: boolean | null
+          normal_balance?: string | null
+          parent_account_code?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       obelixia_content: {
         Row: {
           content: string
@@ -15578,6 +15864,158 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           version?: number | null
+        }
+        Relationships: []
+      }
+      obelixia_fiscal_config: {
+        Row: {
+          company_address: string | null
+          company_name: string
+          company_tax_id: string | null
+          corporate_tax_rate: number | null
+          created_at: string | null
+          fiscal_year: number
+          id: string
+          is_active: boolean | null
+          jurisdiction: string
+          updated_at: string | null
+          vat_rate_reduced: number | null
+          vat_rate_standard: number | null
+          vat_rate_superreduced: number | null
+        }
+        Insert: {
+          company_address?: string | null
+          company_name?: string
+          company_tax_id?: string | null
+          corporate_tax_rate?: number | null
+          created_at?: string | null
+          fiscal_year: number
+          id?: string
+          is_active?: boolean | null
+          jurisdiction?: string
+          updated_at?: string | null
+          vat_rate_reduced?: number | null
+          vat_rate_standard?: number | null
+          vat_rate_superreduced?: number | null
+        }
+        Update: {
+          company_address?: string | null
+          company_name?: string
+          company_tax_id?: string | null
+          corporate_tax_rate?: number | null
+          created_at?: string | null
+          fiscal_year?: number
+          id?: string
+          is_active?: boolean | null
+          jurisdiction?: string
+          updated_at?: string | null
+          vat_rate_reduced?: number | null
+          vat_rate_standard?: number | null
+          vat_rate_superreduced?: number | null
+        }
+        Relationships: []
+      }
+      obelixia_fiscal_declarations: {
+        Row: {
+          calculated_data: Json | null
+          created_at: string | null
+          declaration_period: string
+          declaration_type: string
+          due_date: string
+          fiscal_period_id: string | null
+          id: string
+          notes: string | null
+          reference_number: string | null
+          status: string | null
+          submission_date: string | null
+          submitted_by: string | null
+          submitted_data: Json | null
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          calculated_data?: Json | null
+          created_at?: string | null
+          declaration_period: string
+          declaration_type: string
+          due_date: string
+          fiscal_period_id?: string | null
+          id?: string
+          notes?: string | null
+          reference_number?: string | null
+          status?: string | null
+          submission_date?: string | null
+          submitted_by?: string | null
+          submitted_data?: Json | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          calculated_data?: Json | null
+          created_at?: string | null
+          declaration_period?: string
+          declaration_type?: string
+          due_date?: string
+          fiscal_period_id?: string | null
+          id?: string
+          notes?: string | null
+          reference_number?: string | null
+          status?: string | null
+          submission_date?: string | null
+          submitted_by?: string | null
+          submitted_data?: Json | null
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_fiscal_declarations_fiscal_period_id_fkey"
+            columns: ["fiscal_period_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_fiscal_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_fiscal_periods: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string | null
+          end_date: string
+          fiscal_year: number
+          id: string
+          period_name: string
+          period_number: number
+          start_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string | null
+          end_date: string
+          fiscal_year: number
+          id?: string
+          period_name: string
+          period_number: number
+          start_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string | null
+          end_date?: string
+          fiscal_year?: number
+          id?: string
+          period_name?: string
+          period_number?: number
+          start_date?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -15670,6 +16108,210 @@ export type Database = {
           },
         ]
       }
+      obelixia_journal_entries: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string
+          entry_date: string
+          entry_number: string
+          fiscal_period_id: string | null
+          id: string
+          is_automatic: boolean | null
+          is_reversing: boolean | null
+          notes: string | null
+          posted_at: string | null
+          posted_by: string | null
+          reference_id: string | null
+          reference_type: string | null
+          reversed_entry_id: string | null
+          source_document: string | null
+          status: string | null
+          total_credit: number | null
+          total_debit: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          entry_date: string
+          entry_number: string
+          fiscal_period_id?: string | null
+          id?: string
+          is_automatic?: boolean | null
+          is_reversing?: boolean | null
+          notes?: string | null
+          posted_at?: string | null
+          posted_by?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          reversed_entry_id?: string | null
+          source_document?: string | null
+          status?: string | null
+          total_credit?: number | null
+          total_debit?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          entry_date?: string
+          entry_number?: string
+          fiscal_period_id?: string | null
+          id?: string
+          is_automatic?: boolean | null
+          is_reversing?: boolean | null
+          notes?: string | null
+          posted_at?: string | null
+          posted_by?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          reversed_entry_id?: string | null
+          source_document?: string | null
+          status?: string | null
+          total_credit?: number | null
+          total_debit?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_journal_entries_fiscal_period_id_fkey"
+            columns: ["fiscal_period_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_fiscal_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obelixia_journal_entries_reversed_entry_id_fkey"
+            columns: ["reversed_entry_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_journal_entry_lines: {
+        Row: {
+          account_id: string
+          cost_center: string | null
+          created_at: string | null
+          credit_amount: number | null
+          debit_amount: number | null
+          description: string | null
+          id: string
+          journal_entry_id: string
+          line_number: number
+          tax_amount: number | null
+          tax_code: string | null
+        }
+        Insert: {
+          account_id: string
+          cost_center?: string | null
+          created_at?: string | null
+          credit_amount?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: string
+          journal_entry_id: string
+          line_number: number
+          tax_amount?: number | null
+          tax_code?: string | null
+        }
+        Update: {
+          account_id?: string
+          cost_center?: string | null
+          created_at?: string | null
+          credit_amount?: number | null
+          debit_amount?: number | null
+          description?: string | null
+          id?: string
+          journal_entry_id?: string
+          line_number?: number
+          tax_amount?: number | null
+          tax_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obelixia_journal_entry_lines_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_ledger_balances: {
+        Row: {
+          account_id: string
+          balance: number | null
+          closing_credit: number | null
+          closing_debit: number | null
+          created_at: string | null
+          fiscal_period_id: string
+          id: string
+          last_entry_date: string | null
+          opening_credit: number | null
+          opening_debit: number | null
+          period_credit: number | null
+          period_debit: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_id: string
+          balance?: number | null
+          closing_credit?: number | null
+          closing_debit?: number | null
+          created_at?: string | null
+          fiscal_period_id: string
+          id?: string
+          last_entry_date?: string | null
+          opening_credit?: number | null
+          opening_debit?: number | null
+          period_credit?: number | null
+          period_debit?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_id?: string
+          balance?: number | null
+          closing_credit?: number | null
+          closing_debit?: number | null
+          created_at?: string | null
+          fiscal_period_id?: string
+          id?: string
+          last_entry_date?: string | null
+          opening_credit?: number | null
+          opening_debit?: number | null
+          period_credit?: number | null
+          period_debit?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_ledger_balances_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obelixia_ledger_balances_fiscal_period_id_fkey"
+            columns: ["fiscal_period_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_fiscal_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obelixia_module_pricing: {
         Row: {
           base_price: number
@@ -15720,6 +16362,197 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      obelixia_partner_transactions: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          journal_entry_id: string | null
+          net_amount: number | null
+          partner_id: string
+          status: string | null
+          tax_withholding: number | null
+          transaction_date: string
+          transaction_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          net_amount?: number | null
+          partner_id: string
+          status?: string | null
+          tax_withholding?: number | null
+          transaction_date: string
+          transaction_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          net_amount?: number | null
+          partner_id?: string
+          status?: string | null
+          tax_withholding?: number | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_partner_transactions_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obelixia_partner_transactions_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_partners: {
+        Row: {
+          address: string | null
+          administrator_remuneration: number | null
+          capital_contributed: number | null
+          created_at: string | null
+          current_account_balance: number | null
+          email: string | null
+          entry_date: string
+          exit_date: string | null
+          id: string
+          is_administrator: boolean | null
+          notes: string | null
+          ownership_percentage: number
+          partner_name: string
+          partner_tax_id: string | null
+          phone: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          administrator_remuneration?: number | null
+          capital_contributed?: number | null
+          created_at?: string | null
+          current_account_balance?: number | null
+          email?: string | null
+          entry_date?: string
+          exit_date?: string | null
+          id?: string
+          is_administrator?: boolean | null
+          notes?: string | null
+          ownership_percentage: number
+          partner_name: string
+          partner_tax_id?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          administrator_remuneration?: number | null
+          capital_contributed?: number | null
+          created_at?: string | null
+          current_account_balance?: number | null
+          email?: string | null
+          entry_date?: string
+          exit_date?: string | null
+          id?: string
+          is_administrator?: boolean | null
+          notes?: string | null
+          ownership_percentage?: number
+          partner_name?: string
+          partner_tax_id?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      obelixia_reconciliation_rules: {
+        Row: {
+          auto_create_entry: boolean | null
+          created_at: string | null
+          entry_template: Json | null
+          id: string
+          is_active: boolean | null
+          match_field: string
+          match_type: string
+          match_value: string
+          matches_count: number | null
+          priority: number | null
+          rule_name: string
+          target_account_id: string | null
+          target_category: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_create_entry?: boolean | null
+          created_at?: string | null
+          entry_template?: Json | null
+          id?: string
+          is_active?: boolean | null
+          match_field: string
+          match_type: string
+          match_value: string
+          matches_count?: number | null
+          priority?: number | null
+          rule_name: string
+          target_account_id?: string | null
+          target_category?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_create_entry?: boolean | null
+          created_at?: string | null
+          entry_template?: Json | null
+          id?: string
+          is_active?: boolean | null
+          match_field?: string
+          match_type?: string
+          match_value?: string
+          matches_count?: number | null
+          priority?: number | null
+          rule_name?: string
+          target_account_id?: string | null
+          target_category?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_reconciliation_rules_target_account_id_fkey"
+            columns: ["target_account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       omnichannel_messages: {
         Row: {

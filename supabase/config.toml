@@ -740,3 +740,6 @@ verify_jwt = true
 
 [functions.license-validate]
 verify_jwt = false
+
+[functions.obelixia-accounting-engine]
+verify_jwt = true
