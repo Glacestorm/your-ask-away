@@ -25,3 +25,6 @@ export { LicenseHelpButton } from './LicenseHelpButton';
 
 // Phase 9: AI Agent
 export { LicenseAIAgentPanel } from './LicenseAIAgentPanel';
+
+// Phase 10: Plans Manager
+export { LicensePlansManager } from './LicensePlansManager';
