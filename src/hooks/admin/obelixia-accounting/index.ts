@@ -46,3 +46,17 @@ export type {
   TaxCalendar,
   FiscalPeriodClose
 } from './useObelixiaFiscal';
+
+export { useObelixiaInvoicing } from './useObelixiaInvoicing';
+export type {
+  Invoice,
+  InvoiceLine,
+  InvoiceWorkflow,
+  CreateInvoiceParams
+} from './useObelixiaInvoicing';
+
+export { useObelixiaIntegrations } from './useObelixiaIntegrations';
+export type {
+  BankImport,
+  AccountingExport
+} from './useObelixiaIntegrations';
