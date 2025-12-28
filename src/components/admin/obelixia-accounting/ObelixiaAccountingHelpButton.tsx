@@ -32,7 +32,7 @@ export function ObelixiaAccountingHelpButton({
   return (
     <>
       {/* Floating Button */}
-      <div className={cn("fixed bottom-6 right-6 z-50", className)}>
+      <div className={cn("fixed bottom-6 left-6 z-50", className)}>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
