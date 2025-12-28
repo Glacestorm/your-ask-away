@@ -329,12 +329,11 @@ export function ModuleStudioLayout({
   title?: string;
   showModuleSelector?: boolean;
 }) {
+  // Layout sin provider - el provider se añade externamente en AppRoutes
   return (
-    <ModuleStudioProvider>
-      <ModuleStudioLayoutContent title={title} showModuleSelector={showModuleSelector}>
-        {children}
-      </ModuleStudioLayoutContent>
-    </ModuleStudioProvider>
+    <ModuleStudioLayoutContent title={title} showModuleSelector={showModuleSelector}>
+      {children}
+    </ModuleStudioLayoutContent>
   );
 }
 

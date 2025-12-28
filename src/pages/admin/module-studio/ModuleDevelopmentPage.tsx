@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { ModuleStudioLayout } from '@/layouts/ModuleStudioLayout';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +13,6 @@ import {
   Edit3, 
   TestTube2, 
   GitBranch, 
-  Eye,
   Code,
   Sparkles,
   Package
@@ -71,165 +69,161 @@ export default function ModuleDevelopmentPage() {
 
   if (!selectedModule) {
     return (
-      <ModuleStudioLayout title="Development">
-        <Card className="border-dashed h-[calc(100vh-280px)] flex items-center justify-center">
-          <CardContent className="text-center">
-            <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-medium mb-2">Selecciona un módulo</h3>
-            <p className="text-muted-foreground text-sm">
-              Elige un módulo del panel izquierdo para comenzar a desarrollar.
-            </p>
-          </CardContent>
-        </Card>
-      </ModuleStudioLayout>
+      <Card className="border-dashed h-[calc(100vh-280px)] flex items-center justify-center">
+        <CardContent className="text-center">
+          <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+          <h3 className="text-lg font-medium mb-2">Selecciona un módulo</h3>
+          <p className="text-muted-foreground text-sm">
+            Elige un módulo del panel izquierdo para comenzar a desarrollar.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <ModuleStudioLayout title="Development">
-      <Tabs defaultValue="editor" className="space-y-4">
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="editor" className="gap-2">
-              <Edit3 className="h-4 w-4" />
-              Editor
-            </TabsTrigger>
-            <TabsTrigger value="sandbox" className="gap-2">
-              <Code className="h-4 w-4" />
-              Sandbox
-            </TabsTrigger>
-            <TabsTrigger value="tests" className="gap-2">
-              <TestTube2 className="h-4 w-4" />
-              Tests
-            </TabsTrigger>
-            <TabsTrigger value="dependencies" className="gap-2">
-              <GitBranch className="h-4 w-4" />
-              Dependencias
-            </TabsTrigger>
-          </TabsList>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowImpactAnalysis(!showImpactAnalysis)}
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              Análisis IA
-            </Button>
-            <Button 
-              variant={isEditing ? 'secondary' : 'default'}
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Edit3 className="h-4 w-4 mr-2" />
-              {isEditing ? 'Cancelar' : 'Editar'}
-            </Button>
-          </div>
+    <Tabs defaultValue="editor" className="space-y-4">
+      <div className="flex items-center justify-between">
+        <TabsList>
+          <TabsTrigger value="editor" className="gap-2">
+            <Edit3 className="h-4 w-4" />
+            Editor
+          </TabsTrigger>
+          <TabsTrigger value="sandbox" className="gap-2">
+            <Code className="h-4 w-4" />
+            Sandbox
+          </TabsTrigger>
+          <TabsTrigger value="tests" className="gap-2">
+            <TestTube2 className="h-4 w-4" />
+            Tests
+          </TabsTrigger>
+          <TabsTrigger value="dependencies" className="gap-2">
+            <GitBranch className="h-4 w-4" />
+            Dependencias
+          </TabsTrigger>
+        </TabsList>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowImpactAnalysis(!showImpactAnalysis)}
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Análisis IA
+          </Button>
+          <Button 
+            variant={isEditing ? 'secondary' : 'default'}
+            size="sm"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            <Edit3 className="h-4 w-4 mr-2" />
+            {isEditing ? 'Cancelar' : 'Editar'}
+          </Button>
         </div>
+      </div>
 
-        {/* Impact Analysis */}
-        {showImpactAnalysis && selectedModuleKey && (
-          <ModuleImpactAnalysis
-            moduleKey={selectedModuleKey}
-            currentState={moduleDataForComponents}
-            proposedState={moduleDataForComponents}
+      {/* Impact Analysis */}
+      {showImpactAnalysis && selectedModuleKey && (
+        <ModuleImpactAnalysis
+          moduleKey={selectedModuleKey}
+          currentState={moduleDataForComponents}
+          proposedState={moduleDataForComponents}
+        />
+      )}
+
+      {/* Editor Tab */}
+      <TabsContent value="editor" className="mt-0">
+        {isEditing ? (
+          <ModuleEditor
+            module={selectedModule as any}
+            onSave={handleSaveModule}
+            onCancel={() => setIsEditing(false)}
           />
-        )}
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {selectedModule.module_name}
+                {selectedModule.is_core && <Badge>Core</Badge>}
+                {selectedModule.is_required && <Badge variant="destructive">Requerido</Badge>}
+              </CardTitle>
+              <CardDescription>{selectedModule.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Versión</p>
+                  <p className="text-lg font-semibold">{selectedModule.version || '1.0.0'}</p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Categoría</p>
+                  <p className="text-lg font-semibold capitalize">{selectedModule.category}</p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Sector</p>
+                  <p className="text-lg font-semibold capitalize">{selectedModule.sector || 'General'}</p>
+                </div>
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Precio Base</p>
+                  <p className="text-lg font-semibold">
+                    {selectedModule.base_price ? `€${selectedModule.base_price}` : 'Incluido'}
+                  </p>
+                </div>
+              </div>
 
-        {/* Editor Tab */}
-        <TabsContent value="editor" className="mt-0">
-          {isEditing ? (
-            <ModuleEditor
-              module={selectedModule as any}
-              onSave={handleSaveModule}
-              onCancel={() => setIsEditing(false)}
-            />
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {selectedModule.module_name}
-                  {selectedModule.is_core && <Badge>Core</Badge>}
-                  {selectedModule.is_required && <Badge variant="destructive">Requerido</Badge>}
-                </CardTitle>
-                <CardDescription>{selectedModule.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Versión</p>
-                    <p className="text-lg font-semibold">{selectedModule.version || '1.0.0'}</p>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Categoría</p>
-                    <p className="text-lg font-semibold capitalize">{selectedModule.category}</p>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Sector</p>
-                    <p className="text-lg font-semibold capitalize">{selectedModule.sector || 'General'}</p>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Precio Base</p>
-                    <p className="text-lg font-semibold">
-                      {selectedModule.base_price ? `€${selectedModule.base_price}` : 'Incluido'}
-                    </p>
+              {/* Features */}
+              {selectedModule.features && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Características</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(selectedModule.features) 
+                      ? (selectedModule.features as string[]).map((f, i) => (
+                          <Badge key={i} variant="outline">{f}</Badge>
+                        ))
+                      : <Badge variant="outline">Ver JSON</Badge>
+                    }
                   </div>
                 </div>
+              )}
 
-                {/* Features */}
-                {selectedModule.features && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Características</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.isArray(selectedModule.features) 
-                        ? (selectedModule.features as string[]).map((f, i) => (
-                            <Badge key={i} variant="outline">{f}</Badge>
-                          ))
-                        : <Badge variant="outline">Ver JSON</Badge>
-                      }
-                    </div>
+              {/* Dependencies */}
+              {selectedModule.dependencies && selectedModule.dependencies.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Dependencias</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedModule.dependencies.map((dep, i) => (
+                      <Badge key={i} variant="secondary">{dep}</Badge>
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </TabsContent>
 
-                {/* Dependencies */}
-                {selectedModule.dependencies && selectedModule.dependencies.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Dependencias</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedModule.dependencies.map((dep, i) => (
-                        <Badge key={i} variant="secondary">{dep}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+      {/* Sandbox Tab */}
+      <TabsContent value="sandbox" className="mt-0">
+        <ModuleSandboxPanel 
+          moduleKey={selectedModuleKey!} 
+          moduleData={moduleDataForComponents}
+        />
+      </TabsContent>
 
-        {/* Sandbox Tab */}
-        <TabsContent value="sandbox" className="mt-0">
-          <ModuleSandboxPanel 
-            moduleKey={selectedModuleKey!} 
-            moduleData={moduleDataForComponents}
-          />
-        </TabsContent>
+      {/* Tests Tab */}
+      <TabsContent value="tests" className="mt-0">
+        <ModuleTestingPanel context={{ moduleKey: selectedModuleKey!, moduleName: selectedModule.module_name }} />
+      </TabsContent>
 
-        {/* Tests Tab */}
-        <TabsContent value="tests" className="mt-0">
-          <ModuleTestingPanel context={{ moduleKey: selectedModuleKey!, moduleName: selectedModule.module_name }} />
-        </TabsContent>
-
-        {/* Dependencies Tab */}
-        <TabsContent value="dependencies" className="mt-0 space-y-4">
-          <ModuleDependencyGraph 
-            selectedModule={selectedModuleKey}
-            onModuleSelect={(key) => {}} 
-          />
-          <ModuleDependenciesPanel moduleKey={selectedModuleKey!} />
-        </TabsContent>
-      </Tabs>
-    </ModuleStudioLayout>
+      {/* Dependencies Tab */}
+      <TabsContent value="dependencies" className="mt-0 space-y-4">
+        <ModuleDependencyGraph 
+          selectedModule={selectedModuleKey}
+          onModuleSelect={(key) => {}} 
+        />
+        <ModuleDependenciesPanel moduleKey={selectedModuleKey!} />
+      </TabsContent>
+    </Tabs>
   );
 }
