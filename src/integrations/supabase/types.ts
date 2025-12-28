@@ -15536,6 +15536,60 @@ export type Database = {
           },
         ]
       }
+      obelixia_accounting_exports: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date_from: string
+          date_to: string
+          downloaded_at: string | null
+          error_message: string | null
+          export_format: string
+          export_type: string
+          file_size: number | null
+          file_url: string | null
+          generated_at: string | null
+          id: string
+          organization_id: string | null
+          records_count: number | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date_from: string
+          date_to: string
+          downloaded_at?: string | null
+          error_message?: string | null
+          export_format: string
+          export_type: string
+          file_size?: number | null
+          file_url?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id?: string | null
+          records_count?: number | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date_from?: string
+          date_to?: string
+          downloaded_at?: string | null
+          error_message?: string | null
+          export_format?: string
+          export_type?: string
+          file_size?: number | null
+          file_url?: string | null
+          generated_at?: string | null
+          id?: string
+          organization_id?: string | null
+          records_count?: number | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       obelixia_automation_log: {
         Row: {
           action_taken: string | null
@@ -15686,6 +15740,65 @@ export type Database = {
             columns: ["chart_account_id"]
             isOneToOne: false
             referencedRelation: "obelixia_chart_of_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_bank_imports: {
+        Row: {
+          bank_account_id: string | null
+          created_by: string | null
+          error_message: string | null
+          file_name: string
+          file_type: string
+          file_url: string | null
+          id: string
+          import_date: string | null
+          matched_transactions: number | null
+          organization_id: string | null
+          pending_transactions: number | null
+          processed_at: string | null
+          status: string | null
+          total_transactions: number | null
+        }
+        Insert: {
+          bank_account_id?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          file_name: string
+          file_type: string
+          file_url?: string | null
+          id?: string
+          import_date?: string | null
+          matched_transactions?: number | null
+          organization_id?: string | null
+          pending_transactions?: number | null
+          processed_at?: string | null
+          status?: string | null
+          total_transactions?: number | null
+        }
+        Update: {
+          bank_account_id?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          file_name?: string
+          file_type?: string
+          file_url?: string | null
+          id?: string
+          import_date?: string | null
+          matched_transactions?: number | null
+          organization_id?: string | null
+          pending_transactions?: number | null
+          processed_at?: string | null
+          status?: string | null
+          total_transactions?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_bank_imports_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_bank_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -15869,45 +15982,72 @@ export type Database = {
       }
       obelixia_fiscal_config: {
         Row: {
+          auto_send_invoices: boolean | null
           company_address: string | null
           company_name: string
           company_tax_id: string | null
           corporate_tax_rate: number | null
           created_at: string | null
+          default_payment_terms: number | null
+          early_payment_discount: number | null
           fiscal_year: number
           id: string
+          igi_rate: number | null
+          invoice_current_number: number | null
+          invoice_prefix: string | null
           is_active: boolean | null
           jurisdiction: string
+          late_fee_percentage: number | null
+          modelo_347_threshold: number | null
+          reminder_days: number[] | null
           updated_at: string | null
           vat_rate_reduced: number | null
           vat_rate_standard: number | null
           vat_rate_superreduced: number | null
         }
         Insert: {
+          auto_send_invoices?: boolean | null
           company_address?: string | null
           company_name?: string
           company_tax_id?: string | null
           corporate_tax_rate?: number | null
           created_at?: string | null
+          default_payment_terms?: number | null
+          early_payment_discount?: number | null
           fiscal_year: number
           id?: string
+          igi_rate?: number | null
+          invoice_current_number?: number | null
+          invoice_prefix?: string | null
           is_active?: boolean | null
           jurisdiction?: string
+          late_fee_percentage?: number | null
+          modelo_347_threshold?: number | null
+          reminder_days?: number[] | null
           updated_at?: string | null
           vat_rate_reduced?: number | null
           vat_rate_standard?: number | null
           vat_rate_superreduced?: number | null
         }
         Update: {
+          auto_send_invoices?: boolean | null
           company_address?: string | null
           company_name?: string
           company_tax_id?: string | null
           corporate_tax_rate?: number | null
           created_at?: string | null
+          default_payment_terms?: number | null
+          early_payment_discount?: number | null
           fiscal_year?: number
           id?: string
+          igi_rate?: number | null
+          invoice_current_number?: number | null
+          invoice_prefix?: string | null
           is_active?: boolean | null
           jurisdiction?: string
+          late_fee_percentage?: number | null
+          modelo_347_threshold?: number | null
+          reminder_days?: number[] | null
           updated_at?: string | null
           vat_rate_reduced?: number | null
           vat_rate_standard?: number | null
@@ -16019,8 +16159,100 @@ export type Database = {
         }
         Relationships: []
       }
+      obelixia_invoice_lines: {
+        Row: {
+          account_code: string | null
+          created_at: string | null
+          description: string
+          discount_percent: number | null
+          id: string
+          invoice_id: string
+          line_total: number
+          order_index: number | null
+          quantity: number
+          tax_rate: number | null
+          unit_price: number
+        }
+        Insert: {
+          account_code?: string | null
+          created_at?: string | null
+          description: string
+          discount_percent?: number | null
+          id?: string
+          invoice_id: string
+          line_total: number
+          order_index?: number | null
+          quantity?: number
+          tax_rate?: number | null
+          unit_price: number
+        }
+        Update: {
+          account_code?: string | null
+          created_at?: string | null
+          description?: string
+          discount_percent?: number | null
+          id?: string
+          invoice_id?: string
+          line_total?: number
+          order_index?: number | null
+          quantity?: number
+          tax_rate?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_invoice_workflow: {
+        Row: {
+          action: string
+          from_status: string | null
+          id: string
+          invoice_id: string
+          notes: string | null
+          performed_at: string | null
+          performed_by: string | null
+          to_status: string
+        }
+        Insert: {
+          action: string
+          from_status?: string | null
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          to_status: string
+        }
+        Update: {
+          action?: string
+          from_status?: string | null
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          performed_at?: string | null
+          performed_by?: string | null
+          to_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_invoice_workflow_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obelixia_invoices: {
         Row: {
+          amount_paid: number | null
           cover_letter: string | null
           created_at: string
           created_by: string | null
@@ -16032,12 +16264,21 @@ export type Database = {
           due_date: string | null
           id: string
           invoice_number: string
+          invoice_type: string | null
           issue_date: string
           items: Json
+          journal_entry_id: string | null
+          last_reminder_at: string | null
+          metadata: Json | null
           notes: string | null
+          organization_id: string | null
+          partner_id: string | null
           payment_date: string | null
           payment_method: string | null
           quote_id: string | null
+          reminder_count: number | null
+          retention_amount: number | null
+          retention_rate: number | null
           sent_at: string | null
           status: string
           subtotal: number
@@ -16047,6 +16288,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid?: number | null
           cover_letter?: string | null
           created_at?: string
           created_by?: string | null
@@ -16058,12 +16300,21 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number: string
+          invoice_type?: string | null
           issue_date?: string
           items?: Json
+          journal_entry_id?: string | null
+          last_reminder_at?: string | null
+          metadata?: Json | null
           notes?: string | null
+          organization_id?: string | null
+          partner_id?: string | null
           payment_date?: string | null
           payment_method?: string | null
           quote_id?: string | null
+          reminder_count?: number | null
+          retention_amount?: number | null
+          retention_rate?: number | null
           sent_at?: string | null
           status?: string
           subtotal?: number
@@ -16073,6 +16324,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid?: number | null
           cover_letter?: string | null
           created_at?: string
           created_by?: string | null
@@ -16084,12 +16336,21 @@ export type Database = {
           due_date?: string | null
           id?: string
           invoice_number?: string
+          invoice_type?: string | null
           issue_date?: string
           items?: Json
+          journal_entry_id?: string | null
+          last_reminder_at?: string | null
+          metadata?: Json | null
           notes?: string | null
+          organization_id?: string | null
+          partner_id?: string | null
           payment_date?: string | null
           payment_method?: string | null
           quote_id?: string | null
+          reminder_count?: number | null
+          retention_amount?: number | null
+          retention_rate?: number | null
           sent_at?: string | null
           status?: string
           subtotal?: number
@@ -16371,15 +16632,22 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          gross_amount: number | null
           id: string
           journal_entry_id: string | null
+          metadata: Json | null
           net_amount: number | null
+          organization_id: string | null
           partner_id: string
+          payment_date: string | null
+          reference: string | null
           status: string | null
           tax_withholding: number | null
           transaction_date: string
           transaction_type: string
           updated_at: string | null
+          withholding_amount: number | null
+          withholding_rate: number | null
         }
         Insert: {
           amount: number
@@ -16388,15 +16656,22 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          gross_amount?: number | null
           id?: string
           journal_entry_id?: string | null
+          metadata?: Json | null
           net_amount?: number | null
+          organization_id?: string | null
           partner_id: string
+          payment_date?: string | null
+          reference?: string | null
           status?: string | null
           tax_withholding?: number | null
           transaction_date: string
           transaction_type: string
           updated_at?: string | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
         }
         Update: {
           amount?: number
@@ -16405,15 +16680,22 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          gross_amount?: number | null
           id?: string
           journal_entry_id?: string | null
+          metadata?: Json | null
           net_amount?: number | null
+          organization_id?: string | null
           partner_id?: string
+          payment_date?: string | null
+          reference?: string | null
           status?: string | null
           tax_withholding?: number | null
           transaction_date?: string
           transaction_type?: string
           updated_at?: string | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
         }
         Relationships: [
           {
@@ -16436,6 +16718,7 @@ export type Database = {
         Row: {
           address: string | null
           administrator_remuneration: number | null
+          bank_account: string | null
           capital_contributed: number | null
           created_at: string | null
           current_account_balance: number | null
@@ -16443,12 +16726,16 @@ export type Database = {
           entry_date: string
           exit_date: string | null
           id: string
+          irpf_retention_rate: number | null
           is_administrator: boolean | null
           notes: string | null
+          organization_id: string | null
           ownership_percentage: number
           partner_name: string
           partner_tax_id: string | null
+          partner_type: string | null
           phone: string | null
+          social_security_number: string | null
           status: string | null
           updated_at: string | null
           user_id: string | null
@@ -16456,6 +16743,7 @@ export type Database = {
         Insert: {
           address?: string | null
           administrator_remuneration?: number | null
+          bank_account?: string | null
           capital_contributed?: number | null
           created_at?: string | null
           current_account_balance?: number | null
@@ -16463,12 +16751,16 @@ export type Database = {
           entry_date?: string
           exit_date?: string | null
           id?: string
+          irpf_retention_rate?: number | null
           is_administrator?: boolean | null
           notes?: string | null
+          organization_id?: string | null
           ownership_percentage: number
           partner_name: string
           partner_tax_id?: string | null
+          partner_type?: string | null
           phone?: string | null
+          social_security_number?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -16476,6 +16768,7 @@ export type Database = {
         Update: {
           address?: string | null
           administrator_remuneration?: number | null
+          bank_account?: string | null
           capital_contributed?: number | null
           created_at?: string | null
           current_account_balance?: number | null
@@ -16483,12 +16776,16 @@ export type Database = {
           entry_date?: string
           exit_date?: string | null
           id?: string
+          irpf_retention_rate?: number | null
           is_administrator?: boolean | null
           notes?: string | null
+          organization_id?: string | null
           ownership_percentage?: number
           partner_name?: string
           partner_tax_id?: string | null
+          partner_type?: string | null
           phone?: string | null
+          social_security_number?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -16497,51 +16794,75 @@ export type Database = {
       }
       obelixia_reconciliation_rules: {
         Row: {
+          amount_max: number | null
+          amount_min: number | null
+          auto_approve: boolean | null
           auto_create_entry: boolean | null
           created_at: string | null
+          created_by: string | null
           entry_template: Json | null
           id: string
           is_active: boolean | null
+          last_matched_at: string | null
           match_field: string
           match_type: string
           match_value: string
           matches_count: number | null
+          organization_id: string | null
           priority: number | null
           rule_name: string
+          target_account_code: string | null
           target_account_id: string | null
           target_category: string | null
+          target_partner_id: string | null
           updated_at: string | null
         }
         Insert: {
+          amount_max?: number | null
+          amount_min?: number | null
+          auto_approve?: boolean | null
           auto_create_entry?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           entry_template?: Json | null
           id?: string
           is_active?: boolean | null
+          last_matched_at?: string | null
           match_field: string
           match_type: string
           match_value: string
           matches_count?: number | null
+          organization_id?: string | null
           priority?: number | null
           rule_name: string
+          target_account_code?: string | null
           target_account_id?: string | null
           target_category?: string | null
+          target_partner_id?: string | null
           updated_at?: string | null
         }
         Update: {
+          amount_max?: number | null
+          amount_min?: number | null
+          auto_approve?: boolean | null
           auto_create_entry?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           entry_template?: Json | null
           id?: string
           is_active?: boolean | null
+          last_matched_at?: string | null
           match_field?: string
           match_type?: string
           match_value?: string
           matches_count?: number | null
+          organization_id?: string | null
           priority?: number | null
           rule_name?: string
+          target_account_code?: string | null
           target_account_id?: string | null
           target_category?: string | null
+          target_partner_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -16553,6 +16874,129 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      obelixia_tax_calendar: {
+        Row: {
+          created_at: string | null
+          declaration_id: string | null
+          declaration_type: string
+          due_date: string
+          fiscal_year: number
+          id: string
+          jurisdiction: string
+          notes: string | null
+          organization_id: string | null
+          period: string
+          reminder_date: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          declaration_id?: string | null
+          declaration_type: string
+          due_date: string
+          fiscal_year: number
+          id?: string
+          jurisdiction?: string
+          notes?: string | null
+          organization_id?: string | null
+          period: string
+          reminder_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          declaration_id?: string | null
+          declaration_type?: string
+          due_date?: string
+          fiscal_year?: number
+          id?: string
+          jurisdiction?: string
+          notes?: string | null
+          organization_id?: string | null
+          period?: string
+          reminder_date?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      obelixia_tax_declarations: {
+        Row: {
+          calculation_details: Json | null
+          created_at: string | null
+          created_by: string | null
+          declaration_type: string
+          deductible_amount: number | null
+          due_date: string | null
+          fiscal_year: number
+          id: string
+          jurisdiction: string
+          net_amount: number | null
+          notes: string | null
+          organization_id: string | null
+          payment_date: string | null
+          payment_reference: string | null
+          pdf_file_url: string | null
+          period: string
+          status: string
+          submission_date: string | null
+          submission_reference: string | null
+          tax_amount: number | null
+          tax_base: number | null
+          updated_at: string | null
+          xml_file_url: string | null
+        }
+        Insert: {
+          calculation_details?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          declaration_type: string
+          deductible_amount?: number | null
+          due_date?: string | null
+          fiscal_year: number
+          id?: string
+          jurisdiction?: string
+          net_amount?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          pdf_file_url?: string | null
+          period: string
+          status?: string
+          submission_date?: string | null
+          submission_reference?: string | null
+          tax_amount?: number | null
+          tax_base?: number | null
+          updated_at?: string | null
+          xml_file_url?: string | null
+        }
+        Update: {
+          calculation_details?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          declaration_type?: string
+          deductible_amount?: number | null
+          due_date?: string | null
+          fiscal_year?: number
+          id?: string
+          jurisdiction?: string
+          net_amount?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          pdf_file_url?: string | null
+          period?: string
+          status?: string
+          submission_date?: string | null
+          submission_reference?: string | null
+          tax_amount?: number | null
+          tax_base?: number | null
+          updated_at?: string | null
+          xml_file_url?: string | null
+        }
+        Relationships: []
       }
       omnichannel_messages: {
         Row: {
@@ -27931,6 +28375,10 @@ export type Database = {
           match_count: number
           matching_cnaes: string[]
         }[]
+      }
+      generate_invoice_number: {
+        Args: { p_organization_id?: string }
+        Returns: string
       }
       generate_remote_access_pin: {
         Args: { p_installation_id: string; p_valid_hours?: number }
