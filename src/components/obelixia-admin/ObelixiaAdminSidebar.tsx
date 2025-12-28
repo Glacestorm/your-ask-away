@@ -76,6 +76,7 @@ const categories: NavCategory[] = [
       { id: 'codebase-index', label: 'Índice Codebase', icon: Code },
       { id: 'analyzer', label: 'Analizador App', icon: Sparkles },
       { id: 'audit-improvements', label: 'Mejoras Diagnóstico', icon: BarChart3 },
+      { id: 'system-help', label: 'Ayuda Sistema', icon: HelpCircle },
     ]
   },
   {

@@ -55,6 +55,7 @@ const AdaptiveAuthDashboard = lazy(() => import('@/components/admin/AdaptiveAuth
 const AdvancedMLDashboard = lazy(() => import('@/components/admin/AdvancedMLDashboard').then(m => ({ default: m.AdvancedMLDashboard })));
 const SystemHealthMonitor = lazy(() => import('@/components/admin/SystemHealthMonitor').then(m => ({ default: m.SystemHealthMonitor })));
 const MetricsExplorer = lazy(() => import('@/components/admin/MetricsExplorer').then(m => ({ default: m.MetricsExplorer })));
+const SystemHelpPanel = lazy(() => import('@/components/obelixia-admin/SystemHelpPanel').then(m => ({ default: m.SystemHelpPanel })));
 
 // Premium components
 import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
@@ -628,6 +629,12 @@ const ObelixiaTeamAdmin: React.FC = () => {
               <TabsContent value="advanced-ml" className="m-0">
                 <Suspense fallback={<LoadingFallback />}>
                   <AdvancedMLDashboard />
+                </Suspense>
+              </TabsContent>
+
+              <TabsContent value="system-help" className="m-0">
+                <Suspense fallback={<LoadingFallback />}>
+                  <SystemHelpPanel />
                 </Suspense>
               </TabsContent>
             </Tabs>
