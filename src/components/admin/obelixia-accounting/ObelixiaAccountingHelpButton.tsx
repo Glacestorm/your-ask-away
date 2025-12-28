@@ -33,25 +33,24 @@ export function ObelixiaAccountingHelpButton({
 
   return (
     <>
-      {/* Floating Button */}
-      <div className={cn("fixed bottom-6 left-6 z-50", className)}>
+      {/* Floating Button - Top Right aligned with tabs */}
+      <div className={cn("flex items-center", className)}>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <motion.div
                 initial={false}
-                animate={{ scale: isHovered ? 1.1 : 1 }}
+                animate={{ scale: isHovered ? 1.05 : 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
               >
                 <Button
                   onClick={() => setIsOpen(!isOpen)}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
-                  size="lg"
                   className={cn(
-                    "relative h-14 w-14 rounded-full shadow-lg transition-all duration-300",
+                    "relative h-10 px-4 gap-2 rounded-lg shadow-lg transition-all duration-300",
                     "bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700",
-                    "border-2 border-white/20"
+                    "border border-white/20 text-white font-medium"
                   )}
                 >
                   <AnimatePresence mode="wait">
@@ -62,8 +61,10 @@ export function ObelixiaAccountingHelpButton({
                         animate={{ rotate: 0, opacity: 1 }}
                         exit={{ rotate: 90, opacity: 0 }}
                         transition={{ duration: 0.2 }}
+                        className="flex items-center gap-2"
                       >
-                        <X className="h-6 w-6 text-white" />
+                        <X className="h-4 w-4" />
+                        <span>Cerrar</span>
                       </motion.div>
                     ) : (
                       <motion.div
@@ -72,8 +73,10 @@ export function ObelixiaAccountingHelpButton({
                         animate={{ rotate: 0, opacity: 1 }}
                         exit={{ rotate: -90, opacity: 0 }}
                         transition={{ duration: 0.2 }}
+                        className="flex items-center gap-2"
                       >
-                        <Sparkles className="h-6 w-6 text-white" />
+                        <Sparkles className="h-4 w-4" />
+                        <span>Copilot</span>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -81,9 +84,9 @@ export function ObelixiaAccountingHelpButton({
                   {/* Pulse animation */}
                   {!isOpen && (
                     <motion.span
-                      className="absolute inset-0 rounded-full bg-violet-400/50"
+                      className="absolute inset-0 rounded-lg bg-violet-400/30"
                       initial={{ scale: 1, opacity: 0.5 }}
-                      animate={{ scale: 1.5, opacity: 0 }}
+                      animate={{ scale: 1.1, opacity: 0 }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
@@ -94,7 +97,7 @@ export function ObelixiaAccountingHelpButton({
                 </Button>
               </motion.div>
             </TooltipTrigger>
-            <TooltipContent side="right" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0">
+            <TooltipContent side="bottom" className="bg-gradient-to-r from-violet-500 to-purple-600 text-white border-0">
               <p className="font-medium">ObelixIA Copilot</p>
               <p className="text-xs opacity-80">Asistente contable IA</p>
             </TooltipContent>
