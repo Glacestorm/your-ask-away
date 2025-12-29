@@ -19,6 +19,9 @@ export { TreasuryPanel } from './TreasuryPanel';
 // Phase 9: Intelligent Tax Planning & Optimization
 export { TaxPlanningPanel } from './TaxPlanningPanel';
 
+// Phase 10: Advanced Financial Analytics & Executive Dashboard
+export { FinancialAnalyticsPanel } from './FinancialAnalyticsPanel';
+
 /**
  * ObelixIA Accounting Components - Barrel Export
  * Fase 11 - Enterprise SaaS 2025-2026
