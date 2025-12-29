@@ -69,3 +69,6 @@ export { BusinessPlanGeneratorPanel } from './BusinessPlanGeneratorPanel';
 export { ViabilityStudyPanel } from './ViabilityStudyPanel';
 export { CompetitiveAnalysisPanel } from './CompetitiveAnalysisPanel';
 export { InvestorDocumentsPanel } from './InvestorDocumentsPanel';
+
+// PDF Downloader para documentos ObelixIA
+export { ObelixiaPDFDownloader } from './ObelixiaPDFDownloader';

@@ -43,7 +43,8 @@ import {
   FileSpreadsheet,
   Target,
   Briefcase,
-  FileCheck
+  FileCheck,
+  Download
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
@@ -163,6 +164,7 @@ const moduleGroups: ModuleGroup[] = [
       { id: 'viability-study', label: 'Estudio Viabilidad', icon: Target },
       { id: 'competitive-analysis', label: 'Análisis Competitivo', icon: Briefcase },
       { id: 'investor-documents', label: 'Documentos Inversor', icon: FileCheck },
+      { id: 'pdf-generator', label: 'Descargar PDFs', icon: Download, badge: 'PDF', badgeColor: 'bg-emerald-500' },
     ]
   },
 ];

@@ -44,7 +44,9 @@ import {
   BusinessPlanGeneratorPanel,
   ViabilityStudyPanel,
   CompetitiveAnalysisPanel,
-  InvestorDocumentsPanel
+  InvestorDocumentsPanel,
+  // PDF Generator
+  ObelixiaPDFDownloader
 } from '@/components/admin/obelixia-accounting';
 
 // Phase 12: Advanced AI & Automation
@@ -135,6 +137,8 @@ export default function ObelixiaAccountingPage() {
         return <CompetitiveAnalysisPanel />;
       case 'investor-documents':
         return <InvestorDocumentsPanel />;
+      case 'pdf-generator':
+        return <ObelixiaPDFDownloader />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
