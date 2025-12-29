@@ -36,7 +36,9 @@ import {
   Leaf,
   Settings,
   HelpCircle,
-  LogOut
+  LogOut,
+  Calendar,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
@@ -130,6 +132,18 @@ const moduleGroups: ModuleGroup[] = [
       { id: 'budgeting', label: 'Presupuestos', icon: PiggyBank },
       { id: 'risk-management', label: 'Riesgos', icon: AlertTriangle },
       { id: 'esg-reporting', label: 'ESG', icon: Leaf, badge: 'ESG', badgeColor: 'bg-green-500' },
+    ]
+  },
+  {
+    id: 'guardian',
+    label: 'Guardián Financiero',
+    icon: Shield,
+    color: 'from-rose-500 to-pink-500',
+    glowColor: 'shadow-rose-500/30',
+    modules: [
+      { id: 'financial-guardian', label: 'Guardián IA', icon: Shield, badge: 'NEW', badgeColor: 'bg-rose-500' },
+      { id: 'closing-automation', label: 'Cierre Auto.', icon: Calendar },
+      { id: 'fixed-assets', label: 'Activos Fijos', icon: Package },
     ]
   },
 ];

@@ -57,3 +57,8 @@ export { RegulatoryReportingPanel } from './RegulatoryReportingPanel';
 export { BudgetingPanel } from './BudgetingPanel';
 export { RiskManagementPanel } from './RiskManagementPanel';
 export { ESGReportingPanel } from './ESGReportingPanel';
+
+// Fase 15: Financial Guardian & Automation
+export { FinancialGuardianPanel } from './FinancialGuardianPanel';
+export { ClosingAutomationPanel } from './ClosingAutomationPanel';
+export { FixedAssetsPanel } from './FixedAssetsPanel';
