@@ -38,12 +38,6 @@ import {
   HelpCircle,
   LogOut
 } from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -353,7 +347,7 @@ export function ObelixiaAccountingSidebar({
   onTabChange 
 }: ObelixiaAccountingSidebarProps) {
   return (
-    <Sidebar className="border-r-0 bg-gradient-to-b from-sidebar via-sidebar to-sidebar/95 relative overflow-hidden">
+    <aside className="w-72 min-w-72 h-full border-r border-border/50 bg-gradient-to-b from-sidebar via-sidebar to-sidebar/95 relative overflow-hidden flex flex-col">
       {/* Decorative background elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Gradient orbs */}
@@ -375,7 +369,7 @@ export function ObelixiaAccountingSidebar({
       </div>
 
       {/* Header */}
-      <SidebarHeader className="p-4 border-b border-border/50 relative z-10">
+      <div className="p-4 border-b border-border/50 relative z-10">
         <div className="flex items-center justify-between">
           <motion.div 
             className="flex items-center gap-3"
@@ -412,10 +406,10 @@ export function ObelixiaAccountingSidebar({
           
           <ObelixiaAccountingHelpButton />
         </div>
-      </SidebarHeader>
+      </div>
 
       {/* Content */}
-      <SidebarContent className="p-3 relative z-10">
+      <div className="flex-1 overflow-y-auto p-3 relative z-10">
         {/* Core Modules Section */}
         <motion.div 
           className="mb-4"
@@ -467,10 +461,10 @@ export function ObelixiaAccountingSidebar({
             </motion.div>
           ))}
         </motion.div>
-      </SidebarContent>
+      </div>
 
       {/* Footer */}
-      <SidebarFooter className="p-3 border-t border-border/50 relative z-10">
+      <div className="p-3 border-t border-border/50 relative z-10 mt-auto">
         <div className="flex items-center justify-between">
           <motion.button
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
@@ -503,8 +497,8 @@ export function ObelixiaAccountingSidebar({
             v14.0 Enterprise Edition
           </span>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+      </div>
+    </aside>
   );
 }
 
