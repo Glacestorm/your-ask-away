@@ -333,7 +333,7 @@ export function FinancialGuardianPanel() {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => resolveAlert(alert.id, 'dismissed')}
+                            onClick={() => resolveAlert(alert.id, { action: 'dismiss' })}
                           >
                             Descartar
                           </Button>
@@ -456,16 +456,7 @@ export function FinancialGuardianPanel() {
                         <div className="flex gap-2 mt-4">
                           <Button 
                             size="sm" 
-                            onClick={() => implementRecommendation(rec.id, 'Implementado por usuario')}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Implementar
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Ver detalles
-                          </Button>
-                        </div>
-                      )}
+                            onClick={() => implementRecommendation(rec.id, 'implemented')}
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Implementar
