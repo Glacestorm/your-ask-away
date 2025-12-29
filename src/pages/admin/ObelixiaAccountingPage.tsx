@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { DashboardLayout } from '@/layouts';
-import { SidebarProvider } from '@/components/ui/sidebar';
+
 import {
   ObelixiaAccountingDashboard,
   ChartOfAccountsManager,
@@ -113,20 +113,18 @@ export default function ObelixiaAccountingPage() {
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex h-screen w-full overflow-hidden">
-        <ObelixiaAccountingSidebar 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-        />
-        <main className="flex-1 flex flex-col h-full overflow-hidden">
-          <DashboardLayout title="ObelixIA Accounting" contentPadding="none">
-            <div className="flex-1 overflow-auto p-6">
-              {renderContent()}
-            </div>
-          </DashboardLayout>
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      <ObelixiaAccountingSidebar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+      />
+      <main className="flex-1 flex flex-col h-full overflow-hidden">
+        <DashboardLayout title="ObelixIA Accounting" contentPadding="none">
+          <div className="flex-1 overflow-auto p-6">
+            {renderContent()}
+          </div>
+        </DashboardLayout>
+      </main>
+    </div>
   );
 }
