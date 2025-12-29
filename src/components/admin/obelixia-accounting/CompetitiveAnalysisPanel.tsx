@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
 import { 
   Users, 
   RefreshCw, 
@@ -28,8 +27,7 @@ import {
   AlertTriangle,
   Zap,
   Building2,
-  Globe,
-  Search
+  Globe
 } from 'lucide-react';
 import { useObelixiaCompetitiveAnalysis } from '@/hooks/admin/obelixia-accounting';
 import { toast } from 'sonner';
@@ -40,20 +38,18 @@ import { es } from 'date-fns/locale';
 export function CompetitiveAnalysisPanel() {
   const [activeTab, setActiveTab] = useState('analysis');
   const [showNewAnalysis, setShowNewAnalysis] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [newAnalysisData, setNewAnalysisData] = useState({
-    analysis_name: '',
-    industry: '',
-    market_segment: '',
-    competitors: ''
+    competitor_name: '',
+    competitor_type: '',
+    website_url: ''
   });
 
   const {
     analyses,
     isLoading,
-    isAnalyzing,
     fetchAnalyses,
-    runCompetitiveAnalysis,
-    deleteAnalysis,
+    generateAnalysis,
     exportAnalysis
   } = useObelixiaCompetitiveAnalysis();
 
@@ -62,35 +58,35 @@ export function CompetitiveAnalysisPanel() {
   }, []);
 
   const handleRunAnalysis = async () => {
-    if (!newAnalysisData.analysis_name || !newAnalysisData.industry) {
+    if (!newAnalysisData.competitor_name) {
       toast.error('Completa los campos requeridos');
       return;
     }
-    const competitors = newAnalysisData.competitors
-      .split(',')
-      .map(c => c.trim())
-      .filter(c => c);
-    
-    const result = await runCompetitiveAnalysis({
-      analysis_name: newAnalysisData.analysis_name,
-      industry: newAnalysisData.industry,
-      market_segment: newAnalysisData.market_segment,
-      competitors_list: competitors
+    setIsAnalyzing(true);
+    const result = await generateAnalysis({
+      analysisName: newAnalysisData.competitor_name,
+      industry: newAnalysisData.competitor_type,
+      ourCompanyProfile: {}
     });
+    setIsAnalyzing(false);
     if (result) {
       setShowNewAnalysis(false);
-      setNewAnalysisData({ analysis_name: '', industry: '', market_segment: '', competitors: '' });
+      setNewAnalysisData({ competitor_name: '', competitor_type: '', website_url: '' });
     }
   };
 
-  const getPositionColor = (position: string | null) => {
-    switch (position) {
-      case 'leader': return 'bg-green-500/10 text-green-500';
-      case 'challenger': return 'bg-blue-500/10 text-blue-500';
-      case 'follower': return 'bg-amber-500/10 text-amber-500';
-      case 'nicher': return 'bg-purple-500/10 text-purple-500';
-      default: return 'bg-muted text-muted-foreground';
-    }
+  const getThreatColor = (threatLevel: number | null) => {
+    if (!threatLevel) return 'bg-muted text-muted-foreground';
+    if (threatLevel >= 8) return 'bg-red-500/10 text-red-500';
+    if (threatLevel >= 5) return 'bg-amber-500/10 text-amber-500';
+    return 'bg-green-500/10 text-green-500';
+  };
+
+  const getThreatLabel = (threatLevel: number | null) => {
+    if (!threatLevel) return 'Sin evaluar';
+    if (threatLevel >= 8) return 'Amenaza Alta';
+    if (threatLevel >= 5) return 'Amenaza Media';
+    return 'Amenaza Baja';
   };
 
   return (
@@ -124,23 +120,23 @@ export function CompetitiveAnalysisPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Análisis Realizados</p>
+                <p className="text-sm text-muted-foreground">Competidores Analizados</p>
                 <p className="text-2xl font-bold">{analyses.length}</p>
               </div>
               <Users className="h-8 w-8 text-primary/60" />
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
+        <Card className="bg-gradient-to-br from-red-500/5 to-red-500/10 border-red-500/20">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Posición Líder</p>
+                <p className="text-sm text-muted-foreground">Amenazas Altas</p>
                 <p className="text-2xl font-bold">
-                  {analyses.filter(a => a.market_position === 'leader').length}
+                  {analyses.filter(a => (a.threat_level || 0) >= 8).length}
                 </p>
               </div>
-              <Target className="h-8 w-8 text-green-500/60" />
+              <AlertTriangle className="h-8 w-8 text-red-500/60" />
             </div>
           </CardContent>
         </Card>
@@ -148,27 +144,29 @@ export function CompetitiveAnalysisPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Competidores Analizados</p>
-                <p className="text-2xl font-bold">
-                  {analyses.reduce((sum, a) => sum + ((a.competitors_list as string[])?.length || 0), 0)}
-                </p>
-              </div>
-              <Building2 className="h-8 w-8 text-blue-500/60" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-amber-500/5 to-amber-500/10 border-amber-500/20">
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Cuota Media</p>
+                <p className="text-sm text-muted-foreground">Cuota Media Estimada</p>
                 <p className="text-2xl font-bold">
                   {analyses.length > 0 
-                    ? (analyses.reduce((sum, a) => sum + (Number(a.market_share) || 0), 0) / analyses.length).toFixed(1)
+                    ? (analyses.reduce((sum, a) => sum + (a.market_share_estimate || 0), 0) / analyses.length).toFixed(1)
                     : 0}%
                 </p>
               </div>
-              <BarChart3 className="h-8 w-8 text-amber-500/60" />
+              <BarChart3 className="h-8 w-8 text-blue-500/60" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
+          <CardContent className="pt-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Similitud Promedio</p>
+                <p className="text-2xl font-bold">
+                  {analyses.length > 0 
+                    ? (analyses.reduce((sum, a) => sum + (a.similarity_score || 0), 0) / analyses.length).toFixed(0)
+                    : 0}%
+                </p>
+              </div>
+              <Target className="h-8 w-8 text-green-500/60" />
             </div>
           </CardContent>
         </Card>
@@ -183,43 +181,34 @@ export function CompetitiveAnalysisPanel() {
               Nuevo Análisis Competitivo
             </CardTitle>
             <CardDescription>
-              La IA analizará tu posición en el mercado frente a competidores
+              La IA investigará y analizará a tu competidor
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre del Análisis *</label>
+                <label className="text-sm font-medium">Nombre del Competidor *</label>
                 <Input
-                  placeholder="Ej: Análisis Sector Tech Q1 2025"
-                  value={newAnalysisData.analysis_name}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, analysis_name: e.target.value })}
+                  placeholder="Ej: Empresa Competidora S.L."
+                  value={newAnalysisData.competitor_name}
+                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, competitor_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Industria *</label>
+                <label className="text-sm font-medium">Tipo de Competidor</label>
                 <Input
-                  placeholder="Ej: Tecnología, Retail, Fintech..."
-                  value={newAnalysisData.industry}
-                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, industry: e.target.value })}
+                  placeholder="Ej: Directo, Indirecto, Potencial..."
+                  value={newAnalysisData.competitor_type}
+                  onChange={(e) => setNewAnalysisData({ ...newAnalysisData, competitor_type: e.target.value })}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Segmento de Mercado</label>
+              <label className="text-sm font-medium">Sitio Web</label>
               <Input
-                placeholder="Ej: SaaS B2B, E-commerce España..."
-                value={newAnalysisData.market_segment}
-                onChange={(e) => setNewAnalysisData({ ...newAnalysisData, market_segment: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Competidores (separados por coma)</label>
-              <Textarea
-                placeholder="Ej: Empresa A, Empresa B, Empresa C..."
-                value={newAnalysisData.competitors}
-                onChange={(e) => setNewAnalysisData({ ...newAnalysisData, competitors: e.target.value })}
-                rows={3}
+                placeholder="https://www.competidor.com"
+                value={newAnalysisData.website_url}
+                onChange={(e) => setNewAnalysisData({ ...newAnalysisData, website_url: e.target.value })}
               />
             </div>
             <div className="flex gap-2 justify-end">
@@ -249,7 +238,7 @@ export function CompetitiveAnalysisPanel() {
         <TabsList>
           <TabsTrigger value="analysis">
             <Users className="h-4 w-4 mr-2" />
-            Mis Análisis
+            Competidores
           </TabsTrigger>
           <TabsTrigger value="insights">
             <Sparkles className="h-4 w-4 mr-2" />
@@ -266,87 +255,87 @@ export function CompetitiveAnalysisPanel() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold">{analysis.analysis_name}</h4>
-                          <Badge className={getPositionColor(analysis.market_position)}>
-                            {analysis.market_position || 'Sin posición'}
+                          <h4 className="font-semibold">{analysis.competitor_name}</h4>
+                          <Badge className={getThreatColor(analysis.threat_level)}>
+                            {getThreatLabel(analysis.threat_level)}
                           </Badge>
-                          <Badge variant="outline">{analysis.industry}</Badge>
+                          {analysis.competitor_type && (
+                            <Badge variant="outline">{analysis.competitor_type}</Badge>
+                          )}
                         </div>
 
-                        {analysis.market_segment && (
-                          <p className="text-sm text-muted-foreground">
-                            Segmento: {analysis.market_segment}
+                        {analysis.positioning_statement && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {analysis.positioning_statement}
                           </p>
                         )}
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          {analysis.market_share !== null && (
+                          {analysis.market_share_estimate !== null && (
                             <div className="flex items-center gap-2">
                               <BarChart3 className="h-4 w-4 text-primary" />
                               <div>
                                 <p className="text-muted-foreground">Cuota</p>
-                                <p className="font-semibold">{Number(analysis.market_share).toFixed(1)}%</p>
+                                <p className="font-semibold">{analysis.market_share_estimate}%</p>
                               </div>
                             </div>
                           )}
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-blue-500" />
-                            <div>
-                              <p className="text-muted-foreground">Competidores</p>
-                              <p className="font-semibold">
-                                {(analysis.competitors_list as string[])?.length || 0}
-                              </p>
-                            </div>
-                          </div>
-                          {(analysis.strengths as string[])?.length > 0 && (
+                          {analysis.similarity_score !== null && (
                             <div className="flex items-center gap-2">
-                              <Zap className="h-4 w-4 text-green-500" />
+                              <Target className="h-4 w-4 text-blue-500" />
                               <div>
-                                <p className="text-muted-foreground">Fortalezas</p>
-                                <p className="font-semibold">{(analysis.strengths as string[]).length}</p>
+                                <p className="text-muted-foreground">Similitud</p>
+                                <p className="font-semibold">{analysis.similarity_score}%</p>
                               </div>
                             </div>
                           )}
-                          {(analysis.threats as string[])?.length > 0 && (
+                          {analysis.employee_count && (
                             <div className="flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4 text-amber-500" />
+                              <Users className="h-4 w-4 text-green-500" />
                               <div>
-                                <p className="text-muted-foreground">Amenazas</p>
-                                <p className="font-semibold">{(analysis.threats as string[]).length}</p>
+                                <p className="text-muted-foreground">Empleados</p>
+                                <p className="font-semibold">{analysis.employee_count}</p>
+                              </div>
+                            </div>
+                          )}
+                          {analysis.founding_year && (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-amber-500" />
+                              <div>
+                                <p className="text-muted-foreground">Fundación</p>
+                                <p className="font-semibold">{analysis.founding_year}</p>
                               </div>
                             </div>
                           )}
                         </div>
 
                         {/* SWOT Summary */}
-                        {(analysis.strengths || analysis.weaknesses || analysis.opportunities || analysis.threats) && (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                            {(analysis.strengths as string[])?.slice(0, 1).map((s, i) => (
-                              <Badge key={i} variant="outline" className="bg-green-500/10 text-green-600 text-xs">
-                                <Zap className="h-3 w-3 mr-1" />
-                                {s}
-                              </Badge>
-                            ))}
-                            {(analysis.weaknesses as string[])?.slice(0, 1).map((w, i) => (
-                              <Badge key={i} variant="outline" className="bg-red-500/10 text-red-600 text-xs">
-                                <TrendingDown className="h-3 w-3 mr-1" />
-                                {w}
-                              </Badge>
-                            ))}
-                            {(analysis.opportunities as string[])?.slice(0, 1).map((o, i) => (
-                              <Badge key={i} variant="outline" className="bg-blue-500/10 text-blue-600 text-xs">
-                                <TrendingUp className="h-3 w-3 mr-1" />
-                                {o}
-                              </Badge>
-                            ))}
-                            {(analysis.threats as string[])?.slice(0, 1).map((t, i) => (
-                              <Badge key={i} variant="outline" className="bg-amber-500/10 text-amber-600 text-xs">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                {t}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                          {(analysis.strengths as string[] | null)?.slice(0, 1).map((s, i) => (
+                            <Badge key={i} variant="outline" className="bg-green-500/10 text-green-600 text-xs">
+                              <Zap className="h-3 w-3 mr-1" />
+                              {s}
+                            </Badge>
+                          ))}
+                          {(analysis.weaknesses as string[] | null)?.slice(0, 1).map((w, i) => (
+                            <Badge key={i} variant="outline" className="bg-red-500/10 text-red-600 text-xs">
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              {w}
+                            </Badge>
+                          ))}
+                          {(analysis.opportunities as string[] | null)?.slice(0, 1).map((o, i) => (
+                            <Badge key={i} variant="outline" className="bg-blue-500/10 text-blue-600 text-xs">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              {o}
+                            </Badge>
+                          ))}
+                          {(analysis.threats as string[] | null)?.slice(0, 1).map((t, i) => (
+                            <Badge key={i} variant="outline" className="bg-amber-500/10 text-amber-600 text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              {t}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -371,7 +360,7 @@ export function CompetitiveAnalysisPanel() {
                   <p>No tienes análisis competitivos</p>
                   <Button className="mt-4" onClick={() => setShowNewAnalysis(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Crear tu primer análisis
+                    Analizar tu primer competidor
                   </Button>
                 </div>
               )}
@@ -415,11 +404,15 @@ export function CompetitiveAnalysisPanel() {
                     <Target className="h-8 w-8 mx-auto mb-2 text-amber-500" />
                     <p className="font-semibold">Oportunidades</p>
                     <p className="text-sm text-muted-foreground">
-                      Descubre nichos desatendidos
+                      Detecta gaps en el mercado
                     </p>
                   </CardContent>
                 </Card>
               </div>
+              <Button className="w-full mt-4" size="lg">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generar Informe Competitivo Global
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

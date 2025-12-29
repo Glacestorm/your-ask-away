@@ -59,14 +59,18 @@ export function GrantsIntelligencePanel() {
   const handleSearch = async () => {
     if (searchQuery.trim()) {
       setIsSearching(true);
-      await searchGrants({ query: searchQuery });
+      await searchGrants({ 
+        sectors: [searchQuery],
+        region: '',
+        companySize: ''
+      });
       setIsSearching(false);
     }
   };
 
   const handleAnalyze = async (grantId: string) => {
     setIsAnalyzing(true);
-    const result = await analyzeEligibility({ grantId });
+    const result = await analyzeEligibility(grantId, {});
     setIsAnalyzing(false);
     if (result) {
       toast.success('Análisis de elegibilidad completado');
@@ -225,10 +229,10 @@ export function GrantsIntelligencePanel() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-semibold">{grant.name}</h4>
-                          <Badge className={getLevelColor(grant.grant_level || '')}>
-                            {grant.grant_level === 'european' && <Globe className="h-3 w-3 mr-1" />}
-                            {grant.grant_level === 'national' && <Building2 className="h-3 w-3 mr-1" />}
-                            {grant.grant_level}
+                          <Badge className={getLevelColor(grant.level || '')}>
+                            {grant.level === 'european' && <Globe className="h-3 w-3 mr-1" />}
+                            {grant.level === 'national' && <Building2 className="h-3 w-3 mr-1" />}
+                            {grant.level}
                           </Badge>
                           <Badge variant="outline">{grant.grant_type}</Badge>
                         </div>
@@ -247,7 +251,7 @@ export function GrantsIntelligencePanel() {
                             </span>
                           )}
                           <span className="text-muted-foreground">
-                            {grant.issuing_organization}
+                            {grant.organization}
                           </span>
                         </div>
                       </div>
@@ -301,18 +305,15 @@ export function GrantsIntelligencePanel() {
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1">
                             <Euro className="h-4 w-4" />
-                            Solicitado: {Number(app.requested_amount).toLocaleString('es-ES')}€
+                            Solicitado: {Number(app.amount_requested).toLocaleString('es-ES')}€
                           </span>
-                          {app.eligibility_score && (
-                            <span className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              Elegibilidad: {app.eligibility_score}%
+                          {app.amount_approved && (
+                            <span className="flex items-center gap-1 text-green-600">
+                              <CheckCircle className="h-4 w-4" />
+                              Aprobado: {Number(app.amount_approved).toLocaleString('es-ES')}€
                             </span>
                           )}
                         </div>
-                        {app.eligibility_score && (
-                          <Progress value={app.eligibility_score} className="h-2 w-48" />
-                        )}
                       </div>
                       <div className="text-right text-sm text-muted-foreground">
                         <p>{format(new Date(app.created_at), 'dd/MM/yyyy', { locale: es })}</p>
