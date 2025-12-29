@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.obelixia-treasury]
+verify_jwt = true
+
 [functions.obelixia-smart-reconciliation]
 verify_jwt = true
 

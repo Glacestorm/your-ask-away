@@ -100,3 +100,14 @@ export type {
   ReconciliationStats,
   SmartReconciliationContext
 } from './useObelixiaSmartReconciliation';
+
+// Fase 8: Intelligent Cash Flow Management & Treasury
+export { useObelixiaTreasury } from './useObelixiaTreasury';
+export type {
+  CashFlowForecast,
+  LiquidityPosition,
+  PaymentOptimization,
+  CashFlowAlert,
+  WorkingCapitalMetrics,
+  TreasuryContext
+} from './useObelixiaTreasury';
