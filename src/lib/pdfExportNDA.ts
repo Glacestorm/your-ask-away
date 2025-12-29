@@ -42,14 +42,14 @@ export function generateNDAPDF(data: NDAPDFData): jsPDF {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 25; // Margen aumentado
   const contentWidth = pageWidth - margin * 2;
   let yPos = margin;
   let clauseNumber = 1;
 
   // Helper functions
   const addNewPageIfNeeded = (requiredSpace: number) => {
-    if (yPos + requiredSpace > pageHeight - margin - 10) {
+    if (yPos + requiredSpace > pageHeight - margin - 20) { // Margen inferior mayor
       doc.addPage();
       yPos = margin;
       return true;
@@ -58,12 +58,12 @@ export function generateNDAPDF(data: NDAPDFData): jsPDF {
   };
 
   const drawClauseTitle = (title: string) => {
-    addNewPageIfNeeded(15);
+    addNewPageIfNeeded(20);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(...PRIMARY_COLOR);
-    doc.text(`CLÁUSULA ${clauseNumber}ª. ${title.toUpperCase()}`, margin, yPos);
-    yPos += 8;
+    doc.text(`CLAUSULA ${clauseNumber}. ${title.toUpperCase()}`, margin, yPos);
+    yPos += 10;
     clauseNumber++;
     doc.setTextColor(...TEXT_COLOR);
   };
@@ -71,25 +71,25 @@ export function generateNDAPDF(data: NDAPDFData): jsPDF {
   const drawSubClause = (number: string, text: string) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(`${number} ${text}`, contentWidth - 5);
+    const lines = doc.splitTextToSize(`${number} ${text}`, contentWidth - 10);
     lines.forEach((line: string) => {
-      addNewPageIfNeeded(6);
+      addNewPageIfNeeded(8);
       doc.text(line, margin, yPos);
-      yPos += 5;
+      yPos += 6;
     });
-    yPos += 3;
+    yPos += 4;
   };
 
   const drawParagraph = (text: string, indent = 0) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    const lines = doc.splitTextToSize(text, contentWidth - indent);
+    const lines = doc.splitTextToSize(text, contentWidth - indent - 5);
     lines.forEach((line: string) => {
-      addNewPageIfNeeded(6);
+      addNewPageIfNeeded(8);
       doc.text(line, margin + indent, yPos);
-      yPos += 5;
+      yPos += 6;
     });
-    yPos += 4;
+    yPos += 5;
   };
 
   const formatDate = (date?: string) => date || new Date().toLocaleDateString('es-ES', { 
