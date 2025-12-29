@@ -171,3 +171,19 @@ export type {
   AssetDisposal,
   AssetStats
 } from './useObelixiaFixedAssets';
+
+// Fase 15 Extended: Strategic Financial Agent
+export { useObelixiaGrantsIntelligence } from './useObelixiaGrantsIntelligence';
+export type { Grant, GrantApplication, GrantsContext } from './useObelixiaGrantsIntelligence';
+
+export { useObelixiaBusinessPlan } from './useObelixiaBusinessPlan';
+export type { BusinessPlan, BusinessPlanContext } from './useObelixiaBusinessPlan';
+
+export { useObelixiaViabilityStudy } from './useObelixiaViabilityStudy';
+export type { ViabilityStudy, ViabilityContext } from './useObelixiaViabilityStudy';
+
+export { useObelixiaCompetitiveAnalysis } from './useObelixiaCompetitiveAnalysis';
+export type { CompetitorAnalysis, CompetitiveContext } from './useObelixiaCompetitiveAnalysis';
+
+export { useObelixiaInvestorDocs } from './useObelixiaInvestorDocs';
+export type { InvestorDocument, InvestorDocContext } from './useObelixiaInvestorDocs';
