@@ -111,3 +111,14 @@ export type {
   WorkingCapitalMetrics,
   TreasuryContext
 } from './useObelixiaTreasury';
+
+// Fase 9: Intelligent Tax Planning & Optimization
+export { useObelixiaTaxPlanning } from './useObelixiaTaxPlanning';
+export type {
+  TaxOptimization,
+  TaxScenario,
+  TaxCalendarEvent,
+  DeductionOpportunity,
+  TaxSummary,
+  TaxPlanningContext
+} from './useObelixiaTaxPlanning';

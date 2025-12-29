@@ -16,6 +16,9 @@ export { SmartReconciliationPanel } from './SmartReconciliationPanel';
 // Phase 8: Intelligent Cash Flow Management & Treasury
 export { TreasuryPanel } from './TreasuryPanel';
 
+// Phase 9: Intelligent Tax Planning & Optimization
+export { TaxPlanningPanel } from './TaxPlanningPanel';
+
 /**
  * ObelixIA Accounting Components - Barrel Export
  * Fase 11 - Enterprise SaaS 2025-2026
