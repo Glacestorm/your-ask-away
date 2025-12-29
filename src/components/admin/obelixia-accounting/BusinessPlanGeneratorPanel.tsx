@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
@@ -43,6 +42,16 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { downloadBusinessPlanPDF, type BusinessPlanPDFData } from '@/lib/pdfExportBusinessPlan';
+
+const PLAN_TEMPLATES = [
+  { id: 'startup-tech', name: 'Startup Tech', icon: Rocket, desc: 'Para empresas tecnológicas innovadoras', type: 'startup', audience: 'Tecnología' },
+  { id: 'pyme-tradicional', name: 'PYME Tradicional', icon: Building2, desc: 'Negocios establecidos y tradicionales', type: 'pyme', audience: 'General' },
+  { id: 'ecommerce', name: 'E-commerce', icon: DollarSign, desc: 'Tiendas online y marketplaces', type: 'ecommerce', audience: 'Retail Online' },
+  { id: 'franquicia', name: 'Franquicia', icon: Users, desc: 'Modelos de franquicia y licencias', type: 'franchise', audience: 'Franquicias' },
+  { id: 'servicios-b2b', name: 'Servicios B2B', icon: BarChart3, desc: 'Servicios para empresas', type: 'pyme', audience: 'B2B' },
+  { id: 'saas', name: 'SaaS', icon: TrendingUp, desc: 'Software como servicio', type: 'startup', audience: 'SaaS' },
+];
 
 export function BusinessPlanGeneratorPanel() {
   const [activeTab, setActiveTab] = useState('plans');
@@ -58,7 +67,6 @@ export function BusinessPlanGeneratorPanel() {
     isLoading,
     fetchPlans,
     generatePlan,
-    exportPlan
   } = useObelixiaBusinessPlan();
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -84,8 +92,36 @@ export function BusinessPlanGeneratorPanel() {
     }
   };
 
-  const handleExport = async (planId: string, format: 'pdf' | 'docx') => {
-    await exportPlan(planId, format);
+  const handleUseTemplate = (template: typeof PLAN_TEMPLATES[0]) => {
+    setNewPlanData({
+      title: `Plan de Negocio - ${template.name}`,
+      plan_type: template.type,
+      target_audience: template.audience
+    });
+    setShowNewPlan(true);
+    setActiveTab('plans');
+    toast.success(`Plantilla "${template.name}" cargada`);
+  };
+
+  const handleExportPDF = (plan: any) => {
+    const pdfData: BusinessPlanPDFData = {
+      title: plan.title,
+      companyName: plan.company_name || plan.title,
+      planType: plan.plan_type,
+      targetAudience: plan.target_audience,
+      status: plan.status,
+      createdAt: format(new Date(plan.created_at), 'dd/MM/yyyy', { locale: es }),
+      executiveSummary: plan.executive_summary as BusinessPlanPDFData['executiveSummary'],
+      marketAnalysis: plan.market_analysis as BusinessPlanPDFData['marketAnalysis'],
+      businessModel: plan.business_model as BusinessPlanPDFData['businessModel'],
+      financialPlan: plan.financial_plan as BusinessPlanPDFData['financialPlan'],
+      marketingStrategy: plan.marketing_strategy as BusinessPlanPDFData['marketingStrategy'],
+      operationsPlan: plan.operations_plan as BusinessPlanPDFData['operationsPlan'],
+      teamOrganization: plan.team_organization as BusinessPlanPDFData['teamOrganization'],
+      riskAnalysis: plan.risk_analysis as BusinessPlanPDFData['riskAnalysis'],
+    };
+    downloadBusinessPlanPDF(pdfData);
+    toast.success('PDF generado correctamente');
   };
   
   const handleDeletePlan = async (planId: string) => {
@@ -326,7 +362,7 @@ export function BusinessPlanGeneratorPanel() {
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleExport(plan.id, 'pdf')}
+                          onClick={() => handleExportPDF(plan)}
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -358,20 +394,18 @@ export function BusinessPlanGeneratorPanel() {
 
         <TabsContent value="templates">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { name: 'Startup Tech', icon: Rocket, desc: 'Para empresas tecnológicas innovadoras' },
-              { name: 'PYME Tradicional', icon: Building2, desc: 'Negocios establecidos y tradicionales' },
-              { name: 'E-commerce', icon: DollarSign, desc: 'Tiendas online y marketplaces' },
-              { name: 'Franquicia', icon: Users, desc: 'Modelos de franquicia y licencias' },
-              { name: 'Servicios B2B', icon: BarChart3, desc: 'Servicios para empresas' },
-              { name: 'SaaS', icon: TrendingUp, desc: 'Software como servicio' },
-            ].map((template) => (
-              <Card key={template.name} className="hover:border-primary/50 transition-colors cursor-pointer">
+            {PLAN_TEMPLATES.map((template) => (
+              <Card key={template.id} className="hover:border-primary/50 transition-colors cursor-pointer">
                 <CardContent className="pt-6 text-center">
                   <template.icon className="h-10 w-10 mx-auto mb-3 text-primary" />
                   <h4 className="font-semibold">{template.name}</h4>
                   <p className="text-sm text-muted-foreground mt-1">{template.desc}</p>
-                  <Button className="mt-4" size="sm" variant="outline">
+                  <Button 
+                    className="mt-4" 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleUseTemplate(template)}
+                  >
                     Usar Plantilla
                   </Button>
                 </CardContent>
