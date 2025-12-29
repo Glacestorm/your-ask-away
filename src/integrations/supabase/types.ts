@@ -15887,6 +15887,123 @@ export type Database = {
           },
         ]
       }
+      obelixia_business_plans: {
+        Row: {
+          ai_model_used: string | null
+          appendices: Json | null
+          business_model: Json | null
+          company_description: Json | null
+          competitive_analysis: Json | null
+          created_at: string
+          data_sources: Json | null
+          executive_summary: Json | null
+          exit_strategy: Json | null
+          financial_plan: Json | null
+          full_content: string | null
+          generated_at: string | null
+          generation_time_ms: number | null
+          id: string
+          implementation_roadmap: Json | null
+          investment_needs: Json | null
+          is_current: boolean | null
+          language: string | null
+          market_analysis: Json | null
+          marketing_strategy: Json | null
+          operations_plan: Json | null
+          pdf_url: string | null
+          plan_type: string
+          product_service: Json | null
+          prompts_used: Json | null
+          risk_analysis: Json | null
+          status: string
+          target_audience: string | null
+          team_organization: Json | null
+          title: string
+          total_pages: number | null
+          updated_at: string
+          user_id: string | null
+          version: string | null
+          word_count: number | null
+          word_url: string | null
+        }
+        Insert: {
+          ai_model_used?: string | null
+          appendices?: Json | null
+          business_model?: Json | null
+          company_description?: Json | null
+          competitive_analysis?: Json | null
+          created_at?: string
+          data_sources?: Json | null
+          executive_summary?: Json | null
+          exit_strategy?: Json | null
+          financial_plan?: Json | null
+          full_content?: string | null
+          generated_at?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          implementation_roadmap?: Json | null
+          investment_needs?: Json | null
+          is_current?: boolean | null
+          language?: string | null
+          market_analysis?: Json | null
+          marketing_strategy?: Json | null
+          operations_plan?: Json | null
+          pdf_url?: string | null
+          plan_type?: string
+          product_service?: Json | null
+          prompts_used?: Json | null
+          risk_analysis?: Json | null
+          status?: string
+          target_audience?: string | null
+          team_organization?: Json | null
+          title: string
+          total_pages?: number | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+          word_count?: number | null
+          word_url?: string | null
+        }
+        Update: {
+          ai_model_used?: string | null
+          appendices?: Json | null
+          business_model?: Json | null
+          company_description?: Json | null
+          competitive_analysis?: Json | null
+          created_at?: string
+          data_sources?: Json | null
+          executive_summary?: Json | null
+          exit_strategy?: Json | null
+          financial_plan?: Json | null
+          full_content?: string | null
+          generated_at?: string | null
+          generation_time_ms?: number | null
+          id?: string
+          implementation_roadmap?: Json | null
+          investment_needs?: Json | null
+          is_current?: boolean | null
+          language?: string | null
+          market_analysis?: Json | null
+          marketing_strategy?: Json | null
+          operations_plan?: Json | null
+          pdf_url?: string | null
+          plan_type?: string
+          product_service?: Json | null
+          prompts_used?: Json | null
+          risk_analysis?: Json | null
+          status?: string
+          target_audience?: string | null
+          team_organization?: Json | null
+          title?: string
+          total_pages?: number | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+          word_count?: number | null
+          word_url?: string | null
+        }
+        Relationships: []
+      }
       obelixia_chart_of_accounts: {
         Row: {
           accepts_entries: boolean | null
@@ -15932,6 +16049,114 @@ export type Database = {
           normal_balance?: string | null
           parent_account_code?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      obelixia_competitor_analysis: {
+        Row: {
+          company_profile: Json | null
+          competitive_gaps: Json | null
+          competitor_name: string
+          competitor_type: string | null
+          created_at: string
+          customer_reviews: Json | null
+          employee_count: string | null
+          features: Json | null
+          founding_year: number | null
+          funding_info: Json | null
+          headquarters: string | null
+          id: string
+          last_updated_at: string | null
+          market_share_estimate: number | null
+          media_mentions: Json | null
+          opportunities: Json | null
+          positioning_statement: string | null
+          pricing: Json | null
+          recent_news: Json | null
+          similarity_score: number | null
+          status: string
+          strengths: Json | null
+          target_market: Json | null
+          technology_stack: Json | null
+          threat_level: number | null
+          threats: Json | null
+          updated_at: string
+          user_id: string | null
+          value_proposition: string | null
+          vs_obelixia_advantages: Json | null
+          vs_obelixia_disadvantages: Json | null
+          weaknesses: Json | null
+          website_url: string | null
+        }
+        Insert: {
+          company_profile?: Json | null
+          competitive_gaps?: Json | null
+          competitor_name: string
+          competitor_type?: string | null
+          created_at?: string
+          customer_reviews?: Json | null
+          employee_count?: string | null
+          features?: Json | null
+          founding_year?: number | null
+          funding_info?: Json | null
+          headquarters?: string | null
+          id?: string
+          last_updated_at?: string | null
+          market_share_estimate?: number | null
+          media_mentions?: Json | null
+          opportunities?: Json | null
+          positioning_statement?: string | null
+          pricing?: Json | null
+          recent_news?: Json | null
+          similarity_score?: number | null
+          status?: string
+          strengths?: Json | null
+          target_market?: Json | null
+          technology_stack?: Json | null
+          threat_level?: number | null
+          threats?: Json | null
+          updated_at?: string
+          user_id?: string | null
+          value_proposition?: string | null
+          vs_obelixia_advantages?: Json | null
+          vs_obelixia_disadvantages?: Json | null
+          weaknesses?: Json | null
+          website_url?: string | null
+        }
+        Update: {
+          company_profile?: Json | null
+          competitive_gaps?: Json | null
+          competitor_name?: string
+          competitor_type?: string | null
+          created_at?: string
+          customer_reviews?: Json | null
+          employee_count?: string | null
+          features?: Json | null
+          founding_year?: number | null
+          funding_info?: Json | null
+          headquarters?: string | null
+          id?: string
+          last_updated_at?: string | null
+          market_share_estimate?: number | null
+          media_mentions?: Json | null
+          opportunities?: Json | null
+          positioning_statement?: string | null
+          pricing?: Json | null
+          recent_news?: Json | null
+          similarity_score?: number | null
+          status?: string
+          strengths?: Json | null
+          target_market?: Json | null
+          technology_stack?: Json | null
+          threat_level?: number | null
+          threats?: Json | null
+          updated_at?: string
+          user_id?: string | null
+          value_proposition?: string | null
+          vs_obelixia_advantages?: Json | null
+          vs_obelixia_disadvantages?: Json | null
+          weaknesses?: Json | null
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -16365,6 +16590,295 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      obelixia_grant_applications: {
+        Row: {
+          amount_approved: number | null
+          amount_requested: number | null
+          application_date: string | null
+          application_reference: string | null
+          application_summary: string | null
+          created_at: string
+          documents: Json | null
+          financial_plan: string | null
+          generated_documents: Json | null
+          grant_id: string | null
+          id: string
+          innovation_justification: string | null
+          internal_notes: string | null
+          market_analysis: string | null
+          project_description: string | null
+          response_received_at: string | null
+          reviewer_feedback: string | null
+          status: string
+          status_history: Json | null
+          submitted_at: string | null
+          team_description: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount_approved?: number | null
+          amount_requested?: number | null
+          application_date?: string | null
+          application_reference?: string | null
+          application_summary?: string | null
+          created_at?: string
+          documents?: Json | null
+          financial_plan?: string | null
+          generated_documents?: Json | null
+          grant_id?: string | null
+          id?: string
+          innovation_justification?: string | null
+          internal_notes?: string | null
+          market_analysis?: string | null
+          project_description?: string | null
+          response_received_at?: string | null
+          reviewer_feedback?: string | null
+          status?: string
+          status_history?: Json | null
+          submitted_at?: string | null
+          team_description?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount_approved?: number | null
+          amount_requested?: number | null
+          application_date?: string | null
+          application_reference?: string | null
+          application_summary?: string | null
+          created_at?: string
+          documents?: Json | null
+          financial_plan?: string | null
+          generated_documents?: Json | null
+          grant_id?: string | null
+          id?: string
+          innovation_justification?: string | null
+          internal_notes?: string | null
+          market_analysis?: string | null
+          project_description?: string | null
+          response_received_at?: string | null
+          reviewer_feedback?: string | null
+          status?: string
+          status_history?: Json | null
+          submitted_at?: string | null
+          team_description?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_grant_applications_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_grants: {
+        Row: {
+          ai_analysis: Json | null
+          categories: string[] | null
+          complexity_score: number | null
+          coverage_percentage: number | null
+          created_at: string
+          deadline_date: string | null
+          description: string | null
+          eligibility_score: number | null
+          eligible_company_types: string[] | null
+          eligible_sectors: string[] | null
+          grant_type: string
+          id: string
+          is_featured: boolean | null
+          keywords: string[] | null
+          last_checked_at: string | null
+          level: string
+          max_amount: number | null
+          max_employees: number | null
+          max_turnover: number | null
+          min_amount: number | null
+          min_employees: number | null
+          min_turnover: number | null
+          name: string
+          official_reference: string | null
+          opening_date: string | null
+          organization: string
+          priority_order: number | null
+          region: string | null
+          relevance_score: number | null
+          requirements: Json | null
+          resolution_date: string | null
+          source_hash: string | null
+          source_url: string | null
+          status: string
+          success_probability: number | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          categories?: string[] | null
+          complexity_score?: number | null
+          coverage_percentage?: number | null
+          created_at?: string
+          deadline_date?: string | null
+          description?: string | null
+          eligibility_score?: number | null
+          eligible_company_types?: string[] | null
+          eligible_sectors?: string[] | null
+          grant_type?: string
+          id?: string
+          is_featured?: boolean | null
+          keywords?: string[] | null
+          last_checked_at?: string | null
+          level?: string
+          max_amount?: number | null
+          max_employees?: number | null
+          max_turnover?: number | null
+          min_amount?: number | null
+          min_employees?: number | null
+          min_turnover?: number | null
+          name: string
+          official_reference?: string | null
+          opening_date?: string | null
+          organization: string
+          priority_order?: number | null
+          region?: string | null
+          relevance_score?: number | null
+          requirements?: Json | null
+          resolution_date?: string | null
+          source_hash?: string | null
+          source_url?: string | null
+          status?: string
+          success_probability?: number | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          categories?: string[] | null
+          complexity_score?: number | null
+          coverage_percentage?: number | null
+          created_at?: string
+          deadline_date?: string | null
+          description?: string | null
+          eligibility_score?: number | null
+          eligible_company_types?: string[] | null
+          eligible_sectors?: string[] | null
+          grant_type?: string
+          id?: string
+          is_featured?: boolean | null
+          keywords?: string[] | null
+          last_checked_at?: string | null
+          level?: string
+          max_amount?: number | null
+          max_employees?: number | null
+          max_turnover?: number | null
+          min_amount?: number | null
+          min_employees?: number | null
+          min_turnover?: number | null
+          name?: string
+          official_reference?: string | null
+          opening_date?: string | null
+          organization?: string
+          priority_order?: number | null
+          region?: string | null
+          relevance_score?: number | null
+          requirements?: Json | null
+          resolution_date?: string | null
+          source_hash?: string | null
+          source_url?: string | null
+          status?: string
+          success_probability?: number | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      obelixia_investor_documents: {
+        Row: {
+          ask_amount: number | null
+          company_data: Json | null
+          content: Json | null
+          created_at: string
+          document_type: string
+          financial_highlights: Json | null
+          full_content: string | null
+          generated_at: string | null
+          grant_id: string | null
+          id: string
+          key_metrics: Json | null
+          language: string | null
+          pdf_url: string | null
+          pptx_url: string | null
+          preview_images: Json | null
+          slides: Json | null
+          status: string
+          target_investor_type: string | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          ask_amount?: number | null
+          company_data?: Json | null
+          content?: Json | null
+          created_at?: string
+          document_type: string
+          financial_highlights?: Json | null
+          full_content?: string | null
+          generated_at?: string | null
+          grant_id?: string | null
+          id?: string
+          key_metrics?: Json | null
+          language?: string | null
+          pdf_url?: string | null
+          pptx_url?: string | null
+          preview_images?: Json | null
+          slides?: Json | null
+          status?: string
+          target_investor_type?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          ask_amount?: number | null
+          company_data?: Json | null
+          content?: Json | null
+          created_at?: string
+          document_type?: string
+          financial_highlights?: Json | null
+          full_content?: string | null
+          generated_at?: string | null
+          grant_id?: string | null
+          id?: string
+          key_metrics?: Json | null
+          language?: string | null
+          pdf_url?: string | null
+          pptx_url?: string | null
+          preview_images?: Json | null
+          slides?: Json | null
+          status?: string
+          target_investor_type?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_investor_documents_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "obelixia_grants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       obelixia_invoice_lines: {
         Row: {
@@ -17202,6 +17716,132 @@ export type Database = {
           tax_base?: number | null
           updated_at?: string | null
           xml_file_url?: string | null
+        }
+        Relationships: []
+      }
+      obelixia_viability_studies: {
+        Row: {
+          breakeven_analysis: Json | null
+          cac_ltv_analysis: Json | null
+          commercial_score: number | null
+          contingency_plans: Json | null
+          created_at: string
+          critical_success_factors: Json | null
+          distribution_channels: Json | null
+          financial_score: number | null
+          full_content: string | null
+          generated_at: string | null
+          hiring_plan: Json | null
+          id: string
+          key_findings: Json | null
+          market_demand: Json | null
+          mitigation_strategies: Json | null
+          monte_carlo_results: Json | null
+          npv_irr_payback: Json | null
+          org_structure: Json | null
+          organizational_score: number | null
+          overall_risk_score: number | null
+          overall_viability_score: number | null
+          pdf_url: string | null
+          pricing_strategy: Json | null
+          recommendation: string | null
+          risk_matrix: Json | null
+          scalability_assessment: Json | null
+          scenarios: Json | null
+          security_compliance: Json | null
+          sensitivity_analysis: Json | null
+          status: string
+          study_type: string
+          team_requirements: Json | null
+          technical_analysis: Json | null
+          technical_score: number | null
+          technology_stack: Json | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          breakeven_analysis?: Json | null
+          cac_ltv_analysis?: Json | null
+          commercial_score?: number | null
+          contingency_plans?: Json | null
+          created_at?: string
+          critical_success_factors?: Json | null
+          distribution_channels?: Json | null
+          financial_score?: number | null
+          full_content?: string | null
+          generated_at?: string | null
+          hiring_plan?: Json | null
+          id?: string
+          key_findings?: Json | null
+          market_demand?: Json | null
+          mitigation_strategies?: Json | null
+          monte_carlo_results?: Json | null
+          npv_irr_payback?: Json | null
+          org_structure?: Json | null
+          organizational_score?: number | null
+          overall_risk_score?: number | null
+          overall_viability_score?: number | null
+          pdf_url?: string | null
+          pricing_strategy?: Json | null
+          recommendation?: string | null
+          risk_matrix?: Json | null
+          scalability_assessment?: Json | null
+          scenarios?: Json | null
+          security_compliance?: Json | null
+          sensitivity_analysis?: Json | null
+          status?: string
+          study_type?: string
+          team_requirements?: Json | null
+          technical_analysis?: Json | null
+          technical_score?: number | null
+          technology_stack?: Json | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          breakeven_analysis?: Json | null
+          cac_ltv_analysis?: Json | null
+          commercial_score?: number | null
+          contingency_plans?: Json | null
+          created_at?: string
+          critical_success_factors?: Json | null
+          distribution_channels?: Json | null
+          financial_score?: number | null
+          full_content?: string | null
+          generated_at?: string | null
+          hiring_plan?: Json | null
+          id?: string
+          key_findings?: Json | null
+          market_demand?: Json | null
+          mitigation_strategies?: Json | null
+          monte_carlo_results?: Json | null
+          npv_irr_payback?: Json | null
+          org_structure?: Json | null
+          organizational_score?: number | null
+          overall_risk_score?: number | null
+          overall_viability_score?: number | null
+          pdf_url?: string | null
+          pricing_strategy?: Json | null
+          recommendation?: string | null
+          risk_matrix?: Json | null
+          scalability_assessment?: Json | null
+          scenarios?: Json | null
+          security_compliance?: Json | null
+          sensitivity_analysis?: Json | null
+          status?: string
+          study_type?: string
+          team_requirements?: Json | null
+          technical_analysis?: Json | null
+          technical_score?: number | null
+          technology_stack?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
         }
         Relationships: []
       }
