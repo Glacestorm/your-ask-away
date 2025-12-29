@@ -136,6 +136,8 @@ export type {
 } from './useObelixiaFinancialAnalytics';
 
 // Fase 11: Enterprise Integration Modules
+export { useObelixiaIntegrationsHub } from './useObelixiaIntegrationsHub';
+export type { Integration, SyncLog } from './useObelixiaIntegrationsHub';
 export { useObelixiaWorkflow } from './useObelixiaWorkflow';
 export { useObelixiaDocuments } from './useObelixiaDocuments';
 export { useObelixiaIntercompany } from './useObelixiaIntercompany';
