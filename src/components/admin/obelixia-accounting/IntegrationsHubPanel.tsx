@@ -10,12 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RefreshCw, Plug, Database, Building2, FileText, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
-import { useObelixiaIntegrations } from '@/hooks/admin/obelixia-accounting';
+import { useObelixiaIntegrationsHub } from '@/hooks/admin/obelixia-accounting/useObelixiaIntegrationsHub';
 import { cn } from '@/lib/utils';
 
 export function IntegrationsHubPanel() {
   const [activeTab, setActiveTab] = useState('all');
-  const { isLoading, integrations, syncLogs, fetchIntegrations, syncIntegration, testConnection } = useObelixiaIntegrations();
+  const { isLoading, integrations, syncLogs, fetchIntegrations, syncIntegration, testConnection } = useObelixiaIntegrationsHub();
 
   useEffect(() => { fetchIntegrations(); }, [fetchIntegrations]);
 
