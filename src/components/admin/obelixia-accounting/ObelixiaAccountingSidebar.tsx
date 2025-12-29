@@ -19,7 +19,11 @@ import {
   Landmark,
   Calculator,
   BarChart3,
-  ChevronDown
+  ChevronDown,
+  Plug,
+  Workflow,
+  FileArchive,
+  Network
 } from 'lucide-react';
 import {
   Sidebar,
@@ -66,11 +70,19 @@ const aiModules = [
   { id: 'analytics', label: 'Analytics Ejecutivo', icon: BarChart3 },
 ];
 
+const enterpriseModules = [
+  { id: 'integrations-hub', label: 'Hub Integraciones', icon: Plug },
+  { id: 'workflow', label: 'Workflow Colaborativo', icon: Workflow },
+  { id: 'documents', label: 'Gestión Documental', icon: FileArchive },
+  { id: 'intercompany', label: 'Intercompañía', icon: Network },
+];
+
 export function ObelixiaAccountingSidebar({ 
   activeTab, 
   onTabChange 
 }: ObelixiaAccountingSidebarProps) {
   const isAIModuleActive = aiModules.some(m => m.id === activeTab);
+  const isEnterpriseModuleActive = enterpriseModules.some(m => m.id === activeTab);
 
   return (
     <Sidebar className="border-r bg-sidebar">
@@ -133,6 +145,43 @@ export function ObelixiaAccountingSidebar({
               <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
                   {aiModules.map((module) => (
+                    <SidebarMenuItem key={module.id}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange(module.id)}
+                        className={cn(
+                          "w-full justify-start gap-3 px-3 py-2 text-sm transition-colors",
+                          activeTab === module.id 
+                            ? "bg-primary/10 text-primary font-medium" 
+                            : "hover:bg-muted"
+                        )}
+                      >
+                        <module.icon className="h-4 w-4 shrink-0" />
+                        <span>{module.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
+
+        {/* Enterprise Modules - Phase 11 */}
+        <Collapsible defaultOpen={isEnterpriseModuleActive} className="mt-4">
+          <SidebarGroup>
+            <CollapsibleTrigger className="w-full">
+              <SidebarGroupLabel className="flex items-center justify-between text-xs font-medium px-2 py-1 cursor-pointer hover:bg-muted/50 rounded-md group">
+                <div className="flex items-center gap-2 text-accent-foreground">
+                  <Network className="h-3.5 w-3.5" />
+                  <span>Enterprise</span>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent className="mt-1">
+                <SidebarMenu>
+                  {enterpriseModules.map((module) => (
                     <SidebarMenuItem key={module.id}>
                       <SidebarMenuButton
                         onClick={() => onTabChange(module.id)}

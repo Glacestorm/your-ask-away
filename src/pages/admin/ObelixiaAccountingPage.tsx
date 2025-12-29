@@ -24,7 +24,12 @@ import {
   SmartReconciliationPanel,
   TreasuryPanel,
   TaxPlanningPanel,
-  FinancialAnalyticsPanel
+  FinancialAnalyticsPanel,
+  // Phase 11: Enterprise Modules
+  IntegrationsHubPanel,
+  WorkflowPanel,
+  DocumentsPanel,
+  IntercompanyPanel
 } from '@/components/admin/obelixia-accounting';
 
 export default function ObelixiaAccountingPage() {
@@ -62,6 +67,15 @@ export default function ObelixiaAccountingPage() {
         return <TaxPlanningPanel />;
       case 'analytics':
         return <FinancialAnalyticsPanel />;
+      // Phase 11: Enterprise Modules
+      case 'integrations-hub':
+        return <IntegrationsHubPanel />;
+      case 'workflow':
+        return <WorkflowPanel />;
+      case 'documents':
+        return <DocumentsPanel />;
+      case 'intercompany':
+        return <IntercompanyPanel />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
