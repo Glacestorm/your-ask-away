@@ -122,3 +122,15 @@ export type {
   TaxSummary,
   TaxPlanningContext
 } from './useObelixiaTaxPlanning';
+
+// Fase 10: Advanced Financial Analytics & Executive Dashboard
+export { useObelixiaFinancialAnalytics } from './useObelixiaFinancialAnalytics';
+export type {
+  ExecutiveKPI,
+  BenchmarkAnalysis,
+  StrategicInsight,
+  FinancialHealth,
+  PredictiveMetric,
+  ExecutiveReport,
+  FinancialAnalyticsContext
+} from './useObelixiaFinancialAnalytics';
