@@ -1,0 +1,289 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface RiskRequest {
+  action: 'get_risks' | 'assess_risk' | 'create_mitigation' | 'monitor_kris' | 'stress_test';
+  context?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    const { action, context, params } = await req.json() as RiskRequest;
+
+    let systemPrompt = '';
+    let userPrompt = '';
+
+    switch (action) {
+      case 'get_risks':
+        systemPrompt = `Eres un gestor de riesgos financieros empresariales.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "risks": [
+    {
+      "id": "string",
+      "name": "string",
+      "category": "credit" | "market" | "liquidity" | "operational" | "compliance" | "strategic",
+      "description": "string",
+      "probability": "high" | "medium" | "low",
+      "impact": "critical" | "high" | "medium" | "low",
+      "riskScore": 0-100,
+      "status": "active" | "mitigated" | "accepted" | "transferred",
+      "owner": "string",
+      "mitigations": [],
+      "kris": [],
+      "lastAssessment": "ISO date"
+    }
+  ],
+  "summary": {
+    "totalRisks": number,
+    "criticalRisks": number,
+    "overallExposure": number,
+    "mitigationCoverage": number
+  },
+  "heatmap": {}
+}`;
+        userPrompt = context 
+          ? `Obtén riesgos para: ${JSON.stringify(context)}`
+          : 'Lista todos los riesgos financieros activos';
+        break;
+
+      case 'assess_risk':
+        systemPrompt = `Eres un evaluador de riesgos financieros con metodología cuantitativa.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "assessment": {
+    "riskId": "string",
+    "assessmentDate": "ISO date",
+    "methodology": "string",
+    "inherentRisk": {
+      "probability": number,
+      "impact": number,
+      "score": number,
+      "category": "string"
+    },
+    "residualRisk": {
+      "probability": number,
+      "impact": number,
+      "score": number,
+      "category": "string"
+    },
+    "controls": [
+      {
+        "id": "string",
+        "name": "string",
+        "type": "preventive" | "detective" | "corrective",
+        "effectiveness": number,
+        "status": "string"
+      }
+    ],
+    "quantification": {
+      "expectedLoss": number,
+      "worstCase": number,
+      "var95": number,
+      "var99": number
+    }
+  },
+  "recommendations": [],
+  "nextReviewDate": "ISO date"
+}`;
+        userPrompt = `Evalúa riesgo: ${JSON.stringify(params)}`;
+        break;
+
+      case 'create_mitigation':
+        systemPrompt = `Eres un experto en estrategias de mitigación de riesgos financieros.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "mitigation": {
+    "id": "string",
+    "riskId": "string",
+    "strategy": "avoid" | "reduce" | "transfer" | "accept",
+    "name": "string",
+    "description": "string",
+    "actions": [
+      {
+        "id": "string",
+        "action": "string",
+        "responsible": "string",
+        "dueDate": "ISO date",
+        "status": "pending" | "in_progress" | "completed",
+        "cost": number
+      }
+    ],
+    "expectedReduction": number,
+    "costBenefit": {
+      "implementationCost": number,
+      "expectedBenefit": number,
+      "roi": number,
+      "paybackPeriod": "string"
+    },
+    "kpis": []
+  },
+  "alternatives": [],
+  "monitoring": {}
+}`;
+        userPrompt = `Crea plan de mitigación: ${JSON.stringify(params)}`;
+        break;
+
+      case 'monitor_kris':
+        systemPrompt = `Eres un monitor de indicadores clave de riesgo (KRIs).
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "kris": [
+    {
+      "id": "string",
+      "name": "string",
+      "category": "string",
+      "currentValue": number,
+      "threshold": {
+        "green": number,
+        "yellow": number,
+        "red": number
+      },
+      "status": "green" | "yellow" | "red",
+      "trend": "improving" | "stable" | "worsening",
+      "trendPercentage": number,
+      "lastUpdated": "ISO date",
+      "history": [],
+      "alerts": []
+    }
+  ],
+  "dashboard": {
+    "greenCount": number,
+    "yellowCount": number,
+    "redCount": number,
+    "overallHealth": number
+  },
+  "criticalAlerts": []
+}`;
+        userPrompt = context 
+          ? `Monitorea KRIs para: ${JSON.stringify(context)}`
+          : 'Obtén estado actual de todos los KRIs';
+        break;
+
+      case 'stress_test':
+        systemPrompt = `Eres un experto en pruebas de estrés financiero y análisis de escenarios adversos.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "stressTest": {
+    "id": "string",
+    "name": "string",
+    "scenario": "string",
+    "severity": "mild" | "moderate" | "severe" | "extreme",
+    "assumptions": {},
+    "results": {
+      "baselineMetrics": {},
+      "stressedMetrics": {},
+      "impact": {
+        "revenue": number,
+        "expenses": number,
+        "cashFlow": number,
+        "capitalRatio": number,
+        "liquidityRatio": number
+      },
+      "breachThresholds": [],
+      "recoveryTime": "string"
+    },
+    "vulnerabilities": [],
+    "mitigations": []
+  },
+  "comparison": {},
+  "recommendations": []
+}`;
+        userPrompt = `Ejecuta prueba de estrés: ${JSON.stringify(params)}`;
+        break;
+
+      default:
+        throw new Error(`Acción no soportada: ${action}`);
+    }
+
+    console.log(`[obelixia-risk-management] Processing action: ${action}`);
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 3000,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded', 
+          message: 'Demasiadas solicitudes. Intenta más tarde.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error(`AI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) throw new Error('No content in AI response');
+
+    let result;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found');
+      }
+    } catch (parseError) {
+      console.error('[obelixia-risk-management] JSON parse error:', parseError);
+      result = { rawContent: content, parseError: true };
+    }
+
+    console.log(`[obelixia-risk-management] Success: ${action}`);
+
+    return new Response(JSON.stringify({
+      success: true,
+      action,
+      data: result,
+      timestamp: new Date().toISOString()
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('[obelixia-risk-management] Error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
