@@ -134,3 +134,8 @@ export type {
   ExecutiveReport,
   FinancialAnalyticsContext
 } from './useObelixiaFinancialAnalytics';
+
+// Fase 11: Enterprise Integration Modules
+export { useObelixiaWorkflow } from './useObelixiaWorkflow';
+export { useObelixiaDocuments } from './useObelixiaDocuments';
+export { useObelixiaIntercompany } from './useObelixiaIntercompany';
