@@ -1,5 +1,17 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.obelixia-integrations]
+verify_jwt = true
+
+[functions.obelixia-workflow]
+verify_jwt = true
+
+[functions.obelixia-documents]
+verify_jwt = true
+
+[functions.obelixia-intercompany]
+verify_jwt = true
+
 [functions.obelixia-financial-analytics]
 verify_jwt = true
 
