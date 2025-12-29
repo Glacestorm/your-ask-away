@@ -45,3 +45,9 @@ export { ObelixiaAccountingSidebar } from './ObelixiaAccountingSidebar';
 // Fase 2: Multimodal AI - Vision & Voice
 export { DocumentScannerPanel } from './DocumentScannerPanel';
 export { VoiceCommandInterface } from './VoiceCommandInterface';
+
+// Fase 11: Enterprise Modules
+export { IntegrationsHubPanel } from './IntegrationsHubPanel';
+export { WorkflowPanel } from './WorkflowPanel';
+export { DocumentsPanel } from './DocumentsPanel';
+export { IntercompanyPanel } from './IntercompanyPanel';
