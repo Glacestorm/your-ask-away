@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.obelixia-tax-planning]
+verify_jwt = true
+
 [functions.obelixia-treasury]
 verify_jwt = true
 
