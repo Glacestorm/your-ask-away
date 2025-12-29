@@ -7,6 +7,12 @@ export { FinancialForecastingPanel } from './FinancialForecastingPanel';
 // Phase 5: Compliance & Audit AI
 export { ComplianceAuditPanel } from './ComplianceAuditPanel';
 
+// Phase 6: Multi-Currency & International Operations
+export { MultiCurrencyPanel } from './MultiCurrencyPanel';
+
+// Phase 7: Automated Reconciliation & Smart Matching
+export { SmartReconciliationPanel } from './SmartReconciliationPanel';
+
 /**
  * ObelixIA Accounting Components - Barrel Export
  * Fase 11 - Enterprise SaaS 2025-2026

@@ -90,3 +90,13 @@ export type {
   MultiCurrencyReport,
   MultiCurrencyContext
 } from './useObelixiaMultiCurrency';
+
+// Fase 7: Automated Reconciliation & Smart Matching
+export { useObelixiaSmartReconciliation } from './useObelixiaSmartReconciliation';
+export type {
+  ReconciliationMatch,
+  ReconciliationRule as SmartReconciliationRule,
+  ReconciliationSession,
+  ReconciliationStats,
+  SmartReconciliationContext
+} from './useObelixiaSmartReconciliation';
