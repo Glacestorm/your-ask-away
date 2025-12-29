@@ -48,10 +48,9 @@ export function BusinessPlanGeneratorPanel() {
   const [activeTab, setActiveTab] = useState('plans');
   const [showNewPlan, setShowNewPlan] = useState(false);
   const [newPlanData, setNewPlanData] = useState({
-    plan_name: '',
-    business_type: 'startup',
-    industry: '',
-    executive_summary: ''
+    title: '',
+    plan_type: 'startup',
+    target_audience: ''
   });
 
   const {
@@ -69,20 +68,19 @@ export function BusinessPlanGeneratorPanel() {
   }, []);
 
   const handleGeneratePlan = async () => {
-    if (!newPlanData.plan_name || !newPlanData.industry) {
+    if (!newPlanData.title || !newPlanData.target_audience) {
       toast.error('Completa los campos requeridos');
       return;
     }
     setIsGenerating(true);
     const result = await generatePlan({ 
-      planName: newPlanData.plan_name, 
-      companyName: newPlanData.plan_name,
-      industry: newPlanData.industry 
+      companyName: newPlanData.title,
+      industry: newPlanData.target_audience 
     });
     setIsGenerating(false);
     if (result) {
       setShowNewPlan(false);
-      setNewPlanData({ plan_name: '', business_type: 'startup', industry: '', executive_summary: '' });
+      setNewPlanData({ title: '', plan_type: 'startup', target_audience: '' });
     }
   };
 
@@ -109,10 +107,10 @@ export function BusinessPlanGeneratorPanel() {
       plan.executive_summary,
       plan.market_analysis,
       plan.business_model,
-      plan.financial_projections,
+      plan.financial_plan,
       plan.marketing_strategy,
       plan.operations_plan,
-      plan.team_structure,
+      plan.team_organization,
       plan.risk_analysis
     ];
     const completed = sections.filter(s => s && Object.keys(s).length > 0).length;
@@ -133,7 +131,7 @@ export function BusinessPlanGeneratorPanel() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => fetchBusinessPlans()} variant="outline" disabled={isLoading}>
+          <Button onClick={() => fetchPlans()} variant="outline" disabled={isLoading}>
             <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
             Actualizar
           </Button>
@@ -213,18 +211,18 @@ export function BusinessPlanGeneratorPanel() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Nombre del Plan *</label>
+                <label className="text-sm font-medium">Título del Plan *</label>
                 <Input
                   placeholder="Ej: Plan de Negocio 2025"
-                  value={newPlanData.plan_name}
-                  onChange={(e) => setNewPlanData({ ...newPlanData, plan_name: e.target.value })}
+                  value={newPlanData.title}
+                  onChange={(e) => setNewPlanData({ ...newPlanData, title: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tipo de Negocio *</label>
+                <label className="text-sm font-medium">Tipo de Plan *</label>
                 <Select
-                  value={newPlanData.business_type}
-                  onValueChange={(value) => setNewPlanData({ ...newPlanData, business_type: value })}
+                  value={newPlanData.plan_type}
+                  onValueChange={(value) => setNewPlanData({ ...newPlanData, plan_type: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -240,20 +238,11 @@ export function BusinessPlanGeneratorPanel() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Industria/Sector *</label>
+              <label className="text-sm font-medium">Público Objetivo / Industria *</label>
               <Input
                 placeholder="Ej: Tecnología, Salud, Retail..."
-                value={newPlanData.industry}
-                onChange={(e) => setNewPlanData({ ...newPlanData, industry: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Resumen Ejecutivo (opcional)</label>
-              <Textarea
-                placeholder="Describe brevemente tu idea de negocio..."
-                value={newPlanData.executive_summary}
-                onChange={(e) => setNewPlanData({ ...newPlanData, executive_summary: e.target.value })}
-                rows={4}
+                value={newPlanData.target_audience}
+                onChange={(e) => setNewPlanData({ ...newPlanData, target_audience: e.target.value })}
               />
             </div>
             <div className="flex gap-2 justify-end">
@@ -300,12 +289,14 @@ export function BusinessPlanGeneratorPanel() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-semibold">{plan.plan_name}</h4>
+                          <h4 className="font-semibold">{plan.title}</h4>
                           <Badge className={getStatusColor(plan.status || '')}>
                             {plan.status}
                           </Badge>
-                          <Badge variant="outline">{plan.business_type}</Badge>
-                          <Badge variant="outline">{plan.industry}</Badge>
+                          <Badge variant="outline">{plan.plan_type}</Badge>
+                          {plan.target_audience && (
+                            <Badge variant="outline">{plan.target_audience}</Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="flex-1">
