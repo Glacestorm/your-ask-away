@@ -32,6 +32,14 @@ import {
   IntercompanyPanel
 } from '@/components/admin/obelixia-accounting';
 
+// Phase 12: Advanced AI & Automation
+import {
+  AdvancedCopilotPanel,
+  AIOrchestorPanel,
+  SmartAnalyticsPanel,
+  RealTimeInsightsPanel
+} from '@/components/admin/advanced-ai';
+
 export default function ObelixiaAccountingPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -76,6 +84,15 @@ export default function ObelixiaAccountingPage() {
         return <DocumentsPanel />;
       case 'intercompany':
         return <IntercompanyPanel />;
+      // Phase 12: Advanced AI & Automation
+      case 'advanced-copilot':
+        return <AdvancedCopilotPanel context={{ entityId: 'obelixia-accounting', entityName: 'ObelixIA Contabilidad' }} />;
+      case 'ai-orchestrator':
+        return <AIOrchestorPanel />;
+      case 'smart-analytics':
+        return <SmartAnalyticsPanel context={{ entityId: 'obelixia-accounting', entityType: 'accounting' }} />;
+      case 'realtime-insights':
+        return <RealTimeInsightsPanel context={{ entityId: 'obelixia-accounting', entityType: 'accounting' }} />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
