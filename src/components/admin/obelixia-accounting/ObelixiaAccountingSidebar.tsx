@@ -27,7 +27,11 @@ import {
   Sparkles,
   Cpu,
   LineChart,
-  Zap
+  Zap,
+  Scale,
+  PiggyBank,
+  AlertTriangle,
+  Leaf
 } from 'lucide-react';
 import {
   Sidebar,
@@ -89,6 +93,14 @@ const advancedAIModules = [
   { id: 'realtime-insights', label: 'Insights Tiempo Real', icon: Zap },
 ];
 
+// Phase 13: Regulatory & Advanced Reporting
+const regulatoryModules = [
+  { id: 'regulatory-reporting', label: 'Reporting Regulatorio', icon: Scale },
+  { id: 'budgeting', label: 'Presupuestos IA', icon: PiggyBank },
+  { id: 'risk-management', label: 'Gestión de Riesgos', icon: AlertTriangle },
+  { id: 'esg-reporting', label: 'ESG & Sostenibilidad', icon: Leaf },
+];
+
 export function ObelixiaAccountingSidebar({ 
   activeTab, 
   onTabChange 
@@ -96,6 +108,7 @@ export function ObelixiaAccountingSidebar({
   const isAIModuleActive = aiModules.some(m => m.id === activeTab);
   const isEnterpriseModuleActive = enterpriseModules.some(m => m.id === activeTab);
   const isAdvancedAIModuleActive = advancedAIModules.some(m => m.id === activeTab);
+  const isRegulatoryModuleActive = regulatoryModules.some(m => m.id === activeTab);
 
   return (
     <Sidebar className="border-r bg-sidebar">
@@ -232,6 +245,43 @@ export function ObelixiaAccountingSidebar({
               <SidebarGroupContent className="mt-1">
                 <SidebarMenu>
                   {advancedAIModules.map((module) => (
+                    <SidebarMenuItem key={module.id}>
+                      <SidebarMenuButton
+                        onClick={() => onTabChange(module.id)}
+                        className={cn(
+                          "w-full justify-start gap-3 px-3 py-2 text-sm transition-colors",
+                          activeTab === module.id 
+                            ? "bg-primary/10 text-primary font-medium" 
+                            : "hover:bg-muted"
+                        )}
+                      >
+                        <module.icon className="h-4 w-4 shrink-0" />
+                        <span>{module.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
+
+        {/* Regulatory & Advanced Reporting - Phase 13 */}
+        <Collapsible defaultOpen={isRegulatoryModuleActive} className="mt-4">
+          <SidebarGroup>
+            <CollapsibleTrigger className="w-full">
+              <SidebarGroupLabel className="flex items-center justify-between text-xs font-medium px-2 py-1 cursor-pointer hover:bg-muted/50 rounded-md group">
+                <div className="flex items-center gap-2 text-amber-500">
+                  <Scale className="h-3.5 w-3.5" />
+                  <span>Regulatorio & ESG</span>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent className="mt-1">
+                <SidebarMenu>
+                  {regulatoryModules.map((module) => (
                     <SidebarMenuItem key={module.id}>
                       <SidebarMenuButton
                         onClick={() => onTabChange(module.id)}
