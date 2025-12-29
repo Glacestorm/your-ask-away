@@ -141,3 +141,33 @@ export type { Integration, SyncLog } from './useObelixiaIntegrationsHub';
 export { useObelixiaWorkflow } from './useObelixiaWorkflow';
 export { useObelixiaDocuments } from './useObelixiaDocuments';
 export { useObelixiaIntercompany } from './useObelixiaIntercompany';
+
+// Fase 15: Financial Guardian & Automation
+export { useObelixiaFinancialGuardian } from './useObelixiaFinancialGuardian';
+export type {
+  GuardianAlert,
+  GuardianInsight,
+  GuardianRecommendation,
+  GuardianWatchItem,
+  GuardianStats,
+  FinancialGuardianContext
+} from './useObelixiaFinancialGuardian';
+
+export { useObelixiaClosingAutomation } from './useObelixiaClosingAutomation';
+export type {
+  ClosingPeriod,
+  ClosingTask,
+  ClosingValidation,
+  ClosingAdjustment,
+  ClosingChecklist,
+  ClosingStats
+} from './useObelixiaClosingAutomation';
+
+export { useObelixiaFixedAssets } from './useObelixiaFixedAssets';
+export type {
+  FixedAsset,
+  AssetCategory,
+  AssetDepreciationSchedule,
+  AssetDisposal,
+  AssetStats
+} from './useObelixiaFixedAssets';
