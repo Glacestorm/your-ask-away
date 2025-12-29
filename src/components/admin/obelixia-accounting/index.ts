@@ -51,3 +51,9 @@ export { IntegrationsHubPanel } from './IntegrationsHubPanel';
 export { WorkflowPanel } from './WorkflowPanel';
 export { DocumentsPanel } from './DocumentsPanel';
 export { IntercompanyPanel } from './IntercompanyPanel';
+
+// Fase 13: Regulatory & Advanced Reporting
+export { RegulatoryReportingPanel } from './RegulatoryReportingPanel';
+export { BudgetingPanel } from './BudgetingPanel';
+export { RiskManagementPanel } from './RiskManagementPanel';
+export { ESGReportingPanel } from './ESGReportingPanel';
