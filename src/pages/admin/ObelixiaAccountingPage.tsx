@@ -113,19 +113,19 @@ export default function ObelixiaAccountingPage() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex h-screen w-full overflow-hidden">
         <ObelixiaAccountingSidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab} 
         />
-        <div className="flex-1 flex flex-col min-h-screen">
+        <main className="flex-1 flex flex-col h-full overflow-hidden">
           <DashboardLayout title="ObelixIA Accounting" contentPadding="none">
-            <main className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-6">
               {renderContent()}
-            </main>
+            </div>
           </DashboardLayout>
-        </div>
+        </main>
       </div>
     </SidebarProvider>
   );
