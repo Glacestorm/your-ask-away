@@ -79,3 +79,14 @@ export { useObelixiaFinancialForecasting } from './useObelixiaFinancialForecasti
 
 // Fase 5: Compliance & Audit AI
 export { useObelixiaComplianceAudit } from './useObelixiaComplianceAudit';
+
+// Fase 6: Multi-Currency & International Operations
+export { useObelixiaMultiCurrency } from './useObelixiaMultiCurrency';
+export type {
+  Currency,
+  ExchangeRate,
+  CurrencyConversion,
+  CurrencyExposure,
+  MultiCurrencyReport,
+  MultiCurrencyContext
+} from './useObelixiaMultiCurrency';
