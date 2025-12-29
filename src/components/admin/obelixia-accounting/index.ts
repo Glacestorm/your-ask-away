@@ -39,6 +39,9 @@ export { TaxDeclarations } from './TaxDeclarations';
 export { ObelixiaAccountingCopilotPanel } from './ObelixiaAccountingCopilotPanel';
 export { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 
+// Sidebar Navigation
+export { ObelixiaAccountingSidebar } from './ObelixiaAccountingSidebar';
+
 // Fase 2: Multimodal AI - Vision & Voice
 export { DocumentScannerPanel } from './DocumentScannerPanel';
 export { VoiceCommandInterface } from './VoiceCommandInterface';
