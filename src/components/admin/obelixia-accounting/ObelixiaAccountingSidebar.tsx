@@ -38,7 +38,12 @@ import {
   HelpCircle,
   LogOut,
   Calendar,
-  Package
+  Package,
+  Lightbulb,
+  FileSpreadsheet,
+  Target,
+  Briefcase,
+  FileCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
@@ -144,6 +149,20 @@ const moduleGroups: ModuleGroup[] = [
       { id: 'financial-guardian', label: 'Guardián IA', icon: Shield, badge: 'NEW', badgeColor: 'bg-rose-500' },
       { id: 'closing-automation', label: 'Cierre Auto.', icon: Calendar },
       { id: 'fixed-assets', label: 'Activos Fijos', icon: Package },
+    ]
+  },
+  {
+    id: 'strategic',
+    label: 'Agente Estratégico',
+    icon: Lightbulb,
+    color: 'from-indigo-500 to-violet-500',
+    glowColor: 'shadow-indigo-500/30',
+    modules: [
+      { id: 'grants-intelligence', label: 'Subvenciones IA', icon: Lightbulb, badge: 'NEW', badgeColor: 'bg-indigo-500' },
+      { id: 'business-plan', label: 'Plan de Negocio', icon: FileSpreadsheet },
+      { id: 'viability-study', label: 'Estudio Viabilidad', icon: Target },
+      { id: 'competitive-analysis', label: 'Análisis Competitivo', icon: Briefcase },
+      { id: 'investor-documents', label: 'Documentos Inversor', icon: FileCheck },
     ]
   },
 ];

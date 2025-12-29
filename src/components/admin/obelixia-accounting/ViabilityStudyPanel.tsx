@@ -98,7 +98,7 @@ export function ViabilityStudyPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Viables</p>
-                <p className="text-2xl font-bold">{studies.filter(s => (s.viability_score || 0) >= 70).length}</p>
+                <p className="text-2xl font-bold">{studies.filter(s => (s.commercial_score || 0) >= 70).length}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500/60" />
             </div>
@@ -109,7 +109,7 @@ export function ViabilityStudyPanel() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Condicionales</p>
-                <p className="text-2xl font-bold">{studies.filter(s => (s.viability_score || 0) >= 40 && (s.viability_score || 0) < 70).length}</p>
+                <p className="text-2xl font-bold">{studies.filter(s => (s.commercial_score || 0) >= 40 && (s.commercial_score || 0) < 70).length}</p>
               </div>
               <AlertTriangle className="h-8 w-8 text-amber-500/60" />
             </div>
@@ -119,8 +119,8 @@ export function ViabilityStudyPanel() {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Inversión Total</p>
-                <p className="text-2xl font-bold">{studies.reduce((sum, s) => sum + (s.initial_investment || 0), 0).toLocaleString('es-ES')}€</p>
+                <p className="text-sm text-muted-foreground">Score Financiero</p>
+                <p className="text-2xl font-bold">{studies.length > 0 ? Math.round(studies.reduce((sum, s) => sum + (s.financial_score || 0), 0) / studies.length) : 0}/100</p>
               </div>
               <DollarSign className="h-8 w-8 text-blue-500/60" />
             </div>
@@ -160,16 +160,16 @@ export function ViabilityStudyPanel() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-semibold">{study.project_name}</h4>
-                      <Badge className={getViabilityColor(study.viability_score)}>
-                        {study.viability_score ? `${study.viability_score}/100` : 'Pendiente'}
+                      <h4 className="font-semibold">Estudio {study.id.slice(0, 8)}</h4>
+                      <Badge className={getViabilityColor(study.commercial_score)}>
+                        {study.commercial_score ? `${study.commercial_score}/100` : 'Pendiente'}
                       </Badge>
+                      <Badge variant="outline">{study.status}</Badge>
                     </div>
                     <div className="flex gap-4 text-sm">
-                      <span><DollarSign className="h-4 w-4 inline" /> {(study.initial_investment || 0).toLocaleString('es-ES')}€</span>
-                      {study.npv && <span><TrendingUp className="h-4 w-4 inline text-green-500" /> VAN: {study.npv.toLocaleString('es-ES')}€</span>}
-                      {study.irr && <span><PieChart className="h-4 w-4 inline text-blue-500" /> TIR: {study.irr}%</span>}
-                      {study.payback_months && <span><Clock className="h-4 w-4 inline text-amber-500" /> Payback: {study.payback_months}m</span>}
+                      <span><TrendingUp className="h-4 w-4 inline text-green-500" /> Financiero: {study.financial_score || 0}/100</span>
+                      <span><BarChart3 className="h-4 w-4 inline text-blue-500" /> Técnico: {study.technical_score || 0}/100</span>
+                      <span><PieChart className="h-4 w-4 inline text-purple-500" /> Comercial: {study.commercial_score || 0}/100</span>
                     </div>
                   </div>
                   <div className="flex gap-2">

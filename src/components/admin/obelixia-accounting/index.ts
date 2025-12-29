@@ -62,3 +62,10 @@ export { ESGReportingPanel } from './ESGReportingPanel';
 export { FinancialGuardianPanel } from './FinancialGuardianPanel';
 export { ClosingAutomationPanel } from './ClosingAutomationPanel';
 export { FixedAssetsPanel } from './FixedAssetsPanel';
+
+// Fase 15 Extended: Strategic Financial Agent
+export { GrantsIntelligencePanel } from './GrantsIntelligencePanel';
+export { BusinessPlanGeneratorPanel } from './BusinessPlanGeneratorPanel';
+export { ViabilityStudyPanel } from './ViabilityStudyPanel';
+export { CompetitiveAnalysisPanel } from './CompetitiveAnalysisPanel';
+export { InvestorDocumentsPanel } from './InvestorDocumentsPanel';
