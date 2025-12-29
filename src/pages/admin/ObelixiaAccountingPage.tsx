@@ -43,7 +43,7 @@ import {
   Calculator,
   BarChart3
 } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
 
 export default function ObelixiaAccountingPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -52,82 +52,82 @@ export default function ObelixiaAccountingPage() {
     <DashboardLayout title="ObelixIA Accounting">
       <div className="container mx-auto py-6 px-4 space-y-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Tab Header with Copilot Button aligned right */}
-          <div className="flex items-center justify-between gap-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-              <TabsList className="inline-flex h-auto p-1 gap-1">
-                {/* Core Accounting */}
-                <TabsTrigger value="dashboard" className="flex items-center gap-2 px-3 py-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
+          {/* Tab Header - Two rows for better organization */}
+          <div className="space-y-2">
+            {/* Row 1: Core Accounting + Copilot */}
+            <div className="flex items-center gap-2">
+              <TabsList className="flex-1 h-auto p-1 gap-1 flex flex-wrap justify-start">
+                <TabsTrigger value="dashboard" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <LayoutDashboard className="h-3.5 w-3.5" />
+                  <span>Dashboard</span>
                 </TabsTrigger>
-                <TabsTrigger value="chart" className="flex items-center gap-2 px-3 py-2">
-                  <FolderTree className="h-4 w-4" />
-                  <span className="hidden sm:inline">Plan</span>
+                <TabsTrigger value="chart" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <FolderTree className="h-3.5 w-3.5" />
+                  <span>Plan</span>
                 </TabsTrigger>
-                <TabsTrigger value="entries" className="flex items-center gap-2 px-3 py-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Asientos</span>
+                <TabsTrigger value="entries" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>Asientos</span>
                 </TabsTrigger>
-                <TabsTrigger value="partners" className="flex items-center gap-2 px-3 py-2">
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">Socios</span>
+                <TabsTrigger value="partners" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>Socios</span>
                 </TabsTrigger>
-                <TabsTrigger value="banking" className="flex items-center gap-2 px-3 py-2">
-                  <Building2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Bancos</span>
+                <TabsTrigger value="banking" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <Building2 className="h-3.5 w-3.5" />
+                  <span>Bancos</span>
                 </TabsTrigger>
-                <TabsTrigger value="reports" className="flex items-center gap-2 px-3 py-2">
-                  <PieChart className="h-4 w-4" />
-                  <span className="hidden sm:inline">Reportes</span>
+                <TabsTrigger value="reports" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <PieChart className="h-3.5 w-3.5" />
+                  <span>Reportes</span>
                 </TabsTrigger>
-                <TabsTrigger value="fiscal" className="flex items-center gap-2 px-3 py-2">
-                  <Receipt className="h-4 w-4" />
-                  <span className="hidden sm:inline">Fiscal</span>
-                </TabsTrigger>
-
-                {/* Separator */}
-                <div className="w-px h-6 bg-border mx-1" />
-
-                {/* AI Advanced Modules (Phases 3-10) */}
-                <TabsTrigger value="ai-agent" className="flex items-center gap-2 px-3 py-2">
-                  <Bot className="h-4 w-4" />
-                  <span className="hidden lg:inline">Agente IA</span>
-                </TabsTrigger>
-                <TabsTrigger value="forecasting" className="flex items-center gap-2 px-3 py-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="hidden lg:inline">Previsión</span>
-                </TabsTrigger>
-                <TabsTrigger value="compliance" className="flex items-center gap-2 px-3 py-2">
-                  <Shield className="h-4 w-4" />
-                  <span className="hidden lg:inline">Compliance</span>
-                </TabsTrigger>
-                <TabsTrigger value="multicurrency" className="flex items-center gap-2 px-3 py-2">
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden lg:inline">Divisas</span>
-                </TabsTrigger>
-                <TabsTrigger value="reconciliation" className="flex items-center gap-2 px-3 py-2">
-                  <GitMerge className="h-4 w-4" />
-                  <span className="hidden lg:inline">Conciliación</span>
-                </TabsTrigger>
-                <TabsTrigger value="treasury" className="flex items-center gap-2 px-3 py-2">
-                  <Landmark className="h-4 w-4" />
-                  <span className="hidden lg:inline">Tesorería</span>
-                </TabsTrigger>
-                <TabsTrigger value="tax-planning" className="flex items-center gap-2 px-3 py-2">
-                  <Calculator className="h-4 w-4" />
-                  <span className="hidden lg:inline">Fiscal IA</span>
-                </TabsTrigger>
-                <TabsTrigger value="analytics" className="flex items-center gap-2 px-3 py-2">
-                  <BarChart3 className="h-4 w-4" />
-                  <span className="hidden lg:inline">Analytics</span>
+                <TabsTrigger value="fiscal" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                  <Receipt className="h-3.5 w-3.5" />
+                  <span>Fiscal</span>
                 </TabsTrigger>
               </TabsList>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+              <ObelixiaAccountingHelpButton />
+            </div>
 
-            {/* Copilot Button - Always visible, aligned with Fiscal tab */}
-            <ObelixiaAccountingHelpButton />
+            {/* Row 2: AI Advanced Modules (Phases 3-10) */}
+            <TabsList className="h-auto p-1 gap-1 flex flex-wrap justify-start bg-primary/5 border border-primary/10">
+              <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary/70">
+                <Bot className="h-3 w-3" />
+                IA:
+              </span>
+              <TabsTrigger value="ai-agent" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <Bot className="h-3.5 w-3.5" />
+                <span>Agente</span>
+              </TabsTrigger>
+              <TabsTrigger value="forecasting" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <TrendingUp className="h-3.5 w-3.5" />
+                <span>Previsión</span>
+              </TabsTrigger>
+              <TabsTrigger value="compliance" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <Shield className="h-3.5 w-3.5" />
+                <span>Compliance</span>
+              </TabsTrigger>
+              <TabsTrigger value="multicurrency" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <Globe className="h-3.5 w-3.5" />
+                <span>Divisas</span>
+              </TabsTrigger>
+              <TabsTrigger value="reconciliation" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <GitMerge className="h-3.5 w-3.5" />
+                <span>Conciliación</span>
+              </TabsTrigger>
+              <TabsTrigger value="treasury" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <Landmark className="h-3.5 w-3.5" />
+                <span>Tesorería</span>
+              </TabsTrigger>
+              <TabsTrigger value="tax-planning" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <Calculator className="h-3.5 w-3.5" />
+                <span>Fiscal IA</span>
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs">
+                <BarChart3 className="h-3.5 w-3.5" />
+                <span>Analytics</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           {/* Core Accounting Tabs */}
