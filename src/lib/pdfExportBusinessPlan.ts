@@ -70,13 +70,13 @@ export function generateBusinessPlanPDF(data: BusinessPlanPDFData): jsPDF {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 25; // Margen aumentado para mejor legibilidad
   const contentWidth = pageWidth - margin * 2;
   let yPos = margin;
 
   // Helper functions
   const addNewPageIfNeeded = (requiredSpace: number) => {
-    if (yPos + requiredSpace > pageHeight - margin) {
+    if (yPos + requiredSpace > pageHeight - margin - 15) { // Margen inferior aumentado
       doc.addPage();
       yPos = margin;
       return true;
@@ -85,14 +85,14 @@ export function generateBusinessPlanPDF(data: BusinessPlanPDFData): jsPDF {
   };
 
   const drawSectionTitle = (title: string) => {
-    addNewPageIfNeeded(20);
+    addNewPageIfNeeded(25);
     doc.setFillColor(...PRIMARY_COLOR);
     doc.roundedRect(margin, yPos, contentWidth, 10, 2, 2, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text(title.toUpperCase(), margin + 5, yPos + 7);
-    yPos += 15;
+    yPos += 18;
     doc.setTextColor(...TEXT_COLOR);
   };
 
@@ -109,30 +109,30 @@ export function generateBusinessPlanPDF(data: BusinessPlanPDFData): jsPDF {
   const drawText = (text: string, fontSize = 10) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(fontSize);
-    const lines = doc.splitTextToSize(text, contentWidth);
+    const lines = doc.splitTextToSize(text, contentWidth - 5); // Margen extra para evitar corte
     lines.forEach((line: string) => {
-      addNewPageIfNeeded(7);
+      addNewPageIfNeeded(8);
       doc.text(line, margin, yPos);
-      yPos += 5;
+      yPos += 6;
     });
-    yPos += 3;
+    yPos += 4;
   };
 
   const drawBulletList = (items: string[]) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     items.forEach((item) => {
-      addNewPageIfNeeded(7);
+      const lines = doc.splitTextToSize(item, contentWidth - 12); // Margen para bullet
+      addNewPageIfNeeded(lines.length * 6 + 4);
       doc.setTextColor(...SECONDARY_COLOR);
-      doc.text('•', margin, yPos);
+      doc.text('-', margin, yPos); // Usar guion en lugar de bullet para compatibilidad
       doc.setTextColor(...TEXT_COLOR);
-      const lines = doc.splitTextToSize(item, contentWidth - 8);
       lines.forEach((line: string, idx: number) => {
-        doc.text(line, margin + 6, yPos + (idx * 5));
+        doc.text(line, margin + 8, yPos + (idx * 6));
       });
-      yPos += lines.length * 5 + 2;
+      yPos += lines.length * 6 + 3;
     });
-    yPos += 3;
+    yPos += 4;
   };
 
   // === COVER PAGE ===
