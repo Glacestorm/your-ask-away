@@ -4,24 +4,22 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
 import { 
   Calculator, RefreshCw, Sparkles, Plus, Download, Eye,
-  TrendingUp, AlertTriangle, CheckCircle, XCircle, DollarSign, Clock, BarChart3, PieChart
+  TrendingUp, AlertTriangle, CheckCircle, DollarSign, BarChart3, PieChart
 } from 'lucide-react';
 import { useObelixiaViabilityStudy } from '@/hooks/admin/obelixia-accounting';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { downloadViabilityStudyPDF, type ViabilityStudyPDFData } from '@/lib/pdfExportViabilityStudy';
 
 export function ViabilityStudyPanel() {
-  const [activeTab, setActiveTab] = useState('studies');
   const [showNewStudy, setShowNewStudy] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [newStudyData, setNewStudyData] = useState({
@@ -30,7 +28,7 @@ export function ViabilityStudyPanel() {
     initial_investment: ''
   });
 
-  const { studies, isLoading, fetchStudies, generateStudy, exportStudy } = useObelixiaViabilityStudy();
+  const { studies, isLoading, fetchStudies, generateStudy } = useObelixiaViabilityStudy();
 
   useEffect(() => { fetchStudies(); }, []);
 
@@ -50,6 +48,36 @@ export function ViabilityStudyPanel() {
       setShowNewStudy(false);
       setNewStudyData({ project_name: '', description: '', initial_investment: '' });
     }
+  };
+
+  const handleExportPDF = (study: any) => {
+    const pdfData: ViabilityStudyPDFData = {
+      projectName: study.project_name || `Estudio ${study.id.slice(0, 8)}`,
+      projectType: study.project_type,
+      description: study.description,
+      status: study.status,
+      createdAt: new Date(study.created_at).toLocaleDateString('es-ES'),
+      initialInvestment: study.initial_investment,
+      projectionYears: study.projection_years,
+      financialScore: study.financial_score,
+      technicalScore: study.technical_score,
+      commercialScore: study.commercial_score,
+      overallViability: study.commercial_score,
+      npv: study.npv,
+      irr: study.irr,
+      paybackPeriod: study.payback_months,
+      roi: study.roi,
+      breakEvenPoint: study.break_even_point,
+      strengths: study.swot_analysis?.strengths,
+      weaknesses: study.swot_analysis?.weaknesses,
+      opportunities: study.swot_analysis?.opportunities,
+      threats: study.swot_analysis?.threats,
+      risks: study.risk_assessment?.risks,
+      recommendations: study.ai_recommendations,
+      conclusion: study.conclusion,
+    };
+    downloadViabilityStudyPDF(pdfData);
+    toast.success('PDF generado correctamente');
   };
 
   const getViabilityColor = (score: number | null) => {
@@ -173,8 +201,7 @@ export function ViabilityStudyPanel() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline"><Eye className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="outline" onClick={() => exportStudy(study.id, 'pdf')}><Download className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="outline" onClick={() => handleExportPDF(study)}><Download className="h-4 w-4" /></Button>
                   </div>
                 </div>
               </CardContent>
