@@ -34,7 +34,11 @@ import {
   RegulatoryReportingPanel,
   BudgetingPanel,
   RiskManagementPanel,
-  ESGReportingPanel
+  ESGReportingPanel,
+  // Phase 15: Financial Guardian & Automation
+  FinancialGuardianPanel,
+  ClosingAutomationPanel,
+  FixedAssetsPanel
 } from '@/components/admin/obelixia-accounting';
 
 // Phase 12: Advanced AI & Automation
@@ -107,6 +111,13 @@ export default function ObelixiaAccountingPage() {
         return <RiskManagementPanel />;
       case 'esg-reporting':
         return <ESGReportingPanel />;
+      // Phase 15: Financial Guardian & Automation
+      case 'financial-guardian':
+        return <FinancialGuardianPanel />;
+      case 'closing-automation':
+        return <ClosingAutomationPanel />;
+      case 'fixed-assets':
+        return <FixedAssetsPanel />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
