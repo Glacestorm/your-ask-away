@@ -38,7 +38,13 @@ import {
   // Phase 15: Financial Guardian & Automation
   FinancialGuardianPanel,
   ClosingAutomationPanel,
-  FixedAssetsPanel
+  FixedAssetsPanel,
+  // Phase 15 Extended: Strategic Financial Agent
+  GrantsIntelligencePanel,
+  BusinessPlanGeneratorPanel,
+  ViabilityStudyPanel,
+  CompetitiveAnalysisPanel,
+  InvestorDocumentsPanel
 } from '@/components/admin/obelixia-accounting';
 
 // Phase 12: Advanced AI & Automation
@@ -118,6 +124,17 @@ export default function ObelixiaAccountingPage() {
         return <ClosingAutomationPanel />;
       case 'fixed-assets':
         return <FixedAssetsPanel />;
+      // Phase 15 Extended: Strategic Financial Agent
+      case 'grants-intelligence':
+        return <GrantsIntelligencePanel />;
+      case 'business-plan':
+        return <BusinessPlanGeneratorPanel />;
+      case 'viability-study':
+        return <ViabilityStudyPanel />;
+      case 'competitive-analysis':
+        return <CompetitiveAnalysisPanel />;
+      case 'investor-documents':
+        return <InvestorDocumentsPanel />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
