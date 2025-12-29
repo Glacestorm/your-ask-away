@@ -29,7 +29,12 @@ import {
   IntegrationsHubPanel,
   WorkflowPanel,
   DocumentsPanel,
-  IntercompanyPanel
+  IntercompanyPanel,
+  // Phase 13: Regulatory & Advanced Reporting
+  RegulatoryReportingPanel,
+  BudgetingPanel,
+  RiskManagementPanel,
+  ESGReportingPanel
 } from '@/components/admin/obelixia-accounting';
 
 // Phase 12: Advanced AI & Automation
@@ -93,6 +98,15 @@ export default function ObelixiaAccountingPage() {
         return <SmartAnalyticsPanel context={{ entityId: 'obelixia-accounting', entityType: 'accounting' }} />;
       case 'realtime-insights':
         return <RealTimeInsightsPanel context={{ entityId: 'obelixia-accounting', entityType: 'accounting' }} />;
+      // Phase 13: Regulatory & Advanced Reporting
+      case 'regulatory-reporting':
+        return <RegulatoryReportingPanel />;
+      case 'budgeting':
+        return <BudgetingPanel />;
+      case 'risk-management':
+        return <RiskManagementPanel />;
+      case 'esg-reporting':
+        return <ESGReportingPanel />;
       default:
         return <ObelixiaAccountingDashboard />;
     }
