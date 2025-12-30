@@ -13,6 +13,7 @@ import {
   CheckCircle, AlertTriangle, PiggyBank, Gift,
   Shield, Calendar, Landmark, Award
 } from 'lucide-react';
+import { VerticalHelpButton, VerticalAIAgentPanel } from './shared';
 
 export function VerticalAccountingNGO() {
   const kpis = [
@@ -465,6 +466,9 @@ export function VerticalAccountingNGO() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <VerticalAIAgentPanel verticalType="ngo" className="mt-6" />
+      <VerticalHelpButton verticalType="ngo" />
     </div>
   );
 }

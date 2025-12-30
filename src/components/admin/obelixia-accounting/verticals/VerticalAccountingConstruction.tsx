@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VerticalHelpButton, VerticalAIAgentPanel } from './shared';
 import { 
   HardHat, Building, Calendar, FileText, 
   Users, Receipt, TrendingUp, BarChart3,
@@ -10,7 +11,7 @@ import {
 
 export function VerticalAccountingConstruction() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600">
@@ -261,6 +262,9 @@ export function VerticalAccountingConstruction() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <VerticalAIAgentPanel verticalType="construction" className="mt-6" />
+      <VerticalHelpButton verticalType="construction" />
     </div>
   );
 }
