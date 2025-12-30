@@ -316,19 +316,38 @@ export default function ModuleStudioPage() {
                                 : 'hover:bg-muted/50'
                             }`}
                           >
-                            <div className="flex items-center justify-between gap-1">
+                            <div className="flex items-center justify-between gap-2">
                               <span className="font-medium text-sm truncate flex-1">{mod.module_name}</span>
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 {/* Indicador de implementación */}
-                                <span 
-                                  className={`w-2 h-2 rounded-full ${isImplemented ? 'bg-emerald-500' : 'bg-amber-500'}`} 
-                                  title={isImplemented ? 'Implementado' : 'No implementado'}
-                                />
+                                <Badge 
+                                  variant={isImplemented ? 'default' : 'outline'}
+                                  className={`text-[9px] px-1.5 py-0 h-4 ${
+                                    isImplemented 
+                                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white' 
+                                      : 'border-amber-400 text-amber-500 bg-amber-50 dark:bg-amber-950/30'
+                                  }`}
+                                >
+                                  {isImplemented ? '✓' : '○'}
+                                </Badge>
                                 {/* Indicador de dependencias */}
-                                {hasDeps && (
-                                  <span title={`${depCount} deps, ${depByCount} dependientes`}>
-                                    <GitBranch className="h-3 w-3 text-blue-400" />
-                                  </span>
+                                {hasDeps ? (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-[9px] px-1.5 py-0 h-4 border-blue-400 text-blue-500 bg-blue-50 dark:bg-blue-950/30"
+                                    title={`${depCount} dependencias, ${depByCount} dependientes`}
+                                  >
+                                    <GitBranch className="h-2.5 w-2.5 mr-0.5" />
+                                    {depCount + depByCount}
+                                  </Badge>
+                                ) : (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-[9px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground/50"
+                                  >
+                                    <GitBranch className="h-2.5 w-2.5 mr-0.5" />
+                                    0
+                                  </Badge>
                                 )}
                               </div>
                             </div>
