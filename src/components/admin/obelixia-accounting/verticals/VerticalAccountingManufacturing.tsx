@@ -12,6 +12,7 @@ import {
   ArrowUpRight, ArrowDownRight, Sparkles, Brain,
   CircleDollarSign, AlertTriangle, CheckCircle, Zap
 } from 'lucide-react';
+import { VerticalHelpButton, VerticalAIAgentPanel } from './shared';
 
 export function VerticalAccountingManufacturing() {
   const kpis = [
@@ -456,6 +457,9 @@ export function VerticalAccountingManufacturing() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <VerticalAIAgentPanel verticalType="manufacturing" className="mt-6" />
+      <VerticalHelpButton verticalType="manufacturing" />
     </div>
   );
 }

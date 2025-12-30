@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VerticalHelpButton, VerticalAIAgentPanel } from './shared';
 import { 
   Building2, Home, Key, FileText, 
   Receipt, TrendingUp, Percent, Users,
@@ -10,7 +11,7 @@ import {
 
 export function VerticalAccountingRealEstate() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-teal-600">
@@ -235,6 +236,9 @@ export function VerticalAccountingRealEstate() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <VerticalAIAgentPanel verticalType="real_estate" className="mt-6" />
+      <VerticalHelpButton verticalType="real_estate" />
     </div>
   );
 }

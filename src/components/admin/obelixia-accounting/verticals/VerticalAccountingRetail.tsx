@@ -12,6 +12,7 @@ import {
   RefreshCw, Globe, Smartphone, QrCode,
   ArrowUpRight, ArrowDownRight, Sparkles
 } from 'lucide-react';
+import { VerticalHelpButton, VerticalAIAgentPanel } from './shared';
 
 export function VerticalAccountingRetail() {
   const [activeAnalysis, setActiveAnalysis] = useState<string | null>(null);
@@ -420,6 +421,9 @@ export function VerticalAccountingRetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <VerticalAIAgentPanel verticalType="retail" className="mt-6" />
+      <VerticalHelpButton verticalType="retail" />
     </div>
   );
 }
