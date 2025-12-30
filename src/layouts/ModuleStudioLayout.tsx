@@ -28,6 +28,7 @@ import {
   Shield,
   Store,
   ChevronRight,
+  ChevronDown,
   Star,
   Keyboard,
   Users,
@@ -37,6 +38,7 @@ import {
   Link,
   Layers,
 } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
@@ -126,6 +128,7 @@ function ModuleStudioLayoutContent({
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [moduleDomainFilter, setModuleDomainFilter] = useState<ModuleDomainKey>('all');
+  const [domainFilterOpen, setDomainFilterOpen] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showDependencyDialog, setShowDependencyDialog] = useState(false);
   const [dependencyDialogModule, setDependencyDialogModule] = useState<typeof modules[0] | null>(null);
@@ -360,46 +363,65 @@ function ModuleStudioLayoutContent({
           {showModuleSelector && (
             <div className="col-span-2">
               <Card className="h-[calc(100vh-280px)]">
-                <CardHeader className="pb-2 space-y-3">
-                  {/* Domain Filter (buttons) */}
-                  <div className="space-y-1">
-                    {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
-                      const isActive = moduleDomainFilter === (key as ModuleDomainKey);
-                      const DomainIcon = domain.icon;
-                      const count = domainCounts[key as ModuleDomainKey];
-
-                      return (
-                        <Button
-                          key={key}
-                          type="button"
-                          variant={isActive ? 'secondary' : 'ghost'}
-                          size="sm"
-                          onClick={() => setModuleDomainFilter(key as ModuleDomainKey)}
-                          className="h-8 w-full justify-between"
-                        >
-                          <span className="flex items-center gap-2 min-w-0">
-                            <DomainIcon className={cn('h-4 w-4 shrink-0', domain.color)} />
-                            <span className="text-xs truncate">{domain.label}</span>
-                          </span>
-                          <Badge
-                            variant={isActive ? 'secondary' : 'outline'}
-                            className="h-5 px-1.5 text-[10px]"
-                          >
-                            {count}
+                <CardHeader className="pb-2 space-y-2">
+                  {/* Domain Filter (collapsible dropdown) */}
+                  <Collapsible open={domainFilterOpen} onOpenChange={setDomainFilterOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full h-9 justify-between"
+                      >
+                        <span className="flex items-center gap-2 min-w-0">
+                          {React.createElement(MODULE_DOMAINS[moduleDomainFilter].icon, {
+                            className: cn('h-4 w-4 shrink-0', MODULE_DOMAINS[moduleDomainFilter].color)
+                          })}
+                          <span className="text-sm truncate">{MODULE_DOMAINS[moduleDomainFilter].label}</span>
+                          <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                            {filteredModules.length}
                           </Badge>
-                        </Button>
-                      );
-                    })}
-                  </div>
+                        </span>
+                        <ChevronDown className={cn(
+                          'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
+                          domainFilterOpen && 'rotate-180'
+                        )} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-1 space-y-0.5">
+                      {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
+                        const isActive = moduleDomainFilter === (key as ModuleDomainKey);
+                        const DomainIcon = domain.icon;
+                        const count = domainCounts[key as ModuleDomainKey];
 
-                  <CardTitle className="text-sm flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      {React.createElement(MODULE_DOMAINS[moduleDomainFilter].icon, {
-                        className: cn('h-4 w-4', MODULE_DOMAINS[moduleDomainFilter].color)
+                        return (
+                          <Button
+                            key={key}
+                            type="button"
+                            variant={isActive ? 'secondary' : 'ghost'}
+                            size="sm"
+                            onClick={() => {
+                              setModuleDomainFilter(key as ModuleDomainKey);
+                              setDomainFilterOpen(false);
+                            }}
+                            className="h-7 w-full justify-between text-xs"
+                          >
+                            <span className="flex items-center gap-2 min-w-0">
+                              <DomainIcon className={cn('h-3.5 w-3.5 shrink-0', domain.color)} />
+                              <span className="truncate">{domain.label}</span>
+                            </span>
+                            <Badge
+                              variant={isActive ? 'secondary' : 'outline'}
+                              className="h-4 px-1 text-[9px]"
+                            >
+                              {count}
+                            </Badge>
+                          </Button>
+                        );
                       })}
-                      {MODULE_DOMAINS[moduleDomainFilter].label} ({filteredModules.length})
-                    </span>
-                  </CardTitle>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Search input */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
@@ -411,7 +433,7 @@ function ModuleStudioLayoutContent({
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="h-[calc(100vh-400px)] overflow-y-auto overscroll-contain">
+                  <div className="h-[calc(100vh-340px)] overflow-y-auto overscroll-contain">
                     <div className="p-2 space-y-1">
                       {isLoadingModules ? (
                         <div className="flex items-center justify-center py-8">
