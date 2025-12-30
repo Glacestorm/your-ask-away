@@ -68,6 +68,13 @@ import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
+// Set de módulos implementados (sincronizado con DynamicModuleRouter)
+const IMPLEMENTED_MODULES = new Set([
+  'crm-companies',
+  // Añadir más módulos implementados aquí
+]);
+
+
 export default function ModuleStudioPage() {
   const { isAdmin, isSuperAdmin } = useAuth();
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
@@ -292,6 +299,8 @@ export default function ModuleStudioPage() {
                         const node = graph.nodes.get(mod.module_key);
                         const depCount = node?.dependencies.length || 0;
                         const depByCount = node?.dependents.length || 0;
+                        const hasDeps = depCount > 0 || depByCount > 0;
+                        const isImplemented = IMPLEMENTED_MODULES.has(mod.module_key);
                         
                         return (
                           <button
@@ -307,17 +316,31 @@ export default function ModuleStudioPage() {
                                 : 'hover:bg-muted/50'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-sm truncate">{mod.module_name}</span>
-                              <div className="flex gap-1">
-                                {mod.is_core && <Badge variant="secondary" className="text-xs">Core</Badge>}
-                                {mod.is_required && <Badge variant="destructive" className="text-xs">Req</Badge>}
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="font-medium text-sm truncate flex-1">{mod.module_name}</span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {/* Indicador de implementación */}
+                                <span 
+                                  className={`w-2 h-2 rounded-full ${isImplemented ? 'bg-emerald-500' : 'bg-amber-500'}`} 
+                                  title={isImplemented ? 'Implementado' : 'No implementado'}
+                                />
+                                {/* Indicador de dependencias */}
+                                {hasDeps && (
+                                  <span title={`${depCount} deps, ${depByCount} dependientes`}>
+                                    <GitBranch className="h-3 w-3 text-blue-400" />
+                                  </span>
+                                )}
                               </div>
                             </div>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              {mod.is_core && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">Core</Badge>}
+                              {mod.is_required && <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">Req</Badge>}
+                            </div>
                             <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
-                              <span>↓{depCount} ↑{depByCount}</span>
+                              <span className="flex items-center gap-0.5">
+                                ↓{depCount} ↑{depByCount}
+                              </span>
                               <span>v{mod.version || '1.0.0'}</span>
-                              <span className="capitalize">{mod.category}</span>
                             </div>
                           </button>
                         );
