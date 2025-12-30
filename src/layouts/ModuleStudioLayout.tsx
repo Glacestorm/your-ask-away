@@ -30,7 +30,20 @@ import {
   ChevronRight,
   Star,
   Keyboard,
+  Users,
+  Building2,
+  Brain,
+  Scale,
+  Link,
+  Layers,
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
@@ -59,7 +72,53 @@ const navSections: NavSection[] = [
   { id: 'ecosystem', label: 'Ecosystem', icon: Store, path: '/obelixia-admin/module-studio/ecosystem', color: 'text-cyan-400' },
 ];
 
-type ModuleTypeFilter = 'all' | 'crm' | 'erp';
+// Dominios de negocio para agrupar módulos
+const MODULE_DOMAINS = {
+  all: { 
+    label: 'Todos', 
+    prefixes: [] as string[], 
+    icon: Layers, 
+    color: 'text-foreground' 
+  },
+  core: { 
+    label: 'Core', 
+    prefixes: ['core-', 'platform-'], 
+    icon: Shield, 
+    color: 'text-slate-400' 
+  },
+  crm: { 
+    label: 'CRM & Ventas', 
+    prefixes: ['crm-'], 
+    icon: Users, 
+    color: 'text-blue-400' 
+  },
+  erp: { 
+    label: 'ERP & Ops', 
+    prefixes: ['erp-', 'hr-', 'accounting-'], 
+    icon: Building2, 
+    color: 'text-emerald-400' 
+  },
+  intelligence: { 
+    label: 'AI & BI', 
+    prefixes: ['ai-', 'bi-'], 
+    icon: Brain, 
+    color: 'text-purple-400' 
+  },
+  compliance: { 
+    label: 'Compliance', 
+    prefixes: ['compliance-', 'legal-', 'security-', 'esg-'], 
+    icon: Scale, 
+    color: 'text-amber-400' 
+  },
+  integrations: { 
+    label: 'Integraciones', 
+    prefixes: ['integration-', 'industry-', 'pack-'], 
+    icon: Link, 
+    color: 'text-cyan-400' 
+  },
+} as const;
+
+type ModuleDomainKey = keyof typeof MODULE_DOMAINS;
 
 function ModuleStudioLayoutContent({ 
   children, 
@@ -73,7 +132,7 @@ function ModuleStudioLayoutContent({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [moduleTypeFilter, setModuleTypeFilter] = useState<ModuleTypeFilter>('all');
+  const [moduleDomainFilter, setModuleDomainFilter] = useState<ModuleDomainKey>('all');
   const [showSearch, setShowSearch] = useState(false);
   const [showDependencyDialog, setShowDependencyDialog] = useState(false);
   const [dependencyDialogModule, setDependencyDialogModule] = useState<typeof modules[0] | null>(null);
@@ -120,18 +179,46 @@ function ModuleStudioLayoutContent({
     },
   });
 
-  // Filtrar módulos por tipo (CRM/ERP) y búsqueda
+  // Contar módulos por dominio
+  const domainCounts = useMemo(() => {
+    const counts: Record<ModuleDomainKey, number> = {
+      all: modules.length,
+      core: 0,
+      crm: 0,
+      erp: 0,
+      intelligence: 0,
+      compliance: 0,
+      integrations: 0,
+    };
+    
+    modules.forEach(m => {
+      for (const [key, domain] of Object.entries(MODULE_DOMAINS)) {
+        if (key === 'all') continue;
+        if (domain.prefixes.some(prefix => m.module_key.startsWith(prefix))) {
+          counts[key as ModuleDomainKey]++;
+          break;
+        }
+      }
+    });
+    
+    return counts;
+  }, [modules]);
+
+  // Filtrar módulos por dominio y búsqueda
   const filteredModules = useMemo(() => {
     let filtered = modules;
     
-    // Filter by type (CRM/ERP)
-    if (moduleTypeFilter === 'crm') {
-      filtered = filtered.filter(m => m.module_key.startsWith('crm-'));
-    } else if (moduleTypeFilter === 'erp') {
-      filtered = filtered.filter(m => m.module_key.startsWith('erp-'));
+    // Filtrar por dominio
+    if (moduleDomainFilter !== 'all') {
+      const domain = MODULE_DOMAINS[moduleDomainFilter];
+      if (domain.prefixes.length > 0) {
+        filtered = filtered.filter(m => 
+          domain.prefixes.some(prefix => m.module_key.startsWith(prefix))
+        );
+      }
     }
     
-    // Filter by search query
+    // Filtrar por búsqueda
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(m => 
@@ -142,11 +229,7 @@ function ModuleStudioLayoutContent({
     }
     
     return filtered;
-  }, [modules, moduleTypeFilter, searchQuery]);
-
-  // Count modules by type
-  const crmCount = useMemo(() => modules.filter(m => m.module_key.startsWith('crm-')).length, [modules]);
-  const erpCount = useMemo(() => modules.filter(m => m.module_key.startsWith('erp-')).length, [modules]);
+  }, [modules, moduleDomainFilter, searchQuery]);
 
   // Current section
   const currentSection = navSections.find(s => location.pathname === s.path) || navSections[0];
@@ -285,46 +368,59 @@ function ModuleStudioLayoutContent({
             <div className="col-span-2">
               <Card className="h-[calc(100vh-280px)]">
                 <CardHeader className="pb-2 space-y-3">
-                  {/* Type Filter Tabs */}
-                  <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
-                    <button
-                      onClick={() => setModuleTypeFilter('all')}
-                      className={cn(
-                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
-                        moduleTypeFilter === 'all'
-                          ? 'bg-background shadow-sm text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      Todos ({modules.length})
-                    </button>
-                    <button
-                      onClick={() => setModuleTypeFilter('crm')}
-                      className={cn(
-                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
-                        moduleTypeFilter === 'crm'
-                          ? 'bg-primary text-primary-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      CRM ({crmCount})
-                    </button>
-                    <button
-                      onClick={() => setModuleTypeFilter('erp')}
-                      className={cn(
-                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
-                        moduleTypeFilter === 'erp'
-                          ? 'bg-accent text-accent-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      ERP ({erpCount})
-                    </button>
-                  </div>
+                  {/* Domain Filter Dropdown */}
+                  <Select 
+                    value={moduleDomainFilter} 
+                    onValueChange={(value) => setModuleDomainFilter(value as ModuleDomainKey)}
+                  >
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue>
+                        {(() => {
+                          const domain = MODULE_DOMAINS[moduleDomainFilter];
+                          const Icon = domain.icon;
+                          return (
+                            <span className="flex items-center gap-2">
+                              <Icon className={cn('h-4 w-4', domain.color)} />
+                              <span>{domain.label}</span>
+                              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                                {domainCounts[moduleDomainFilter]}
+                              </Badge>
+                            </span>
+                          );
+                        })()}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
+                        const Icon = domain.icon;
+                        const count = domainCounts[key as ModuleDomainKey];
+                        return (
+                          <SelectItem 
+                            key={key} 
+                            value={key}
+                            className="cursor-pointer"
+                          >
+                            <span className="flex items-center gap-2">
+                              <Icon className={cn('h-4 w-4', domain.color)} />
+                              <span>{domain.label}</span>
+                              <Badge variant="outline" className="h-5 px-1.5 text-[10px] ml-auto">
+                                {count}
+                              </Badge>
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                   
                   <CardTitle className="text-sm flex items-center justify-between">
-                    <span>
-                      {moduleTypeFilter === 'all' ? 'Módulos' : moduleTypeFilter.toUpperCase()} ({filteredModules.length})
+                    <span className="flex items-center gap-2">
+                      {(() => {
+                        const domain = MODULE_DOMAINS[moduleDomainFilter];
+                        const Icon = domain.icon;
+                        return <Icon className={cn('h-4 w-4', domain.color)} />;
+                      })()}
+                      {MODULE_DOMAINS[moduleDomainFilter].label} ({filteredModules.length})
                     </span>
                   </CardTitle>
                   <div className="relative">
