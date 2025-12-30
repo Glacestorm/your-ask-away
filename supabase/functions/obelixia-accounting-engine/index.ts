@@ -27,7 +27,10 @@ interface AccountingRequest {
           // FASE 6: Reporting
           'get_aging_report' | 'get_cash_projection' |
           // FASE 7: Integraciones
-          'import_bank_file' | 'export_accounting';
+          'import_bank_file' | 'export_accounting' |
+          // FASE 8: Integración Facturación
+          'get_billing_config' | 'get_billing_invoices' | 'sync_invoice_to_accounting' |
+          'get_billing_payments' | 'create_billing_entry';
   params?: Record<string, unknown>;
 }
 
@@ -3005,6 +3008,265 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
             submitted: filtered.filter(d => d.status === 'submitted').length,
             paid: filtered.filter(d => d.status === 'paid').length
           }
+        };
+        break;
+      }
+
+      // ============================================================
+      // FASE 8: INTEGRACIÓN FACTURACIÓN
+      // ============================================================
+      case 'get_billing_config': {
+        // Get billing integration configuration
+        const { data: fiscalConfig } = await supabase
+          .from('obelixia_fiscal_config')
+          .select('*')
+          .eq('is_active', true)
+          .single();
+
+        // Default billing accounts mapping
+        const billingAccounts = {
+          sales_account: '700',       // Ventas
+          vat_collected: '477',       // IVA Repercutido
+          receivables: '430',         // Clientes
+          cash: '572',                // Bancos
+          purchases_account: '600',   // Compras
+          vat_paid: '472',            // IVA Soportado
+          payables: '400',            // Proveedores
+        };
+
+        result = {
+          fiscalConfig,
+          billingAccounts,
+          autoPost: true,
+          defaultVatRate: fiscalConfig?.jurisdiction === 'ES' ? 21 : 4.5,
+          currency: fiscalConfig?.currency || 'EUR',
+          syncEnabled: true,
+        };
+        break;
+      }
+
+      case 'get_billing_invoices': {
+        const { status, limit = 50, offset = 0, type } = params as { 
+          status?: string; 
+          limit?: number; 
+          offset?: number;
+          type?: 'issued' | 'received';
+        };
+
+        // Get invoices from journal entries with invoice references
+        let query = supabase
+          .from('obelixia_journal_entries')
+          .select(`
+            *,
+            lines:obelixia_journal_entry_lines(
+              *,
+              account:obelixia_chart_of_accounts(account_code, account_name)
+            )
+          `)
+          .or('reference_type.eq.invoice,reference_type.eq.billing_invoice')
+          .order('entry_date', { ascending: false })
+          .range(offset, offset + limit - 1);
+
+        if (status === 'posted') {
+          query = query.eq('status', 'posted');
+        } else if (status === 'draft') {
+          query = query.eq('status', 'draft');
+        }
+
+        const { data: entries, error } = await query;
+
+        if (error) throw error;
+
+        // Transform entries to billing invoice format
+        const invoices = (entries || []).map(entry => {
+          const salesLine = entry.lines?.find((l: any) => 
+            l.account?.account_code?.startsWith('7') && l.credit_amount > 0
+          );
+          const vatLine = entry.lines?.find((l: any) => 
+            l.account?.account_code === '477' && l.credit_amount > 0
+          );
+          const receivableLine = entry.lines?.find((l: any) => 
+            l.account?.account_code === '430' && l.debit_amount > 0
+          );
+
+          return {
+            id: entry.id,
+            invoice_number: entry.entry_number,
+            reference_id: entry.reference_id,
+            date: entry.entry_date,
+            description: entry.description,
+            base_amount: salesLine?.credit_amount || 0,
+            vat_amount: vatLine?.credit_amount || 0,
+            total_amount: receivableLine?.debit_amount || entry.total_debit,
+            status: entry.status,
+            type: salesLine ? 'issued' : 'received',
+            posted_at: entry.posted_at,
+            accounting_synced: true,
+          };
+        });
+
+        // Filter by type if specified
+        const filteredInvoices = type 
+          ? invoices.filter(inv => inv.type === type)
+          : invoices;
+
+        result = {
+          invoices: filteredInvoices,
+          total: filteredInvoices.length,
+          hasMore: entries?.length === limit,
+        };
+        break;
+      }
+
+      case 'get_billing_payments': {
+        const { invoice_id, limit = 50 } = params as { 
+          invoice_id?: string; 
+          limit?: number;
+        };
+
+        // Get payment entries (bank to receivables/payables)
+        let query = supabase
+          .from('obelixia_journal_entries')
+          .select(`
+            *,
+            lines:obelixia_journal_entry_lines(
+              *,
+              account:obelixia_chart_of_accounts(account_code, account_name)
+            )
+          `)
+          .or('reference_type.eq.payment,reference_type.eq.collection')
+          .eq('status', 'posted')
+          .order('entry_date', { ascending: false })
+          .limit(limit);
+
+        if (invoice_id) {
+          query = query.eq('reference_id', invoice_id);
+        }
+
+        const { data: entries, error } = await query;
+
+        if (error) throw error;
+
+        const payments = (entries || []).map(entry => {
+          const bankLine = entry.lines?.find((l: any) => 
+            l.account?.account_code === '572'
+          );
+
+          return {
+            id: entry.id,
+            payment_number: entry.entry_number,
+            date: entry.entry_date,
+            amount: bankLine?.debit_amount || bankLine?.credit_amount || 0,
+            type: bankLine?.debit_amount > 0 ? 'collection' : 'payment',
+            description: entry.description,
+            reference_id: entry.reference_id,
+          };
+        });
+
+        result = { payments, total: payments.length };
+        break;
+      }
+
+      case 'sync_invoice_to_accounting': {
+        const { invoice_data, auto_post = true } = params as {
+          invoice_data: {
+            invoice_number: string;
+            invoice_id: string;
+            date: string;
+            customer_name?: string;
+            base_amount: number;
+            vat_rate: number;
+            vat_amount: number;
+            total_amount: number;
+            type: 'issued' | 'received';
+          };
+          auto_post?: boolean;
+        };
+
+        // Determine template based on invoice type
+        const eventType = invoice_data.type === 'issued' ? 'invoice_issued' : 'supplier_invoice';
+
+        // Generate automatic entry
+        const entryResult = await fetch(req.url, {
+          method: 'POST',
+          headers: {
+            'Authorization': req.headers.get('Authorization') || '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'generate_auto_entry',
+            params: {
+              event_type: eventType,
+              event_data: {
+                total: invoice_data.total_amount,
+                base: invoice_data.base_amount,
+                tax: invoice_data.vat_amount,
+                description: `${invoice_data.invoice_number} - ${invoice_data.customer_name || ''}`.trim(),
+                reference_type: 'billing_invoice',
+                reference_id: invoice_data.invoice_id,
+              },
+              entry_date: invoice_data.date,
+            }
+          })
+        });
+
+        const entryData = await entryResult.json();
+
+        if (!entryData.success) {
+          throw new Error(entryData.error || 'Error al generar asiento');
+        }
+
+        result = {
+          synced: true,
+          entry: entryData.data.entry,
+          message: `Factura ${invoice_data.invoice_number} sincronizada con contabilidad`,
+        };
+        break;
+      }
+
+      case 'create_billing_entry': {
+        const { entry_type, amount, date, description, reference_id } = params as {
+          entry_type: 'collection' | 'payment';
+          amount: number;
+          date: string;
+          description: string;
+          reference_id?: string;
+        };
+
+        const eventType = entry_type === 'collection' ? 'invoice_collected' : 'supplier_paid';
+
+        // Generate automatic entry for payment/collection
+        const entryResult = await fetch(req.url, {
+          method: 'POST',
+          headers: {
+            'Authorization': req.headers.get('Authorization') || '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'generate_auto_entry',
+            params: {
+              event_type: eventType,
+              event_data: {
+                amount,
+                description,
+                reference_type: entry_type,
+                reference_id,
+              },
+              entry_date: date,
+            }
+          })
+        });
+
+        const entryData = await entryResult.json();
+
+        if (!entryData.success) {
+          throw new Error(entryData.error || 'Error al generar asiento');
+        }
+
+        result = {
+          created: true,
+          entry: entryData.data.entry,
+          message: `Asiento de ${entry_type === 'collection' ? 'cobro' : 'pago'} creado`,
         };
         break;
       }
