@@ -55,10 +55,10 @@ export function SectorCRMSection({ limit = 6, showViewAll = true }: SectorCRMSec
         .from('app_modules')
         .select('*')
         .like('module_key', 'crm-%')
-        .not('module_key', 'eq', 'crm-automation')
+        .neq('module_key', 'crm-automation')
         .order('base_price', { ascending: false })
         .limit(limit);
-      
+
       if (error) throw error;
       return data;
     },
