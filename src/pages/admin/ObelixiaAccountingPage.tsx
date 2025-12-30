@@ -46,7 +46,9 @@ import {
   CompetitiveAnalysisPanel,
   InvestorDocumentsPanel,
   // PDF Generator
-  ObelixiaPDFDownloader
+  ObelixiaPDFDownloader,
+  // Phase 16: Billing Integration
+  BillingIntegrationPanel
 } from '@/components/admin/obelixia-accounting';
 
 // Phase 12: Advanced AI & Automation
@@ -139,6 +141,8 @@ export default function ObelixiaAccountingPage() {
         return <InvestorDocumentsPanel />;
       case 'pdf-generator':
         return <ObelixiaPDFDownloader />;
+      case 'billing-integration':
+        return <BillingIntegrationPanel />;
       default:
         return <ObelixiaAccountingDashboard />;
     }

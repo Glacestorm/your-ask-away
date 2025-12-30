@@ -54,6 +54,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { useObelixiaBillingIntegration, BillingInvoice } from '@/hooks/admin/obelixia-accounting/useObelixiaBillingIntegration';
+import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -160,6 +161,7 @@ export function BillingIntegrationPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ObelixiaAccountingHelpButton />
           <Button 
             variant="outline" 
             size="sm" 

@@ -150,7 +150,14 @@ export function useObelixiaAccountingAgent() {
     autonomyLevel: 'suggestion',
     confidenceThreshold: 85,
     maxActionsPerHour: 50,
-    enabledCapabilities: ['classification', 'entry_generation', 'reconciliation'],
+    enabledCapabilities: [
+      'classification', 
+      'entry_generation', 
+      'reconciliation',
+      'billing_integration',
+      'invoice_accounting',
+      'payment_matching'
+    ],
     learningEnabled: true,
     notifyOnAction: true,
     requireApprovalBelow: 70
