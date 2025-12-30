@@ -62,7 +62,10 @@ const QUICK_ACTION_ICONS: Record<string, React.ReactNode> = {
   GitMerge: <GitMerge className="h-4 w-4" />,
   TrendingUp: <TrendingUp className="h-4 w-4" />,
   Lock: <Lock className="h-4 w-4" />,
-  Sparkles: <Sparkles className="h-4 w-4" />
+  Sparkles: <Sparkles className="h-4 w-4" />,
+  CreditCard: <Receipt className="h-4 w-4" />,
+  Invoice: <FileText className="h-4 w-4" />,
+  Wallet: <TrendingUp className="h-4 w-4" />
 };
 
 // Colores por prioridad
@@ -358,7 +361,7 @@ export function ObelixiaAccountingCopilotPanel({
                     </div>
                     <h3 className="font-medium mb-1">¡Hola! Soy tu copilot contable</h3>
                     <p className="text-sm text-muted-foreground max-w-[280px]">
-                      Pregúntame sobre asientos, balances, impuestos, conciliación o cualquier duda contable.
+                      Pregúntame sobre asientos, balances, impuestos, conciliación, facturación, cobros y pagos, o cualquier duda contable.
                     </p>
                   </div>
                 )}

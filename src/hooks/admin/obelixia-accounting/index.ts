@@ -187,3 +187,13 @@ export type { CompetitorAnalysis, CompetitiveContext } from './useObelixiaCompet
 
 export { useObelixiaInvestorDocs } from './useObelixiaInvestorDocs';
 export type { InvestorDocument, InvestorDocContext } from './useObelixiaInvestorDocs';
+
+// Fase 16: Billing Integration
+export { useObelixiaBillingIntegration } from './useObelixiaBillingIntegration';
+export type {
+  BillingInvoice,
+  BillingPayment,
+  BillingIntegrationConfig,
+  InvoiceSummary,
+  AccountingIntegrationResult
+} from './useObelixiaBillingIntegration';
