@@ -1,15 +1,26 @@
 // Vertical Accounting Modules - Barrel Export
+// Fase 12 - Industry Verticals con IA avanzada
+
+// Sector Primario
 export { VerticalAccountingAgriculture } from './VerticalAccountingAgriculture';
+
+// Sector Servicios
 export { VerticalAccountingEducation } from './VerticalAccountingEducation';
-export { VerticalAccountingEnergy } from './VerticalAccountingEnergy';
 export { VerticalAccountingHealthcare } from './VerticalAccountingHealthcare';
-export { VerticalAccountingConstruction } from './VerticalAccountingConstruction';
 export { VerticalAccountingHospitality } from './VerticalAccountingHospitality';
+export { VerticalAccountingLegal } from './VerticalAccountingLegal';
+
+// Sector Industrial
+export { VerticalAccountingEnergy } from './VerticalAccountingEnergy';
+export { VerticalAccountingConstruction } from './VerticalAccountingConstruction';
+export { VerticalAccountingManufacturing } from './VerticalAccountingManufacturing';
+export { VerticalAccountingLogistics } from './VerticalAccountingLogistics';
+
+// Sector Inmobiliario
 export { VerticalAccountingRealEstate } from './VerticalAccountingRealEstate';
 
-// Placeholder exports for remaining verticals (to be implemented)
-export const VerticalAccountingRetail = () => null;
-export const VerticalAccountingLogistics = () => null;
-export const VerticalAccountingManufacturing = () => null;
-export const VerticalAccountingLegal = () => null;
-export const VerticalAccountingNGO = () => null;
+// Sector Retail & Comercio
+export { VerticalAccountingRetail } from './VerticalAccountingRetail';
+
+// Sector No Lucrativo
+export { VerticalAccountingNGO } from './VerticalAccountingNGO';
