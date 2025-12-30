@@ -30,33 +30,81 @@ export function useObelixiaGrantsIntelligence() {
   
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch available grants
+  // Fetch available grants - first try DB, then fallback to AI scan
   const fetchGrants = useCallback(async (filters?: { level?: string; status?: string; sector?: string }) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      // First try to get from database
       let query = supabase
         .from('obelixia_grants')
         .select('*')
         .eq('status', 'active')
         .order('deadline_date', { ascending: true });
 
-      if (filters?.level) {
-        query = query.eq('level', filters.level);
+      if (filters?.level) query = query.eq('level', filters.level);
+
+      const { data, error: fetchError } = await query.limit(50);
+
+      // If we have data from DB, use it
+      if (!fetchError && data && data.length > 0) {
+        setGrants(data);
+        setLastRefresh(new Date());
+        return data;
       }
 
-      const { data, error: fetchError } = await query;
+      // Otherwise, use AI to scan for grants
+      console.log('[useObelixiaGrantsIntelligence] No DB data, using AI scan');
+      const { data: aiData, error: aiError } = await supabase.functions.invoke(
+        'obelixia-grants-intelligence',
+        {
+          body: {
+            action: 'scan_grants',
+            context: {
+              companyType: 'startup',
+              sector: filters?.sector || 'technology',
+              region: 'catalonia'
+            }
+          }
+        }
+      );
 
-      if (fetchError) throw fetchError;
+      if (aiError) throw aiError;
 
-      setGrants(data || []);
+      if (aiData?.success && aiData?.data?.grants) {
+        // Transform AI results to match Grant type structure
+        const aiGrants = aiData.data.grants.map((g: any, index: number) => ({
+          id: g.id || `ai-grant-${Date.now()}-${index}`,
+          name: g.name,
+          description: g.aiNotes || `${g.organization} - ${g.type}`,
+          organization: g.organization,
+          level: g.level,
+          grant_type: g.type,
+          min_amount: g.minAmount || 0,
+          max_amount: g.maxAmount,
+          deadline_date: g.deadline,
+          status: 'active',
+          sectors: g.focus || [],
+          requirements: g.requirements || [],
+          eligibility_criteria: g.requirements || [],
+          source_url: g.sourceUrl || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        setGrants(aiGrants as any);
+        setLastRefresh(new Date());
+        return aiGrants;
+      }
+
+      setGrants([]);
       setLastRefresh(new Date());
-      return data;
+      return [];
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching grants';
       setError(message);
       console.error('[useObelixiaGrantsIntelligence] fetchGrants error:', err);
+      setGrants([]);
       return null;
     } finally {
       setIsLoading(false);
