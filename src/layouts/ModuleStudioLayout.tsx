@@ -384,6 +384,7 @@ function ModuleStudioLayoutContent({
                           <SelectItem 
                             key={key} 
                             value={key}
+                            textValue={`${domain.label} (${count})`}
                             className="cursor-pointer"
                           >
                             <span className="flex items-center gap-2">
