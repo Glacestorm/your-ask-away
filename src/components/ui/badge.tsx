@@ -12,6 +12,12 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+
+        // Semantic status variants (use design tokens, no hard-coded colors)
+        success: "border-success/30 bg-success/12 text-success hover:bg-success/18",
+        info: "border-info/30 bg-info/12 text-info hover:bg-info/18",
+        warning: "border-warning/30 bg-warning/12 text-warning hover:bg-warning/18",
+        muted: "border-border bg-muted/40 text-muted-foreground hover:bg-muted/60",
       },
     },
     defaultVariants: {

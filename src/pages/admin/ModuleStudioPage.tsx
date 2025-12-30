@@ -315,7 +315,7 @@ export default function ModuleStudioPage() {
                               <span className="font-medium text-sm truncate flex-1">{mod.module_name}</span>
                               <div className="flex items-center gap-1 shrink-0">
                                 <Badge
-                                  variant={isImplemented ? 'default' : 'outline'}
+                                  variant={isImplemented ? 'success' : 'warning'}
                                   className="h-5 px-1.5 text-[10px]"
                                   title={isImplemented ? 'Implementado' : 'No implementado'}
                                 >
@@ -323,7 +323,7 @@ export default function ModuleStudioPage() {
                                 </Badge>
 
                                 <Badge
-                                  variant={hasDeps ? 'secondary' : 'outline'}
+                                  variant={hasDeps ? 'info' : 'muted'}
                                   className="h-5 px-1.5 text-[10px] gap-1"
                                   title={hasDeps ? `${depCount} dependencias` : 'Sin dependencias'}
                                 >

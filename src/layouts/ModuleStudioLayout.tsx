@@ -311,7 +311,7 @@ function ModuleStudioLayoutContent({
 
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Badge
-                                    variant={isImplemented ? 'default' : 'outline'}
+                                    variant={isImplemented ? 'success' : 'warning'}
                                     className="h-5 px-1.5 text-[10px]"
                                     title={isImplemented ? 'Implementado' : 'No implementado'}
                                   >
@@ -319,7 +319,7 @@ function ModuleStudioLayoutContent({
                                   </Badge>
 
                                   <Badge
-                                    variant={hasDependencies ? 'secondary' : 'outline'}
+                                    variant={hasDependencies ? 'info' : 'muted'}
                                     className="h-5 px-1.5 text-[10px] gap-1"
                                     title={hasDependencies ? `${depCount} dependencias` : 'Sin dependencias'}
                                   >
