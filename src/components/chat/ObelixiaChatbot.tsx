@@ -55,6 +55,56 @@ const OBELIXIA_KNOWLEDGE = {
       "Gestión de productos y conceptos bancarios",
       "Importación masiva de datos desde Excel",
     ],
+    // Nuevos módulos sectoriales CRM
+    sectorCRM: [
+      "CRM Salud - Gestión de pacientes y centros médicos",
+      "CRM Inmobiliario - Propiedades, leads y transacciones",
+      "CRM Educación - Alumnos, matrículas y seguimiento académico",
+      "CRM Hostelería - Reservas, clientes y fidelización",
+      "CRM Legal - Casos, clientes y facturación jurídica",
+      "CRM Retail - Clientes, inventario y ventas omnicanal",
+      "CRM Industrial - B2B, maquinaria y proyectos",
+      "CRM Logística - Flotas, rutas y clientes de transporte",
+      "CRM Agrícola - Explotaciones, cosechas y cooperativas",
+      "CRM Energético - Plantas, contratos y mantenimiento",
+      "CRM Bancario - Carteras, scoring y cumplimiento",
+      "CRM Gobierno - Ciudadanos, trámites y servicios públicos",
+    ],
+    // Nuevos módulos sectoriales ERP
+    sectorERP: [
+      "ERP Salud - Gestión hospitalaria completa",
+      "ERP Inmobiliario - Promociones y proyectos",
+      "ERP Educativo - Gestión académica integral",
+      "ERP Hostelería - Operaciones hoteleras",
+      "ERP Legal - Gestión de despachos",
+      "ERP Retail - Tiendas y ecommerce",
+      "ERP Industrial - Producción y MRP",
+      "ERP Logístico - Almacenes y distribución",
+      "ERP Agrícola - Gestión agraria integral",
+      "ERP Construcción - Proyectos y obras",
+      "ERP Energético - Plantas y utilities",
+    ],
+    // Packs sectoriales 360°
+    packs360: [
+      "Pack Healthcare 360 - Solución completa para salud",
+      "Pack Real Estate 360 - Gestión inmobiliaria integral",
+      "Pack Education 360 - Plataforma educativa completa",
+      "Pack Hospitality 360 - Gestión hotelera total",
+      "Pack Professional 360 - Servicios profesionales",
+      "Pack Retail 360 - Comercio unificado",
+      "Pack Industry 360 - Fabricación inteligente",
+      "Pack Logistics 360 - Cadena de suministro",
+      "Pack Agriculture 360 - Gestión agraria",
+      "Pack Energy 360 - Utilities y renovables",
+      "Pack Banking 360 - Banca digital",
+      "Pack Government 360 - Administración pública",
+    ],
+    // Módulos premium transversales
+    premium: [
+      "AI Copilot Enterprise - Asistente IA avanzado multimodal",
+      "Analytics Executive Suite - BI ejecutivo con predicción",
+      "Compliance Master - Cumplimiento normativo automatizado",
+    ],
   },
   
   roles: {
@@ -144,10 +194,34 @@ function generateResponse(question: string): string {
     return `🤖 **Capacidades de IA**\n\n${features}\n\nLa IA está integrada en toda la plataforma para maximizar la productividad.\n\n¿Te gustaría una demo para ver la IA en acción?`;
   }
   
+  // CRM sectorial
+  if (q.includes('crm') && (q.includes('sector') || q.includes('salud') || q.includes('inmobil') || q.includes('educa') || q.includes('hotel') || q.includes('legal') || q.includes('retail') || q.includes('industri') || q.includes('logísti') || q.includes('agríco') || q.includes('energé') || q.includes('banc') || q.includes('gobierno'))) {
+    const crmModules = OBELIXIA_KNOWLEDGE.modules.sectorCRM.slice(0, 6).map(f => `• ${f}`).join('\n');
+    return `👥 **CRM Sectoriales**\n\nTenemos CRM especializados por sector:\n\n${crmModules}\n\n...y 6 más para otros sectores.\n\nCada CRM incluye campos, workflows y reportes específicos del sector.\n\n¿Qué sector te interesa? Podemos mostrarte una demo especializada.`;
+  }
+
+  // ERP sectorial
+  if (q.includes('erp') && (q.includes('sector') || q.includes('salud') || q.includes('inmobil') || q.includes('educa') || q.includes('hotel') || q.includes('legal') || q.includes('retail') || q.includes('industri') || q.includes('logísti') || q.includes('agríco') || q.includes('construc') || q.includes('energé'))) {
+    const erpModules = OBELIXIA_KNOWLEDGE.modules.sectorERP.slice(0, 6).map(f => `• ${f}`).join('\n');
+    return `🏢 **ERP Sectoriales**\n\nERPs adaptados a cada industria:\n\n${erpModules}\n\n...y 5 más para otros sectores.\n\nCada ERP incluye procesos, contabilidad y reportes específicos.\n\n¿Qué sector necesitas? Te mostramos cómo funciona.`;
+  }
+
+  // Packs 360
+  if (q.includes('pack') || q.includes('360') || q.includes('completo') || q.includes('integral') || q.includes('todo incluido')) {
+    const packs = OBELIXIA_KNOWLEDGE.modules.packs360.slice(0, 4).map(f => `• ${f}`).join('\n');
+    return `📦 **Packs Sectoriales 360°**\n\nSoluciones completas que incluyen CRM + ERP + Módulos específicos:\n\n${packs}\n\n...y 8 más para todos los sectores.\n\nCada Pack incluye todo lo necesario para digitalizar tu sector al completo.\n\n¿Te gustaría ver un Pack específico en una demo?`;
+  }
+
+  // Módulos premium
+  if (q.includes('premium') || q.includes('enterprise') || q.includes('avanzado') || q.includes('copilot') || q.includes('analytics executive') || q.includes('compliance master')) {
+    const premium = OBELIXIA_KNOWLEDGE.modules.premium.map(f => `• ${f}`).join('\n');
+    return `💎 **Módulos Premium**\n\nCapacidades enterprise avanzadas:\n\n${premium}\n\nEstos módulos potencian cualquier sector con IA avanzada y analytics predictivo.\n\n¿Quieres conocer más sobre alguno en particular?`;
+  }
+
   // Sectors/CNAE
   if (q.includes('sector') || q.includes('industria') || q.includes('cnae')) {
     const sectors = OBELIXIA_KNOWLEDGE.sectors.join(', ');
-    return `🏢 **Sectores Soportados**\n\n${sectors}\n\n**Sistema Multi-CNAE:**\n• Una empresa puede gestionar múltiples sectores\n• Contabilidad adaptada automáticamente al sector\n• Ratios y Z-Score específicos por industria\n\n¿Trabajas con algún sector específico? Podemos mostrarte cómo se adapta.`;
+    return `🏢 **Sectores Soportados**\n\n${sectors}\n\n**Ofrecemos para cada sector:**\n• CRM especializado\n• ERP adaptado\n• Pack 360° completo\n\n¿Trabajas con algún sector específico? Podemos mostrarte cómo se adapta.`;
   }
   
   // Deployment
