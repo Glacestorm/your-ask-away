@@ -37,13 +37,6 @@ import {
   Link,
   Layers,
 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
@@ -368,38 +361,37 @@ function ModuleStudioLayoutContent({
             <div className="col-span-2">
               <Card className="h-[calc(100vh-280px)]">
                 <CardHeader className="pb-2 space-y-3">
-                  {/* Domain Filter Dropdown */}
-                  <Select 
-                    value={moduleDomainFilter} 
-                    onValueChange={(value) => setModuleDomainFilter(value as ModuleDomainKey)}
-                  >
-                    <SelectTrigger className="h-9 text-sm">
-                      <SelectValue placeholder="Seleccionar dominio" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
-                        const DomainIcon = domain.icon;
-                        const count = domainCounts[key as ModuleDomainKey];
-                        return (
-                          <SelectItem 
-                            key={key} 
-                            value={key}
-                            textValue={`${domain.label} (${count})`}
-                            className="cursor-pointer"
+                  {/* Domain Filter (buttons) */}
+                  <div className="space-y-1">
+                    {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
+                      const isActive = moduleDomainFilter === (key as ModuleDomainKey);
+                      const DomainIcon = domain.icon;
+                      const count = domainCounts[key as ModuleDomainKey];
+
+                      return (
+                        <Button
+                          key={key}
+                          type="button"
+                          variant={isActive ? 'secondary' : 'ghost'}
+                          size="sm"
+                          onClick={() => setModuleDomainFilter(key as ModuleDomainKey)}
+                          className="h-8 w-full justify-between"
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <DomainIcon className={cn('h-4 w-4 shrink-0', domain.color)} />
+                            <span className="text-xs truncate">{domain.label}</span>
+                          </span>
+                          <Badge
+                            variant={isActive ? 'secondary' : 'outline'}
+                            className="h-5 px-1.5 text-[10px]"
                           >
-                            <span className="flex items-center gap-2">
-                              <DomainIcon className={cn('h-4 w-4', domain.color)} />
-                              <span>{domain.label}</span>
-                              <Badge variant="outline" className="h-5 px-1.5 text-[10px] ml-auto">
-                                {count}
-                              </Badge>
-                            </span>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                  
+                            {count}
+                          </Badge>
+                        </Button>
+                      );
+                    })}
+                  </div>
+
                   <CardTitle className="text-sm flex items-center justify-between">
                     <span className="flex items-center gap-2">
                       {React.createElement(MODULE_DOMAINS[moduleDomainFilter].icon, {
