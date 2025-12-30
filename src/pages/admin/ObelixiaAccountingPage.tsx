@@ -51,6 +51,25 @@ import {
   BillingIntegrationPanel
 } from '@/components/admin/obelixia-accounting';
 
+// Vertical Industry Modules
+import {
+  VerticalAccountingAgriculture,
+  VerticalAccountingEducation,
+  VerticalAccountingHealthcare,
+  VerticalAccountingHospitality,
+  VerticalAccountingLegal,
+  VerticalAccountingEnergy,
+  VerticalAccountingConstruction,
+  VerticalAccountingManufacturing,
+  VerticalAccountingLogistics,
+  VerticalAccountingRealEstate,
+  VerticalAccountingRetail,
+  VerticalAccountingNGO,
+  VerticalAccountingCrypto,
+  VerticalAccountingAIMarketplace,
+  VerticalAccountingPredictiveCashflow
+} from '@/components/admin/obelixia-accounting/verticals';
+
 // Phase 12: Advanced AI & Automation
 import {
   AdvancedCopilotPanel,
@@ -143,6 +162,38 @@ export default function ObelixiaAccountingPage() {
         return <ObelixiaPDFDownloader />;
       case 'billing-integration':
         return <BillingIntegrationPanel />;
+      // Vertical Industry Modules
+      case 'vertical-agriculture':
+        return <VerticalAccountingAgriculture />;
+      case 'vertical-education':
+        return <VerticalAccountingEducation />;
+      case 'vertical-healthcare':
+        return <VerticalAccountingHealthcare />;
+      case 'vertical-hospitality':
+        return <VerticalAccountingHospitality />;
+      case 'vertical-legal':
+        return <VerticalAccountingLegal />;
+      case 'vertical-energy':
+        return <VerticalAccountingEnergy />;
+      case 'vertical-construction':
+        return <VerticalAccountingConstruction />;
+      case 'vertical-manufacturing':
+        return <VerticalAccountingManufacturing />;
+      case 'vertical-logistics':
+        return <VerticalAccountingLogistics />;
+      case 'vertical-realestate':
+        return <VerticalAccountingRealEstate />;
+      case 'vertical-retail':
+        return <VerticalAccountingRetail />;
+      case 'vertical-ngo':
+        return <VerticalAccountingNGO />;
+      // Disruptive Modules
+      case 'vertical-crypto':
+        return <VerticalAccountingCrypto />;
+      case 'vertical-ai-marketplace':
+        return <VerticalAccountingAIMarketplace />;
+      case 'vertical-predictive-cashflow':
+        return <VerticalAccountingPredictiveCashflow />;
       default:
         return <ObelixiaAccountingDashboard />;
     }

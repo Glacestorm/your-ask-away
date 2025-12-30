@@ -44,7 +44,22 @@ import {
   Target,
   Briefcase,
   FileCheck,
-  Download
+  Download,
+  // Vertical icons
+  Wheat,
+  GraduationCap,
+  Heart,
+  Hotel,
+  Gavel,
+  Factory,
+  HardHat,
+  Truck,
+  Home,
+  ShoppingCart,
+  HandHeart,
+  Bitcoin,
+  Store,
+  TrendingDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ObelixiaAccountingHelpButton } from './ObelixiaAccountingHelpButton';
@@ -166,6 +181,39 @@ const moduleGroups: ModuleGroup[] = [
       { id: 'competitive-analysis', label: 'Análisis Competitivo', icon: Briefcase },
       { id: 'investor-documents', label: 'Documentos Inversor', icon: FileCheck },
       { id: 'pdf-generator', label: 'Descargar PDFs', icon: Download, badge: 'PDF', badgeColor: 'bg-emerald-500' },
+    ]
+  },
+  {
+    id: 'verticals',
+    label: 'Verticales Industria',
+    icon: Factory,
+    color: 'from-cyan-500 to-blue-500',
+    glowColor: 'shadow-cyan-500/30',
+    modules: [
+      { id: 'vertical-agriculture', label: 'Agricultura', icon: Wheat },
+      { id: 'vertical-education', label: 'Educación', icon: GraduationCap },
+      { id: 'vertical-healthcare', label: 'Salud', icon: Heart },
+      { id: 'vertical-hospitality', label: 'Hostelería', icon: Hotel },
+      { id: 'vertical-legal', label: 'Legal', icon: Gavel },
+      { id: 'vertical-energy', label: 'Energía', icon: Zap },
+      { id: 'vertical-construction', label: 'Construcción', icon: HardHat },
+      { id: 'vertical-manufacturing', label: 'Manufactura', icon: Factory },
+      { id: 'vertical-logistics', label: 'Logística', icon: Truck },
+      { id: 'vertical-realestate', label: 'Inmobiliario', icon: Home },
+      { id: 'vertical-retail', label: 'Retail', icon: ShoppingCart },
+      { id: 'vertical-ngo', label: 'ONGs', icon: HandHeart },
+    ]
+  },
+  {
+    id: 'disruptive',
+    label: 'Módulos Disruptivos',
+    icon: Bitcoin,
+    color: 'from-orange-500 to-yellow-500',
+    glowColor: 'shadow-orange-500/30',
+    modules: [
+      { id: 'vertical-crypto', label: 'Crypto & Web3', icon: Bitcoin, badge: 'NEW', badgeColor: 'bg-orange-500' },
+      { id: 'vertical-ai-marketplace', label: 'AI Marketplace', icon: Store, badge: 'NEW', badgeColor: 'bg-violet-500' },
+      { id: 'vertical-predictive-cashflow', label: 'Cashflow Predictivo', icon: TrendingDown, badge: 'AI', badgeColor: 'bg-cyan-500' },
     ]
   },
 ];
