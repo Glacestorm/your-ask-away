@@ -59,6 +59,8 @@ const navSections: NavSection[] = [
   { id: 'ecosystem', label: 'Ecosystem', icon: Store, path: '/obelixia-admin/module-studio/ecosystem', color: 'text-cyan-400' },
 ];
 
+type ModuleTypeFilter = 'all' | 'crm' | 'erp';
+
 function ModuleStudioLayoutContent({ 
   children, 
   title,
@@ -71,6 +73,7 @@ function ModuleStudioLayoutContent({
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [moduleTypeFilter, setModuleTypeFilter] = useState<ModuleTypeFilter>('all');
   const [showSearch, setShowSearch] = useState(false);
   const [showDependencyDialog, setShowDependencyDialog] = useState(false);
   const [dependencyDialogModule, setDependencyDialogModule] = useState<typeof modules[0] | null>(null);
@@ -117,16 +120,33 @@ function ModuleStudioLayoutContent({
     },
   });
 
-  // Filtrar módulos
+  // Filtrar módulos por tipo (CRM/ERP) y búsqueda
   const filteredModules = useMemo(() => {
-    if (!searchQuery.trim()) return modules;
-    const query = searchQuery.toLowerCase();
-    return modules.filter(m => 
-      m.module_name.toLowerCase().includes(query) ||
-      m.module_key.toLowerCase().includes(query) ||
-      m.description?.toLowerCase().includes(query)
-    );
-  }, [modules, searchQuery]);
+    let filtered = modules;
+    
+    // Filter by type (CRM/ERP)
+    if (moduleTypeFilter === 'crm') {
+      filtered = filtered.filter(m => m.module_key.startsWith('crm-'));
+    } else if (moduleTypeFilter === 'erp') {
+      filtered = filtered.filter(m => m.module_key.startsWith('erp-'));
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(m => 
+        m.module_name.toLowerCase().includes(query) ||
+        m.module_key.toLowerCase().includes(query) ||
+        m.description?.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered;
+  }, [modules, moduleTypeFilter, searchQuery]);
+
+  // Count modules by type
+  const crmCount = useMemo(() => modules.filter(m => m.module_key.startsWith('crm-')).length, [modules]);
+  const erpCount = useMemo(() => modules.filter(m => m.module_key.startsWith('erp-')).length, [modules]);
 
   // Current section
   const currentSection = navSections.find(s => location.pathname === s.path) || navSections[0];
@@ -264,11 +284,50 @@ function ModuleStudioLayoutContent({
           {showModuleSelector && (
             <div className="col-span-2">
               <Card className="h-[calc(100vh-280px)]">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 space-y-3">
+                  {/* Type Filter Tabs */}
+                  <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-lg">
+                    <button
+                      onClick={() => setModuleTypeFilter('all')}
+                      className={cn(
+                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
+                        moduleTypeFilter === 'all'
+                          ? 'bg-background shadow-sm text-foreground'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      Todos ({modules.length})
+                    </button>
+                    <button
+                      onClick={() => setModuleTypeFilter('crm')}
+                      className={cn(
+                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
+                        moduleTypeFilter === 'crm'
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      CRM ({crmCount})
+                    </button>
+                    <button
+                      onClick={() => setModuleTypeFilter('erp')}
+                      className={cn(
+                        'flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all',
+                        moduleTypeFilter === 'erp'
+                          ? 'bg-accent text-accent-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      ERP ({erpCount})
+                    </button>
+                  </div>
+                  
                   <CardTitle className="text-sm flex items-center justify-between">
-                    <span>Módulos ({filteredModules.length})</span>
+                    <span>
+                      {moduleTypeFilter === 'all' ? 'Módulos' : moduleTypeFilter.toUpperCase()} ({filteredModules.length})
+                    </span>
                   </CardTitle>
-                  <div className="relative mt-2">
+                  <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                       placeholder="Buscar..."
