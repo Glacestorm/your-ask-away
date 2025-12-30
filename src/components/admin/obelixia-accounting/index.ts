@@ -72,3 +72,6 @@ export { InvestorDocumentsPanel } from './InvestorDocumentsPanel';
 
 // PDF Downloader para documentos ObelixIA
 export { ObelixiaPDFDownloader } from './ObelixiaPDFDownloader';
+
+// Fase 16: Integración Facturación-Contabilidad
+export { BillingIntegrationPanel } from './BillingIntegrationPanel';
