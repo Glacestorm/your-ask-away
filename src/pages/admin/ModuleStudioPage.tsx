@@ -67,12 +67,7 @@ import {
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
-
-// Set de módulos implementados (sincronizado con DynamicModuleRouter)
-const IMPLEMENTED_MODULES = new Set([
-  'crm-companies',
-  // Añadir más módulos implementados aquí
-]);
+import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
 
 
 export default function ModuleStudioPage() {
@@ -299,8 +294,8 @@ export default function ModuleStudioPage() {
                         const node = graph.nodes.get(mod.module_key);
                         const depCount = node?.dependencies.length || 0;
                         const depByCount = node?.dependents.length || 0;
-                        const hasDeps = depCount > 0 || depByCount > 0;
-                        const isImplemented = IMPLEMENTED_MODULES.has(mod.module_key);
+                        const hasDeps = depCount > 0;
+                        const isImplemented = IMPLEMENTED_MODULE_KEYS.has(mod.module_key);
                         
                         return (
                           <button
@@ -318,37 +313,23 @@ export default function ModuleStudioPage() {
                           >
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-medium text-sm truncate flex-1">{mod.module_name}</span>
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                {/* Indicador de implementación */}
-                                <Badge 
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Badge
                                   variant={isImplemented ? 'default' : 'outline'}
-                                  className={`text-[9px] px-1.5 py-0 h-4 ${
-                                    isImplemented 
-                                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white' 
-                                      : 'border-amber-400 text-amber-500 bg-amber-50 dark:bg-amber-950/30'
-                                  }`}
+                                  className="h-5 px-1.5 text-[10px]"
+                                  title={isImplemented ? 'Implementado' : 'No implementado'}
                                 >
                                   {isImplemented ? '✓' : '○'}
                                 </Badge>
-                                {/* Indicador de dependencias */}
-                                {hasDeps ? (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-[9px] px-1.5 py-0 h-4 border-blue-400 text-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                                    title={`${depCount} dependencias, ${depByCount} dependientes`}
-                                  >
-                                    <GitBranch className="h-2.5 w-2.5 mr-0.5" />
-                                    {depCount + depByCount}
-                                  </Badge>
-                                ) : (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-[9px] px-1.5 py-0 h-4 border-muted-foreground/30 text-muted-foreground/50"
-                                  >
-                                    <GitBranch className="h-2.5 w-2.5 mr-0.5" />
-                                    0
-                                  </Badge>
-                                )}
+
+                                <Badge
+                                  variant={hasDeps ? 'secondary' : 'outline'}
+                                  className="h-5 px-1.5 text-[10px] gap-1"
+                                  title={hasDeps ? `${depCount} dependencias` : 'Sin dependencias'}
+                                >
+                                  <GitBranch className="h-3 w-3" />
+                                  {depCount}
+                                </Badge>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 mt-1">
