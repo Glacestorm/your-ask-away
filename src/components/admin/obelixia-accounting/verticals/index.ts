@@ -24,3 +24,14 @@ export { VerticalAccountingRetail } from './VerticalAccountingRetail';
 
 // Sector No Lucrativo
 export { VerticalAccountingNGO } from './VerticalAccountingNGO';
+
+// ============ MÓDULOS DISRUPTIVOS ============
+
+// Crypto & Web3
+export { VerticalAccountingCrypto } from './VerticalAccountingCrypto';
+
+// AI Agent Marketplace
+export { VerticalAccountingAIMarketplace } from './VerticalAccountingAIMarketplace';
+
+// Predictive Cashflow con IA Generativa
+export { VerticalAccountingPredictiveCashflow } from './VerticalAccountingPredictiveCashflow';
