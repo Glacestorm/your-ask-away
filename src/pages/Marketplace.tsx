@@ -4,7 +4,10 @@ import {
   AppCard, 
   MarketplaceCategories, 
   FeaturedApps, 
-  PremiumIntegrationsGrid 
+  PremiumIntegrationsGrid,
+  SectorPacksSection,
+  SectorCRMSection,
+  SectorERPSection
 } from '@/components/marketplace';
 import { MarketplaceHero } from '@/components/marketplace/MarketplaceHero';
 import { SystemModulesSection } from '@/components/marketplace/SystemModulesSection';
@@ -18,7 +21,8 @@ import {
   ArrowRight, 
   Layers,
   Package,
-  Sparkles
+  Sparkles,
+  Package2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -71,10 +75,14 @@ export default function Marketplace() {
             transition={{ delay: 0.2 }}
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-6 bg-white/5 border border-white/10">
+              <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4 mb-6 bg-white/5 border border-white/10">
                 <TabsTrigger value="all" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
                   <Sparkles className="h-4 w-4" />
                   Destacados
+                </TabsTrigger>
+                <TabsTrigger value="packs" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
+                  <Package2 className="h-4 w-4" />
+                  Packs
                 </TabsTrigger>
                 <TabsTrigger value="modules" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
                   <Layers className="h-4 w-4" />
@@ -90,11 +98,20 @@ export default function Marketplace() {
                 {/* Featured Apps */}
                 <FeaturedApps />
 
+                {/* Sector Packs Preview */}
+                <SectorPacksSection limit={6} showViewAll />
+
                 {/* System Modules Preview */}
                 <SystemModulesSection limit={6} showViewAll />
 
                 {/* Premium Integrations */}
                 <PremiumIntegrationsGrid limit={4} />
+              </TabsContent>
+
+              <TabsContent value="packs" className="space-y-8 mt-0">
+                <SectorPacksSection limit={12} showViewAll={false} />
+                <SectorCRMSection limit={12} showViewAll={false} />
+                <SectorERPSection limit={12} showViewAll={false} />
               </TabsContent>
 
               <TabsContent value="modules" className="mt-0">
