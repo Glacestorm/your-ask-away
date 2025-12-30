@@ -323,6 +323,50 @@ El sistema permite a los gestores bancarios administrar su cartera de empresas, 
       features: ['Registro automático', 'IP/User Agent', 'Antes/Después', 'Filtros avanzados', 'Export'],
       dependencies: ['Todos los módulos'],
       menuPath: '/admin → Audit Logs'
+    },
+    // Módulos Sectoriales CRM
+    {
+      id: 'crm-sectorial',
+      name: 'CRM Sectoriales',
+      description: 'CRMs especializados por sector: Salud, Inmobiliario, Educación, Hostelería, Legal, Retail, Industrial, Logística, Agrícola, Energético, Bancario y Gobierno',
+      compliance: 94,
+      regulations: ['GDPR', 'ISO 27001'],
+      features: ['12 verticales sectoriales', 'Campos específicos', 'Workflows adaptados', 'Reportes especializados', 'Integraciones sectoriales'],
+      dependencies: ['Empresas', 'Contabilidad', 'IA'],
+      menuPath: '/store → Packs → CRM Sectoriales'
+    },
+    // Módulos Sectoriales ERP
+    {
+      id: 'erp-sectorial',
+      name: 'ERP Sectoriales',
+      description: 'ERPs adaptados por industria: Salud, Inmobiliario, Educativo, Hostelería, Legal, Retail, Industrial, Logístico, Agrícola, Construcción y Energético',
+      compliance: 93,
+      regulations: ['GDPR', 'ISO 27001', 'IFRS 9'],
+      features: ['11 verticales ERP', 'Contabilidad sectorial', 'Procesos específicos', 'Facturación adaptada', 'Reportes fiscales'],
+      dependencies: ['Contabilidad', 'Empresas'],
+      menuPath: '/store → Packs → ERP Sectoriales'
+    },
+    // Packs Sectoriales 360°
+    {
+      id: 'packs-360',
+      name: 'Packs Sectoriales 360°',
+      description: 'Soluciones completas CRM + ERP + IA para 12 sectores: Healthcare, Real Estate, Education, Hospitality, Professional, Retail, Industry, Logistics, Agriculture, Energy, Banking y Government',
+      compliance: 95,
+      regulations: ['GDPR', 'ISO 27001', 'DORA'],
+      features: ['12 packs sectoriales', 'CRM + ERP integrado', 'Contabilidad incluida', 'IA especializada', 'Soporte premium'],
+      dependencies: ['CRM Sectoriales', 'ERP Sectoriales', 'IA'],
+      menuPath: '/store → Packs'
+    },
+    // Módulos Premium Transversales
+    {
+      id: 'premium-modules',
+      name: 'Módulos Premium',
+      description: 'Capacidades enterprise avanzadas: AI Copilot Enterprise, Analytics Executive Suite, Compliance Master',
+      compliance: 97,
+      regulations: ['GDPR', 'AI Act', 'ISO 27001', 'DORA'],
+      features: ['IA multimodal avanzada', 'BI ejecutivo predictivo', 'Compliance automatizado', 'Dashboards C-level', 'Integraciones enterprise'],
+      dependencies: ['IA', 'Analytics', 'Compliance'],
+      menuPath: '/store → Premium'
     }
   ],
   regulations: [

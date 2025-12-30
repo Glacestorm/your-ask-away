@@ -42,23 +42,30 @@ interface SectorERPSectionProps {
   showViewAll?: boolean;
 }
 
-export function SectorERPSection({ limit = 6, showViewAll = true }: SectorERPSectionProps) {
+export function SectorERPSection({ limit, showViewAll = true }: SectorERPSectionProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const { data: modules, isLoading } = useQuery({
+  const { data: modules, isLoading, refetch } = useQuery({
     queryKey: ['sector-erp', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('app_modules')
         .select('*')
         .like('module_key', 'erp-%')
         .not('module_key', 'in', '("erp-invoicing","erp-payroll")')
-        .order('base_price', { ascending: false })
-        .limit(limit);
+        .order('base_price', { ascending: false });
       
+      // Solo aplicar límite si se especifica
+      if (limit) {
+        query.limit(limit);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    staleTime: 0, // Siempre refrescar al montar
+    refetchOnMount: 'always',
   });
 
   if (isLoading) {
@@ -71,7 +78,7 @@ export function SectorERPSection({ limit = 6, showViewAll = true }: SectorERPSec
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: limit }).map((_, i) => (
+          {Array.from({ length: limit || 6 }).map((_, i) => (
             <Skeleton key={i} className="h-32 rounded-xl" />
           ))}
         </div>

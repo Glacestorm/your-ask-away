@@ -109,9 +109,9 @@ export default function Marketplace() {
               </TabsContent>
 
               <TabsContent value="packs" className="space-y-8 mt-0">
-                <SectorPacksSection limit={12} showViewAll={false} />
-                <SectorCRMSection limit={12} showViewAll={false} />
-                <SectorERPSection limit={12} showViewAll={false} />
+                <SectorPacksSection showViewAll={false} />
+                <SectorCRMSection showViewAll={false} />
+                <SectorERPSection showViewAll={false} />
               </TabsContent>
 
               <TabsContent value="modules" className="mt-0">

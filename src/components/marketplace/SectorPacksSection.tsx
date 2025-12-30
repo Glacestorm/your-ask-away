@@ -60,22 +60,29 @@ interface SectorPacksSectionProps {
   showViewAll?: boolean;
 }
 
-export function SectorPacksSection({ limit = 6, showViewAll = true }: SectorPacksSectionProps) {
+export function SectorPacksSection({ limit, showViewAll = true }: SectorPacksSectionProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const { data: packs, isLoading } = useQuery({
     queryKey: ['sector-packs', limit],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('app_modules')
         .select('*')
         .like('module_key', 'pack-%')
-        .order('base_price', { ascending: false })
-        .limit(limit);
+        .order('base_price', { ascending: false });
       
+      // Solo aplicar límite si se especifica
+      if (limit) {
+        query.limit(limit);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+    staleTime: 0, // Siempre refrescar al montar
+    refetchOnMount: 'always',
   });
 
   if (isLoading) {
@@ -88,7 +95,7 @@ export function SectorPacksSection({ limit = 6, showViewAll = true }: SectorPack
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: limit }).map((_, i) => (
+          {Array.from({ length: limit || 6 }).map((_, i) => (
             <Skeleton key={i} className="h-48 rounded-xl" />
           ))}
         </div>
