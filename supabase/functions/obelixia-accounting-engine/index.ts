@@ -3046,7 +3046,7 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       }
 
       case 'get_billing_invoices': {
-        const { status, limit = 50, offset = 0, type } = params as { 
+        const { status, limit = 50, offset = 0, type } = (params || {}) as { 
           status?: string; 
           limit?: number; 
           offset?: number;
@@ -3119,7 +3119,7 @@ ${counterparty ? `Ordenante/Beneficiario: ${counterparty}` : ''}
       }
 
       case 'get_billing_payments': {
-        const { invoice_id, limit = 50 } = params as { 
+        const { invoice_id, limit = 50 } = (params || {}) as { 
           invoice_id?: string; 
           limit?: number;
         };
