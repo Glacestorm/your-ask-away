@@ -62,7 +62,8 @@ import {
   ModuleABTestingPanel,
   ModuleExportImportPanel,
   ModuleTemplatesPanel,
-  ModuleStudioHelpButton
+  ModuleStudioHelpButton,
+  ModuleDependencyDetailDialog
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -79,6 +80,8 @@ export default function ModuleStudioPage() {
   const [showCopilot, setShowCopilot] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
   const [showAgent, setShowAgent] = useState(true);
+  const [showDependencyDialog, setShowDependencyDialog] = useState(false);
+  const [dependencyDialogModule, setDependencyDialogModule] = useState<typeof modules extends (infer T)[] | undefined ? T | null : never>(null);
   const { graph, dependencies, isLoading: graphLoading, refetch: refetchGraph } = useModuleDependencyGraph();
   const { history, versions, refetch: refetchHistory } = useModuleChangeHistory(selectedModule || undefined);
 
@@ -291,21 +294,33 @@ export default function ModuleStudioPage() {
                       </div>
                     ) : (
                       filteredModules.map(mod => {
-                        const node = graph.nodes.get(mod.module_key);
-                        const depCount = node?.dependencies.length || 0;
-                        const depByCount = node?.dependents.length || 0;
-                        const hasDeps = depCount > 0;
+                        // Use the dependencies array from the module itself
+                        const directDepsFromArray = mod.dependencies || [];
+                        const depCount = directDepsFromArray.length;
+                        
+                        // Calculate dependents (modules that depend on this one)
+                        const depByCount = modules?.filter(
+                          m => (m.dependencies || []).includes(mod.module_key)
+                        ).length || 0;
+                        
+                        const hasDeps = depCount > 0 || depByCount > 0;
                         const isImplemented = IMPLEMENTED_MODULE_KEYS.has(mod.module_key);
                         
+                        const handleDependencyClick = (e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          setDependencyDialogModule(mod);
+                          setShowDependencyDialog(true);
+                        };
+                        
                         return (
-                          <button
+                          <div
                             key={mod.id}
                             onClick={() => {
                               setSelectedModule(mod.module_key);
                               setIsEditing(false);
                               setShowImpactAnalysis(false);
                             }}
-                            className={`w-full text-left p-3 rounded-lg transition-all ${
+                            className={`w-full text-left p-3 rounded-lg transition-all cursor-pointer ${
                               selectedModule === mod.module_key 
                                 ? 'bg-primary/10 border border-primary/30 shadow-sm' 
                                 : 'hover:bg-muted/50'
@@ -322,14 +337,19 @@ export default function ModuleStudioPage() {
                                   {isImplemented ? '✓' : '○'}
                                 </Badge>
 
-                                <Badge
-                                  variant={hasDeps ? 'info' : 'muted'}
-                                  className="h-5 px-1.5 text-[10px] gap-1"
-                                  title={hasDeps ? `${depCount} dependencias` : 'Sin dependencias'}
+                                {/* Dependency button */}
+                                <button
+                                  onClick={handleDependencyClick}
+                                  className={`inline-flex items-center gap-1 h-5 px-1.5 rounded-full text-[10px] font-semibold border transition-colors ${
+                                    hasDeps
+                                      ? 'bg-info/12 border-info/30 text-info hover:bg-info/20'
+                                      : 'bg-muted/40 border-border text-muted-foreground hover:bg-muted/60'
+                                  }`}
+                                  title={`${depCount} dependencias, ${depByCount} dependientes - Clic para ver detalles`}
                                 >
                                   <GitBranch className="h-3 w-3" />
-                                  {depCount}
-                                </Badge>
+                                  {depCount + depByCount}
+                                </button>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 mt-1">
@@ -342,7 +362,7 @@ export default function ModuleStudioPage() {
                               </span>
                               <span>v{mod.version || '1.0.0'}</span>
                             </div>
-                          </button>
+                          </div>
                         );
                       })
                     )}
@@ -685,6 +705,18 @@ export default function ModuleStudioPage() {
             </div>
           )}
         </div>
+
+        {/* Dependency Detail Dialog */}
+        <ModuleDependencyDetailDialog
+          open={showDependencyDialog}
+          onOpenChange={setShowDependencyDialog}
+          module={dependencyDialogModule}
+          allModules={modules || []}
+          onNavigateToModule={(key) => {
+            setSelectedModule(key);
+            setShowDependencyDialog(false);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

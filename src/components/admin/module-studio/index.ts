@@ -2,6 +2,7 @@
  * Module Studio Components
  */
 
+export { ModuleDependencyDetailDialog } from './ModuleDependencyDetailDialog';
 export { ModuleDependencyGraph } from './ModuleDependencyGraph';
 export { ModuleEditor } from './ModuleEditor';
 export { ModuleSandboxPanel } from './ModuleSandboxPanel';

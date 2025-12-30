@@ -34,7 +34,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
 import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
-import { ModuleCopilotPanel, ModuleAutonomousAgentPanel, ModulePreviewPanel, ModuleStudioHelpButton } from '@/components/admin/module-studio';
+import { ModuleCopilotPanel, ModuleAutonomousAgentPanel, ModulePreviewPanel, ModuleStudioHelpButton, ModuleDependencyDetailDialog } from '@/components/admin/module-studio';
 import { ModuleSelectorSkeleton } from '@/components/admin/module-studio/ModuleStudioSkeleton';
 import { ModuleSearchCommand } from '@/components/admin/module-studio/ModuleSearchCommand';
 import { ModuleStudioKeyboardHelp } from '@/components/admin/module-studio/ModuleStudioKeyboardHelp';
@@ -72,6 +72,8 @@ function ModuleStudioLayoutContent({
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [showDependencyDialog, setShowDependencyDialog] = useState(false);
+  const [dependencyDialogModule, setDependencyDialogModule] = useState<typeof modules[0] | null>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   
   const {
@@ -289,18 +291,30 @@ function ModuleStudioLayoutContent({
                         </div>
                       ) : (
                         filteredModules.map(mod => {
-                          const node = graph.nodes.get(mod.module_key);
-                          const depCount = node?.dependencies.length || 0;
-                          const depByCount = node?.dependents.length || 0;
+                          // Use the dependencies array from the module itself
+                          const directDepsFromArray = mod.dependencies || [];
+                          const depCount = directDepsFromArray.length;
+                          
+                          // Calculate dependents (modules that depend on this one)
+                          const depByCount = modules.filter(
+                            m => (m.dependencies || []).includes(mod.module_key)
+                          ).length;
+                          
                           const isImplemented = IMPLEMENTED_MODULE_KEYS.has(mod.module_key);
-                          const hasDependencies = depCount > 0;
+                          const hasDependencies = depCount > 0 || depByCount > 0;
+
+                          const handleDependencyClick = (e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            setDependencyDialogModule(mod);
+                            setShowDependencyDialog(true);
+                          };
 
                           return (
-                            <button
+                            <div
                               key={mod.id}
                               onClick={() => setSelectedModuleKey(mod.module_key)}
                               className={cn(
-                                'w-full text-left p-3 rounded-lg transition-all',
+                                'w-full text-left p-3 rounded-lg transition-all cursor-pointer',
                                 selectedModuleKey === mod.module_key
                                   ? 'bg-primary/10 border border-primary/30 shadow-sm'
                                   : 'hover:bg-muted/50'
@@ -318,14 +332,20 @@ function ModuleStudioLayoutContent({
                                     {isImplemented ? '✓' : '○'}
                                   </Badge>
 
-                                  <Badge
-                                    variant={hasDependencies ? 'info' : 'muted'}
-                                    className="h-5 px-1.5 text-[10px] gap-1"
-                                    title={hasDependencies ? `${depCount} dependencias` : 'Sin dependencias'}
+                                  {/* Dependency button */}
+                                  <button
+                                    onClick={handleDependencyClick}
+                                    className={cn(
+                                      'inline-flex items-center gap-1 h-5 px-1.5 rounded-full text-[10px] font-semibold border transition-colors',
+                                      hasDependencies
+                                        ? 'bg-info/12 border-info/30 text-info hover:bg-info/20'
+                                        : 'bg-muted/40 border-border text-muted-foreground hover:bg-muted/60'
+                                    )}
+                                    title={`${depCount} dependencias, ${depByCount} dependientes - Clic para ver detalles`}
                                   >
                                     <GitBranch className="h-3 w-3" />
-                                    {depCount}
-                                  </Badge>
+                                    {depCount + depByCount}
+                                  </button>
 
                                   {mod.is_core && (
                                     <Badge variant="secondary" className="text-[10px] px-1 h-5">
@@ -339,7 +359,7 @@ function ModuleStudioLayoutContent({
                                 <span>↓{depCount} ↑{depByCount}</span>
                                 <span>v{mod.version || '1.0.0'}</span>
                               </div>
-                            </button>
+                            </div>
                           );
                         })
                       )}
@@ -390,6 +410,15 @@ function ModuleStudioLayoutContent({
           onSelectModule={setSelectedModuleKey}
           open={showSearch}
           onOpenChange={setShowSearch}
+        />
+
+        {/* Dependency Detail Dialog */}
+        <ModuleDependencyDetailDialog
+          open={showDependencyDialog}
+          onOpenChange={setShowDependencyDialog}
+          module={dependencyDialogModule}
+          allModules={modules}
+          onNavigateToModule={(key) => setSelectedModuleKey(key)}
         />
       </div>
     </DashboardLayout>
