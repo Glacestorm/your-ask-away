@@ -52,7 +52,7 @@ export function SectorERPSection({ limit = 6, showViewAll = true }: SectorERPSec
         .from('app_modules')
         .select('*')
         .like('module_key', 'erp-%')
-        .not('module_key', 'in', '(erp-invoicing,erp-payroll)')
+        .not('module_key', 'in', '("erp-invoicing","erp-payroll")')
         .order('base_price', { ascending: false })
         .limit(limit);
       
