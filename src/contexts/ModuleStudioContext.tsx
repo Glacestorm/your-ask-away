@@ -113,17 +113,18 @@ export function ModuleStudioProvider({ children }: { children: React.ReactNode }
   // Sincronizar URL con estado
   const setSelectedModuleKey = useCallback((key: string | null) => {
     setSelectedModuleKeyState(key);
-    if (key) {
-      setSearchParams(prev => {
-        prev.set('module', key);
-        return prev;
-      });
-    } else {
-      setSearchParams(prev => {
-        prev.delete('module');
-        return prev;
-      });
-    }
+
+    // IMPORTANT: nunca mutar el objeto URLSearchParams "prev" in-place
+    // porque puede causar bucles de render/efectos al no cambiar la referencia.
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (key) {
+        next.set('module', key);
+      } else {
+        next.delete('module');
+      }
+      return next;
+    });
   }, [setSearchParams]);
 
   // Sincronizar estado con URL al cargar
