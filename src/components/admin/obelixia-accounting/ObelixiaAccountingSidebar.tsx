@@ -77,6 +77,7 @@ const coreModules: ModuleItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'chart', label: 'Plan Contable', icon: FolderTree },
   { id: 'entries', label: 'Asientos', icon: FileText },
+  { id: 'billing', label: 'Facturación', icon: Receipt, badge: 'NEW', badgeColor: 'bg-emerald-500' },
   { id: 'partners', label: 'Socios', icon: Users },
   { id: 'banking', label: 'Bancos', icon: Building2 },
   { id: 'reports', label: 'Reportes', icon: PieChart },
