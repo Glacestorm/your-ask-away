@@ -180,10 +180,21 @@ export function ModuleDependencyDetailDialog({
     );
   };
 
-  if (!module) return null;
-
   const totalDeps = directDeps.length + transitiveDeps.length;
   const totalDependents = directDependents.length + transitiveDependents.length;
+
+  // Early return if no module - but still render the Dialog container for controlled state
+  if (!module) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Cargando...</DialogTitle>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
