@@ -118,10 +118,6 @@ export function ObelixiaAccountingDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            ObelixIA Accounting
-          </h1>
           <p className="text-sm text-muted-foreground">
             Contabilidad interna • {fiscalConfig?.jurisdiction === 'ES' ? 'España' : 'Andorra'}
           </p>

@@ -237,6 +237,22 @@ export function useObelixiaFinancialGuardian() {
           status: 'active'
         },
         {
+          id: 'alert-billing-1',
+          type: 'warning',
+          category: 'anomaly',
+          title: 'Facturas vencidas sin cobrar',
+          description: '5 facturas por valor de €12,500 superan los 60 días de vencimiento',
+          affectedEntity: { type: 'partner', id: 'billing-aging', name: 'Facturación Vencida' },
+          severity: 6,
+          confidence: 100,
+          suggestedAction: 'Gestionar cobros pendientes y contactar con clientes morosos',
+          alternativeActions: ['Enviar recordatorios automáticos', 'Iniciar gestión de recobro'],
+          impact: { financial: 12500, risk: 'alto' },
+          autoResolvable: false,
+          createdAt: new Date().toISOString(),
+          status: 'active'
+        },
+        {
           id: 'alert-2',
           type: 'recommendation',
           category: 'optimization',
@@ -264,6 +280,21 @@ export function useObelixiaFinancialGuardian() {
           impact: { compliance: 'alto riesgo', financial: 5000 },
           autoResolvable: false,
           createdAt: new Date(Date.now() - 86400000).toISOString(),
+          status: 'active'
+        },
+        {
+          id: 'alert-billing-2',
+          type: 'info',
+          category: 'opportunity',
+          title: 'Facturas sin contabilizar',
+          description: '8 facturas emitidas pendientes de integrar en asientos contables',
+          affectedEntity: { type: 'transaction', id: 'pending-accounting', name: 'Facturas Pendientes' },
+          severity: 4,
+          confidence: 100,
+          suggestedAction: 'Acceder a Facturación para contabilizar facturas pendientes',
+          impact: { compliance: 'medio' },
+          autoResolvable: true,
+          createdAt: new Date(Date.now() - 1800000).toISOString(),
           status: 'active'
         },
         {
@@ -415,6 +446,27 @@ export function useObelixiaFinancialGuardian() {
           prerequisites: ['Facturas originales disponibles', 'Registro de horas dedicadas a I+D'],
           confidence: 88,
           urgency: 'medium_term',
+          status: 'pending',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'rec-billing-1',
+          category: 'cash_flow',
+          title: 'Automatizar ciclo de facturación',
+          description: 'La integración facturación-contabilidad puede reducir tiempo de cierre en 40%',
+          expectedBenefit: {
+            type: 'efficiency',
+            description: 'Reducción de 2 días en proceso de cierre mensual y eliminación de errores manuales'
+          },
+          implementationSteps: [
+            { step: 1, action: 'Configurar contabilización automática en Facturación', effort: 'low', timeline: '1 hora' },
+            { step: 2, action: 'Revisar mapeo de cuentas contables', effort: 'low', timeline: '1 día' },
+            { step: 3, action: 'Activar conciliación automática de cobros', effort: 'medium', timeline: '2 días' }
+          ],
+          risks: ['Revisar asientos generados las primeras semanas'],
+          prerequisites: ['Acceso al módulo de Facturación'],
+          confidence: 95,
+          urgency: 'immediate',
           status: 'pending',
           createdAt: new Date().toISOString()
         },
