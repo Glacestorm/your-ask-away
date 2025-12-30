@@ -19,6 +19,15 @@
   --primary-glow: 224 76% 50%;
   --secondary: 160 84% 39%;
   --secondary-foreground: 0 0% 100%;
+
+  /* Semantic status colors */
+  --success: 160 84% 39%;
+  --success-foreground: 0 0% 100%;
+  --info: 224 76% 40%;
+  --info-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+
   --muted: 210 40% 96%;
   --muted-foreground: 215 16% 47%;
   --accent: 160 84% 95%;
@@ -58,6 +67,15 @@
   --primary-glow: 224 76% 65%;
   --secondary: 160 84% 45%;
   --secondary-foreground: 0 0% 100%;
+
+  /* Semantic status colors */
+  --success: 160 84% 45%;
+  --success-foreground: 0 0% 100%;
+  --info: 224 76% 55%;
+  --info-foreground: 0 0% 100%;
+  --warning: 38 92% 55%;
+  --warning-foreground: 0 0% 100%;
+
   --muted: 217 33% 17%;
   --muted-foreground: 215 20% 65%;
   --accent: 160 60% 20%;
@@ -95,6 +113,15 @@
   --primary-glow: 145 55% 52%;
   --secondary: 145 25% 90%;
   --secondary-foreground: 145 55% 25%;
+
+  /* Semantic status colors */
+  --success: 145 55% 42%;
+  --success-foreground: 0 0% 100%;
+  --info: 200 55% 45%;
+  --info-foreground: 0 0% 100%;
+  --warning: 35 75% 50%;
+  --warning-foreground: 0 0% 100%;
+
   --muted: 0 0% 96%;
   --muted-foreground: 0 0% 45%;
   --accent: 145 55% 95%;
@@ -133,6 +160,15 @@
   --primary-glow: 280 80% 70%;
   --secondary: 200 90% 60%;
   --secondary-foreground: 0 0% 100%;
+
+  /* Semantic status colors */
+  --success: 200 90% 60%;
+  --success-foreground: 0 0% 100%;
+  --info: 280 80% 60%;
+  --info-foreground: 0 0% 100%;
+  --warning: 340 75% 65%;
+  --warning-foreground: 0 0% 100%;
+
   --muted: 250 60% 95%;
   --muted-foreground: 260 20% 50%;
   --accent: 320 85% 65%;
