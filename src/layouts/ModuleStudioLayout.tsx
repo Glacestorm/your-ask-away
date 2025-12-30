@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useModuleStudioContext } from '@/contexts/ModuleStudioContext';
+import { IMPLEMENTED_MODULE_KEYS } from '@/components/admin/modules/implementedModules';
 import { ModuleCopilotPanel, ModuleAutonomousAgentPanel, ModulePreviewPanel, ModuleStudioHelpButton } from '@/components/admin/module-studio';
 import { ModuleSelectorSkeleton } from '@/components/admin/module-studio/ModuleStudioSkeleton';
 import { ModuleSearchCommand } from '@/components/admin/module-studio/ModuleSearchCommand';
@@ -291,24 +292,49 @@ function ModuleStudioLayoutContent({
                           const node = graph.nodes.get(mod.module_key);
                           const depCount = node?.dependencies.length || 0;
                           const depByCount = node?.dependents.length || 0;
-                          
+                          const isImplemented = IMPLEMENTED_MODULE_KEYS.has(mod.module_key);
+                          const hasDependencies = depCount > 0;
+
                           return (
                             <button
                               key={mod.id}
                               onClick={() => setSelectedModuleKey(mod.module_key)}
                               className={cn(
                                 'w-full text-left p-3 rounded-lg transition-all',
-                                selectedModuleKey === mod.module_key 
-                                  ? 'bg-primary/10 border border-primary/30 shadow-sm' 
+                                selectedModuleKey === mod.module_key
+                                  ? 'bg-primary/10 border border-primary/30 shadow-sm'
                                   : 'hover:bg-muted/50'
                               )}
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium text-sm truncate">{mod.module_name}</span>
-                                <div className="flex gap-1">
-                                  {mod.is_core && <Badge variant="secondary" className="text-[10px] px-1">Core</Badge>}
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-medium text-sm truncate flex-1">{mod.module_name}</span>
+
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <Badge
+                                    variant={isImplemented ? 'default' : 'outline'}
+                                    className="h-5 px-1.5 text-[10px]"
+                                    title={isImplemented ? 'Implementado' : 'No implementado'}
+                                  >
+                                    {isImplemented ? '✓' : '○'}
+                                  </Badge>
+
+                                  <Badge
+                                    variant={hasDependencies ? 'secondary' : 'outline'}
+                                    className="h-5 px-1.5 text-[10px] gap-1"
+                                    title={hasDependencies ? `${depCount} dependencias` : 'Sin dependencias'}
+                                  >
+                                    <GitBranch className="h-3 w-3" />
+                                    {depCount}
+                                  </Badge>
+
+                                  {mod.is_core && (
+                                    <Badge variant="secondary" className="text-[10px] px-1 h-5">
+                                      Core
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
+
                               <div className="flex gap-2 mt-1 text-xs text-muted-foreground">
                                 <span>↓{depCount} ↑{depByCount}</span>
                                 <span>v{mod.version || '1.0.0'}</span>

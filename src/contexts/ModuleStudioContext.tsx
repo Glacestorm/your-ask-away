@@ -92,6 +92,10 @@ export function ModuleStudioProvider({ children }: { children: React.ReactNode }
       if (error) throw error;
       return data as ModuleData[];
     },
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   // Grafo de dependencias
