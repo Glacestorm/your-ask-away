@@ -374,25 +374,11 @@ function ModuleStudioLayoutContent({
                     onValueChange={(value) => setModuleDomainFilter(value as ModuleDomainKey)}
                   >
                     <SelectTrigger className="h-9 text-sm">
-                      <SelectValue>
-                        {(() => {
-                          const domain = MODULE_DOMAINS[moduleDomainFilter];
-                          const Icon = domain.icon;
-                          return (
-                            <span className="flex items-center gap-2">
-                              <Icon className={cn('h-4 w-4', domain.color)} />
-                              <span>{domain.label}</span>
-                              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                                {domainCounts[moduleDomainFilter]}
-                              </Badge>
-                            </span>
-                          );
-                        })()}
-                      </SelectValue>
+                      <SelectValue placeholder="Seleccionar dominio" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
                       {Object.entries(MODULE_DOMAINS).map(([key, domain]) => {
-                        const Icon = domain.icon;
+                        const DomainIcon = domain.icon;
                         const count = domainCounts[key as ModuleDomainKey];
                         return (
                           <SelectItem 
@@ -401,7 +387,7 @@ function ModuleStudioLayoutContent({
                             className="cursor-pointer"
                           >
                             <span className="flex items-center gap-2">
-                              <Icon className={cn('h-4 w-4', domain.color)} />
+                              <DomainIcon className={cn('h-4 w-4', domain.color)} />
                               <span>{domain.label}</span>
                               <Badge variant="outline" className="h-5 px-1.5 text-[10px] ml-auto">
                                 {count}
@@ -415,11 +401,9 @@ function ModuleStudioLayoutContent({
                   
                   <CardTitle className="text-sm flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      {(() => {
-                        const domain = MODULE_DOMAINS[moduleDomainFilter];
-                        const Icon = domain.icon;
-                        return <Icon className={cn('h-4 w-4', domain.color)} />;
-                      })()}
+                      {React.createElement(MODULE_DOMAINS[moduleDomainFilter].icon, {
+                        className: cn('h-4 w-4', MODULE_DOMAINS[moduleDomainFilter].color)
+                      })}
                       {MODULE_DOMAINS[moduleDomainFilter].label} ({filteredModules.length})
                     </span>
                   </CardTitle>
