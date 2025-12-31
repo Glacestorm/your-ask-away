@@ -1,3 +1,10 @@
 export { ERPDashboard } from './ERPDashboard';
 export { ERPModulesGrid } from './ERPModulesGrid';
+export { ERPModularDashboard } from './ERPModularDashboard';
+export { ERPCompanySelector } from './config/ERPCompanySelector';
+export { ERPCompaniesManager } from './config/ERPCompaniesManager';
+export { ERPFiscalYearsManager } from './config/ERPFiscalYearsManager';
+export { ERPSeriesManager } from './config/ERPSeriesManager';
+export { ERPRolesManager } from './config/ERPRolesManager';
+export { ERPAuditViewer } from './audit/ERPAuditViewer';
 export type { Transaction, Invoice, Employee, ERPMetrics } from './ERPDashboard';
