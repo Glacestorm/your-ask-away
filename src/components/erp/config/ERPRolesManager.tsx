@@ -44,7 +44,7 @@ const initialForm: CreateRoleForm = {
 
 export function ERPRolesManager() {
   const { currentCompany, hasPermission } = useERPContext();
-  const { roles, permissions, isLoading, fetchRoles, fetchPermissions, createRole, updateRole, deleteRole } = useERPRoles();
+  const { roles, permissions, isLoading, fetchRoles, fetchPermissions, createRole, updateRolePermissions, deleteRole } = useERPRoles();
   
   const [showDialog, setShowDialog] = useState(false);
   const [editingRole, setEditingRole] = useState<ERPRole | null>(null);
@@ -56,7 +56,7 @@ export function ERPRolesManager() {
   useEffect(() => {
     fetchPermissions();
     if (currentCompany?.id) {
-      fetchRoles(currentCompany.id);
+      fetchRoles();
     }
   }, [currentCompany?.id, fetchRoles, fetchPermissions]);
 
@@ -94,14 +94,13 @@ export function ERPRolesManager() {
     setIsSaving(true);
     try {
       if (editingRole) {
-        await updateRole(editingRole.id, form);
+        await updateRolePermissions(editingRole.id, form.permission_ids);
         toast.success('Rol actualizado');
       } else {
-        await createRole(currentCompany.id, form);
+        await createRole(form);
         toast.success('Rol creado');
       }
       setShowDialog(false);
-      fetchRoles(currentCompany.id);
     } catch (err) {
       toast.error('Error al guardar rol');
     } finally {
@@ -116,13 +115,7 @@ export function ERPRolesManager() {
     }
     if (!confirm(`¿Eliminar el rol "${role.name}"?`)) return;
     
-    try {
-      await deleteRole(role.id);
-      toast.success('Rol eliminado');
-      if (currentCompany?.id) fetchRoles(currentCompany.id);
-    } catch (err) {
-      toast.error('Error al eliminar rol');
-    }
+    await deleteRole(role.id);
   };
 
   const togglePermission = (permId: string) => {

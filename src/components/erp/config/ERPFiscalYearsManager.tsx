@@ -55,7 +55,7 @@ export function ERPFiscalYearsManager() {
 
   useEffect(() => {
     if (currentCompany?.id) {
-      fetchFiscalYears(currentCompany.id);
+      fetchFiscalYears();
     }
   }, [currentCompany?.id, fetchFiscalYears]);
 
@@ -79,10 +79,8 @@ export function ERPFiscalYearsManager() {
 
     setIsSaving(true);
     try {
-      await createFiscalYear(currentCompany.id, form);
-      toast.success('Ejercicio creado');
+      await createFiscalYear(form);
       setShowDialog(false);
-      fetchFiscalYears(currentCompany.id);
     } catch (err) {
       toast.error('Error al crear ejercicio');
     } finally {
@@ -93,24 +91,18 @@ export function ERPFiscalYearsManager() {
   const handleClosePeriod = async (periodId: string, periodName: string) => {
     if (!confirm(`¿Cerrar el periodo "${periodName}"? Esta acción no se puede deshacer.`)) return;
     
-    try {
-      await closePeriod(periodId);
-      toast.success(`Periodo ${periodName} cerrado`);
-      if (currentCompany?.id) fetchFiscalYears(currentCompany.id);
-    } catch (err) {
-      toast.error('Error al cerrar periodo');
+    const success = await closePeriod(periodId);
+    if (success) {
+      fetchFiscalYears();
     }
   };
 
   const handleCloseFiscalYear = async (yearId: string, yearName: string) => {
     if (!confirm(`¿Cerrar el ejercicio "${yearName}"? Todos los periodos se cerrarán también.`)) return;
     
-    try {
-      await closeFiscalYear(yearId);
-      toast.success(`Ejercicio ${yearName} cerrado`);
-      if (currentCompany?.id) fetchFiscalYears(currentCompany.id);
-    } catch (err) {
-      toast.error('Error al cerrar ejercicio');
+    const success = await closeFiscalYear(yearId);
+    if (success) {
+      fetchFiscalYears();
     }
   };
 
