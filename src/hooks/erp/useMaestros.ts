@@ -38,6 +38,7 @@ export interface CustomerAddress {
   region: string | null;
   country: string;
   is_default: boolean;
+  created_at?: string;
 }
 
 export interface CustomerContact {
@@ -48,6 +49,7 @@ export interface CustomerContact {
   phone: string | null;
   role: string | null;
   is_primary: boolean;
+  created_at?: string;
 }
 
 export interface Supplier {
