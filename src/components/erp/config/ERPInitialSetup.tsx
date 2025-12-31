@@ -307,7 +307,9 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="country">País</Label>
+                    <Label htmlFor="country">
+                      País <span className="text-destructive">*</span>
+                    </Label>
                     <Select value={form.country} onValueChange={(v) => setForm({ ...form, country: v })}>
                       <SelectTrigger>
                         <SelectValue />
@@ -325,7 +327,9 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="currency">Moneda</Label>
+                    <Label htmlFor="currency">
+                      Moneda <span className="text-destructive">*</span>
+                    </Label>
                     <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
                       <SelectTrigger>
                         <SelectValue />
