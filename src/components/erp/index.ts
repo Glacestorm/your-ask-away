@@ -6,5 +6,7 @@ export { ERPCompaniesManager } from './config/ERPCompaniesManager';
 export { ERPFiscalYearsManager } from './config/ERPFiscalYearsManager';
 export { ERPSeriesManager } from './config/ERPSeriesManager';
 export { ERPRolesManager } from './config/ERPRolesManager';
+export { ERPInitialSetup } from './config/ERPInitialSetup';
+export { ERPUserAssignment } from './config/ERPUserAssignment';
 export { ERPAuditViewer } from './audit/ERPAuditViewer';
 export type { Transaction, Invoice, Employee, ERPMetrics } from './ERPDashboard';
