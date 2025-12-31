@@ -9408,6 +9408,478 @@ export type Database = {
           },
         ]
       }
+      erp_audit_events: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          after_json: Json | null
+          before_json: Json | null
+          company_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          after_json?: Json | null
+          before_json?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          after_json?: Json | null
+          before_json?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_audit_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_companies: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          email: string | null
+          group_id: string | null
+          id: string
+          is_active: boolean | null
+          legal_name: string | null
+          logo_url: string | null
+          name: string
+          phone: string | null
+          postal_code: string | null
+          settings: Json | null
+          tax_id: string | null
+          timezone: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          postal_code?: string | null
+          settings?: Json | null
+          tax_id?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          group_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          postal_code?: string | null
+          settings?: Json | null
+          tax_id?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_companies_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "erp_company_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_company_groups: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      erp_fiscal_years: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string | null
+          end_date: string
+          id: string
+          is_closed: boolean | null
+          name: string
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string | null
+          end_date: string
+          id?: string
+          is_closed?: boolean | null
+          name: string
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          is_closed?: boolean | null
+          name?: string
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_fiscal_years_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_periods: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          created_at: string | null
+          end_date: string
+          fiscal_year_id: string
+          id: string
+          is_closed: boolean | null
+          month: number
+          name: string
+          start_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          created_at?: string | null
+          end_date: string
+          fiscal_year_id: string
+          id?: string
+          is_closed?: boolean | null
+          month: number
+          name: string
+          start_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string | null
+          end_date?: string
+          fiscal_year_id?: string
+          id?: string
+          is_closed?: boolean | null
+          month?: number
+          name?: string
+          start_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_periods_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_periods_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_permissions: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          id: string
+          key: string
+          module: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key: string
+          module: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          key?: string
+          module?: string
+        }
+        Relationships: []
+      }
+      erp_role_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string
+          role_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id: string
+          role_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "erp_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_roles: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_system: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_system?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_roles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_series: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string | null
+          document_type: string
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          module: string
+          name: string
+          next_number: number | null
+          padding: number | null
+          prefix: string | null
+          reset_annually: boolean | null
+          suffix: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string | null
+          document_type: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          module: string
+          name: string
+          next_number?: number | null
+          padding?: number | null
+          prefix?: string | null
+          reset_annually?: boolean | null
+          suffix?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string | null
+          document_type?: string
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          module?: string
+          name?: string
+          next_number?: number | null
+          padding?: number | null
+          prefix?: string | null
+          reset_annually?: boolean | null
+          suffix?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_series_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_user_companies: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          role_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          role_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          role_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_user_companies_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_role"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       error_logs: {
         Row: {
           component_name: string | null
@@ -29211,6 +29683,19 @@ export type Database = {
         }
         Returns: string
       }
+      erp_get_next_document_number: {
+        Args: { p_company_id: string; p_series_id: string }
+        Returns: string
+      }
+      erp_get_user_companies: { Args: { p_user_id: string }; Returns: string[] }
+      erp_has_permission: {
+        Args: {
+          p_company_id: string
+          p_permission_key: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       expire_open_banking_consents: { Args: never; Returns: undefined }
       expire_pending_approval_requests: { Args: never; Returns: undefined }
       find_applicable_bundles: {
@@ -29454,6 +29939,13 @@ export type Database = {
         | "biometric"
         | "security_question"
       auth_risk_level: "low" | "medium" | "high" | "critical"
+      erp_role_type:
+        | "superadmin"
+        | "admin"
+        | "manager"
+        | "user"
+        | "auditor"
+        | "readonly"
       financial_data_source: "manual" | "pdf_import"
       financial_statement_status: "draft" | "submitted" | "approved"
       financial_statement_type: "normal" | "abreujat" | "simplificat"
@@ -29636,6 +30128,14 @@ export const Constants = {
         "security_question",
       ],
       auth_risk_level: ["low", "medium", "high", "critical"],
+      erp_role_type: [
+        "superadmin",
+        "admin",
+        "manager",
+        "user",
+        "auditor",
+        "readonly",
+      ],
       financial_data_source: ["manual", "pdf_import"],
       financial_statement_status: ["draft", "submitted", "approved"],
       financial_statement_type: ["normal", "abreujat", "simplificat"],
