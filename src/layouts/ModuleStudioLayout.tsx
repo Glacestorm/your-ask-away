@@ -362,7 +362,7 @@ function ModuleStudioLayoutContent({
           {/* Module Selector Sidebar */}
           {showModuleSelector && (
             <div className="col-span-2">
-              <Card className="h-[calc(100vh-280px)]">
+              <Card className="h-[calc(100vh-280px)] overflow-hidden flex flex-col">
                 <CardHeader className="pb-2 space-y-2">
                   {/* Domain Filter (collapsible dropdown) */}
                   <Collapsible open={domainFilterOpen} onOpenChange={setDomainFilterOpen}>
@@ -432,8 +432,8 @@ function ModuleStudioLayoutContent({
                     />
                   </div>
                 </CardHeader>
-                <CardContent className="p-0">
-                  <div className="h-[calc(100vh-340px)] overflow-y-auto overscroll-contain">
+                <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
+                  <div className="h-full overflow-y-auto overscroll-contain">
                     <div className="p-2 space-y-1">
                       {isLoadingModules ? (
                         <div className="flex items-center justify-center py-8">
