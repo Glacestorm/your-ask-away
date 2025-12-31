@@ -8,3 +8,4 @@ export { useERPFiscalYears } from './useERPFiscalYears';
 export { useERPSeries } from './useERPSeries';
 export { useERPAudit } from './useERPAudit';
 export { useERPRoles } from './useERPRoles';
+export * from './useMaestros';
