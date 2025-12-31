@@ -268,7 +268,6 @@ export const dashboardRoutes: RouteConfig[] = [
   { path: '/crm/automation', component: AutomationPage, layout: 'none', priority: 'high', meta: { title: 'Automatización CRM', requiresAuth: true } },
   // Fase 3: Diferenciadores
   { path: '/compliance', component: CompliancePage, layout: 'none', priority: 'high', meta: { title: 'Compliance', requiresAuth: true } },
-  { path: '/erp', component: ERPPage, layout: 'none', priority: 'high', meta: { title: 'ERP', requiresAuth: true } },
   { path: '/revenue', component: RevenuePage, layout: 'none', priority: 'high', meta: { title: 'Revenue Intelligence', requiresAuth: true } },
   { path: '/gis', component: GISPage, layout: 'none', priority: 'high', meta: { title: 'GIS Territorial', requiresAuth: true } },
   { path: '/docs-ai', component: DocsPage, layout: 'none', priority: 'medium', meta: { title: 'Documentación AI', requiresAuth: true } },
@@ -303,6 +302,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/obelixia-admin/ai-local', component: AILocalPage, layout: 'none', priority: 'high', meta: { title: 'IA Local', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/licenses', component: LicenseManagementPage, layout: 'none', priority: 'high', meta: { title: 'Sistema de Licencias Enterprise', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin/accounting', component: ObelixiaAccountingPage, layout: 'none', priority: 'high', meta: { title: 'ObelixIA Accounting', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/obelixia-admin/erp', component: ERPPage, layout: 'none', priority: 'high', meta: { title: 'ERP Modular', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
@@ -361,4 +361,5 @@ export const redirects = [
   { from: '/admin?section=app-store', to: '/obelixia-admin?tab=appstore' },
   { from: '/admin?section=whitelabel', to: '/obelixia-admin?tab=whitelabel' },
   { from: '/admin?section=api-docs', to: '/obelixia-admin?tab=api' },
+  { from: '/erp', to: '/obelixia-admin/erp' },
 ];
