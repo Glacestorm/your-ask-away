@@ -30756,12 +30756,21 @@ export type Database = {
         Returns: string
       }
       erp_get_user_companies: { Args: { p_user_id: string }; Returns: string[] }
+      erp_get_user_company_ids: {
+        Args: { p_user_id: string }
+        Returns: string[]
+      }
+      erp_has_any_companies: { Args: never; Returns: boolean }
       erp_has_permission: {
         Args: {
           p_company_id: string
           p_permission_key: string
           p_user_id: string
         }
+        Returns: boolean
+      }
+      erp_is_company_admin: {
+        Args: { p_company_id: string; p_user_id: string }
         Returns: boolean
       }
       expire_open_banking_consents: { Args: never; Returns: undefined }
