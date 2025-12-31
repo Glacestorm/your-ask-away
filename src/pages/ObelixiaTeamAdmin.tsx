@@ -135,6 +135,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
       navigate('/obelixia-admin/accounting');
       return;
     }
+    if (tab === 'erp') {
+      navigate('/obelixia-admin/erp');
+      return;
+    }
     setActiveTab(tab);
     setSearchParams({ tab });
   };
