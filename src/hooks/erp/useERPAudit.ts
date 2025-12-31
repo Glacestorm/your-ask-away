@@ -21,7 +21,7 @@ export function useERPAudit() {
     pageSize = 50
   ) => {
     if (!currentCompany?.id) return;
-    if (!hasPermission('audit.read')) {
+    if (!hasPermission('admin.all')) {
       toast.error('Sin permisos para ver auditoría');
       return;
     }
