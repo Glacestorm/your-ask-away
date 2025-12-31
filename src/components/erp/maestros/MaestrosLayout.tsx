@@ -32,7 +32,11 @@ import { WarehousesPanel } from './WarehousesPanel';
 import { BankAccountsPanel } from './BankAccountsPanel';
 import { PriceSimulator } from './PriceSimulator';
 
-export const MaestrosLayout: React.FC = () => {
+interface MaestrosLayoutProps {
+  companyId?: string;
+}
+
+export const MaestrosLayout: React.FC<MaestrosLayoutProps> = ({ companyId }) => {
   const { currentCompany } = useERPContext();
   const { 
     customers, 

@@ -9,4 +9,5 @@ export { ERPRolesManager } from './config/ERPRolesManager';
 export { ERPInitialSetup } from './config/ERPInitialSetup';
 export { ERPUserAssignment } from './config/ERPUserAssignment';
 export { ERPAuditViewer } from './audit/ERPAuditViewer';
+export * from './maestros';
 export type { Transaction, Invoice, Employee, ERPMetrics } from './ERPDashboard';

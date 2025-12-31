@@ -24,7 +24,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import { useERPContext, ERPProvider } from '@/hooks/erp/useERPContext';
 import { ERPCompanySelector } from './config/ERPCompanySelector';
@@ -35,6 +36,7 @@ import { ERPRolesManager } from './config/ERPRolesManager';
 import { ERPAuditViewer } from './audit/ERPAuditViewer';
 import { ERPInitialSetup } from './config/ERPInitialSetup';
 import { ERPUserAssignment } from './config/ERPUserAssignment';
+import { MaestrosLayout } from './maestros';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -149,6 +151,12 @@ function ERPModularDashboardContent() {
             <LayoutDashboard className="h-4 w-4" />
             Resumen
           </TabsTrigger>
+          {hasPermission('masters.read') && (
+            <TabsTrigger value="maestros" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Maestros
+            </TabsTrigger>
+          )}
           {hasPermission('admin.all') && (
             <>
               <TabsTrigger value="companies" className="gap-2">
@@ -279,12 +287,15 @@ function ERPModularDashboardContent() {
           )}
         </TabsContent>
 
+        {/* Maestros Tab */}
+        <TabsContent value="maestros">
+          {currentCompany && <MaestrosLayout companyId={currentCompany.id} />}
+        </TabsContent>
+
         {/* Companies Tab */}
         <TabsContent value="companies">
           <ERPCompaniesManager />
         </TabsContent>
-
-        {/* Users Tab */}
         <TabsContent value="users">
           <ERPUserAssignment />
         </TabsContent>
