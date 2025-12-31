@@ -4,10 +4,11 @@ import { ERPModularDashboard } from '@/components/erp';
 
 const ERPPage = () => {
   return (
-    <DashboardLayout title="ERP Modular">
-      <div className="p-6">
-        <ERPModularDashboard />
-      </div>
+    <DashboardLayout 
+      title="ERP Modular" 
+      subtitle="Sistema de gestión empresarial multi-tenant"
+    >
+      <ERPModularDashboard />
     </DashboardLayout>
   );
 };

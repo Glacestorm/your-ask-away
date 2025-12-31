@@ -96,19 +96,7 @@ function ERPModularDashboardContent() {
 
   // Mostrar wizard de configuración inicial
   if (needsSetup) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">ERP Modular</h1>
-            <p className="text-muted-foreground">
-              Sistema de gestión empresarial multi-tenant
-            </p>
-          </div>
-        </div>
-        <ERPInitialSetup onComplete={handleSetupComplete} />
-      </div>
-    );
+    return <ERPInitialSetup onComplete={handleSetupComplete} />;
   }
 
   const modules = [
@@ -125,23 +113,15 @@ function ERPModularDashboardContent() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">ERP Modular</h1>
-          <p className="text-muted-foreground">
-            Sistema de gestión empresarial multi-tenant
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ERPCompanySelector />
-          {currentCompany && (
-            <Badge variant="outline" className="gap-1">
-              <CheckCircle2 className="h-3 w-3 text-green-500" />
-              {currentCompany.currency}
-            </Badge>
-          )}
-        </div>
+      {/* Header - Company selector */}
+      <div className="flex items-center justify-end gap-3">
+        <ERPCompanySelector />
+        {currentCompany && (
+          <Badge variant="outline" className="gap-1">
+            <CheckCircle2 className="h-3 w-3 text-green-500" />
+            {currentCompany.currency}
+          </Badge>
+        )}
       </div>
 
       {/* Main Tabs */}
