@@ -3,7 +3,7 @@
  * Se muestra cuando no hay empresas ni asignaciones configuradas
  */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,43 +69,56 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(null);
   const [createdRoleId, setCreatedRoleId] = useState<string | null>(null);
+  const [attemptedCompanySubmit, setAttemptedCompanySubmit] = useState(false);
+
+  const companyNameRef = useRef<HTMLInputElement | null>(null);
 
   const handleCreateCompany = async () => {
+    setAttemptedCompanySubmit(true);
+
     if (!form.name.trim()) {
       toast.error('El nombre de la empresa es obligatorio');
+      companyNameRef.current?.focus();
       return;
     }
 
     setIsLoading(true);
     try {
-      // 1. Crear la empresa
-      const { data: company, error: companyError } = await supabase
+      // IMPORTANTE:
+      // No pedimos RETURNING/SELECT aquí porque durante el setup inicial
+      // el usuario todavía no está asignado a la empresa y la política SELECT
+      // bloquearía la respuesta del INSERT.
+      const companyId = crypto.randomUUID();
+
+      const { error: companyError } = await supabase
         .from('erp_companies')
-        .insert([{
-          name: form.name,
-          legal_name: form.legal_name || null,
-          tax_id: form.tax_id || null,
-          country: form.country,
-          currency: form.currency,
-          timezone: form.timezone,
-          address: form.address || null,
-          city: form.city || null,
-          postal_code: form.postal_code || null,
-          phone: form.phone || null,
-          email: form.email || null,
-          is_active: true,
-        }])
-        .select()
-        .single();
+        .insert([
+          {
+            id: companyId,
+            name: form.name,
+            legal_name: form.legal_name || null,
+            tax_id: form.tax_id || null,
+            country: form.country,
+            currency: form.currency,
+            timezone: form.timezone,
+            address: form.address || null,
+            city: form.city || null,
+            postal_code: form.postal_code || null,
+            phone: form.phone || null,
+            email: form.email || null,
+            is_active: true,
+          },
+        ]);
 
       if (companyError) throw companyError;
 
-      setCreatedCompanyId(company.id);
+      setCreatedCompanyId(companyId);
       toast.success('Empresa creada correctamente');
       setStep(2);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al crear la empresa';
       console.error('[ERPInitialSetup] Error creating company:', err);
-      toast.error('Error al crear la empresa');
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -119,21 +132,24 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
 
     setIsLoading(true);
     try {
-      // 2. Crear rol de Administrador
-      const { data: role, error: roleError } = await supabase
+      // 2. Crear rol de Administrador (sin RETURNING/SELECT por la misma razón del setup inicial)
+      const roleId = crypto.randomUUID();
+
+      const { error: roleError } = await supabase
         .from('erp_roles')
-        .insert([{
-          company_id: createdCompanyId,
-          name: 'Administrador',
-          description: 'Acceso completo al sistema ERP',
-          is_system: true,
-        }])
-        .select()
-        .single();
+        .insert([
+          {
+            id: roleId,
+            company_id: createdCompanyId,
+            name: 'Administrador',
+            description: 'Acceso completo al sistema ERP',
+            is_system: true,
+          },
+        ]);
 
       if (roleError) throw roleError;
 
-      setCreatedRoleId(role.id);
+      setCreatedRoleId(roleId);
 
       // 3. Obtener todos los permisos y asignarlos al rol
       const { data: permissions, error: permError } = await supabase
@@ -144,8 +160,8 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
 
       // 4. Asignar todos los permisos al rol admin
       if (permissions && permissions.length > 0) {
-        const rolePermissions = permissions.map(p => ({
-          role_id: role.id,
+        const rolePermissions = permissions.map((p) => ({
+          role_id: roleId,
           permission_id: p.id,
         }));
 
@@ -159,13 +175,15 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
       // 5. Asignar usuario a la empresa con rol admin
       const { error: ucError } = await supabase
         .from('erp_user_companies')
-        .insert([{
-          user_id: user.id,
-          company_id: createdCompanyId,
-          role_id: role.id,
-          is_default: true,
-          is_active: true,
-        }]);
+        .insert([
+          {
+            user_id: user.id,
+            company_id: createdCompanyId,
+            role_id: roleId,
+            is_default: true,
+            is_active: true,
+          },
+        ]);
 
       if (ucError) throw ucError;
 
@@ -176,10 +194,10 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
       setTimeout(() => {
         onComplete();
       }, 2000);
-
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al configurar rol y permisos';
       console.error('[ERPInitialSetup] Error setting up role:', err);
-      toast.error('Error al configurar rol y permisos');
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -247,13 +265,25 @@ export function ERPInitialSetup({ onComplete }: ERPInitialSetupProps) {
               <div className="grid gap-4 max-w-2xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre comercial *</Label>
+                    <Label htmlFor="name">
+                      Nombre comercial <span className="text-destructive">*</span>
+                    </Label>
                     <Input
+                      ref={companyNameRef}
                       id="name"
+                      required
+                      aria-required="true"
+                      aria-invalid={attemptedCompanySubmit && !form.name.trim()}
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="Mi Empresa S.L."
+                      className={cn(
+                        attemptedCompanySubmit && !form.name.trim() && "border-destructive focus-visible:ring-destructive"
+                      )}
                     />
+                    {attemptedCompanySubmit && !form.name.trim() && (
+                      <p className="text-xs text-destructive">Este campo es obligatorio</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="legal_name">Razón social</Label>
