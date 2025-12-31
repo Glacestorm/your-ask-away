@@ -2,7 +2,7 @@
  * Dashboard Principal del ERP Modular
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,8 @@ import {
   Receipt,
   AlertCircle,
   CheckCircle2,
-  Loader2
+  Loader2,
+  Sparkles
 } from 'lucide-react';
 import { useERPContext, ERPProvider } from '@/hooks/erp/useERPContext';
 import { ERPCompanySelector } from './config/ERPCompanySelector';
@@ -32,13 +33,43 @@ import { ERPFiscalYearsManager } from './config/ERPFiscalYearsManager';
 import { ERPSeriesManager } from './config/ERPSeriesManager';
 import { ERPRolesManager } from './config/ERPRolesManager';
 import { ERPAuditViewer } from './audit/ERPAuditViewer';
+import { ERPInitialSetup } from './config/ERPInitialSetup';
+import { ERPUserAssignment } from './config/ERPUserAssignment';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 function ERPModularDashboardContent() {
-  const { currentCompany, userPermissions, isLoading, error, hasPermission } = useERPContext();
+  const { currentCompany, companies, userPermissions, isLoading, error, hasPermission, refreshCompanies } = useERPContext();
   const [activeTab, setActiveTab] = useState('overview');
+  const [needsSetup, setNeedsSetup] = useState(false);
+  const [checkingSetup, setCheckingSetup] = useState(true);
 
-  if (isLoading) {
+  // Verificar si necesita configuración inicial
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('erp_companies')
+          .select('*', { count: 'exact', head: true });
+        
+        if (error) throw error;
+        setNeedsSetup(count === 0);
+      } catch (err) {
+        console.error('[ERPModularDashboard] Error checking setup:', err);
+      } finally {
+        setCheckingSetup(false);
+      }
+    };
+    
+    checkSetup();
+  }, []);
+
+  const handleSetupComplete = async () => {
+    setNeedsSetup(false);
+    await refreshCompanies();
+  };
+
+  if (isLoading || checkingSetup) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -58,6 +89,23 @@ function ERPModularDashboardContent() {
           <p className="text-sm text-muted-foreground mt-2">{error}</p>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Mostrar wizard de configuración inicial
+  if (needsSetup) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">ERP Modular</h1>
+            <p className="text-muted-foreground">
+              Sistema de gestión empresarial multi-tenant
+            </p>
+          </div>
+        </div>
+        <ERPInitialSetup onComplete={handleSetupComplete} />
+      </div>
     );
   }
 
@@ -106,6 +154,10 @@ function ERPModularDashboardContent() {
               <TabsTrigger value="companies" className="gap-2">
                 <Building2 className="h-4 w-4" />
                 Empresas
+              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-2">
+                <Users className="h-4 w-4" />
+                Usuarios
               </TabsTrigger>
               <TabsTrigger value="roles" className="gap-2">
                 <Shield className="h-4 w-4" />
@@ -230,6 +282,11 @@ function ERPModularDashboardContent() {
         {/* Companies Tab */}
         <TabsContent value="companies">
           <ERPCompaniesManager />
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users">
+          <ERPUserAssignment />
         </TabsContent>
 
         {/* Roles Tab */}
