@@ -68,7 +68,7 @@ const ACTIONS = [
 
 export function ERPAuditViewer() {
   const { currentCompany, hasPermission } = useERPContext();
-  const { events, isLoading, fetchEvents, exportEvents } = useERPAudit();
+  const { events, isLoading, fetchAuditEvents, exportToCSV } = useERPAudit();
   
   const [filters, setFilters] = useState<ERPAuditFilters>({});
   const [showFilters, setShowFilters] = useState(false);
@@ -78,29 +78,16 @@ export function ERPAuditViewer() {
 
   useEffect(() => {
     if (currentCompany?.id && canView) {
-      fetchEvents(currentCompany.id, filters);
+      fetchAuditEvents(filters);
     }
-  }, [currentCompany?.id, canView, fetchEvents]);
+  }, [currentCompany?.id, canView, fetchAuditEvents]);
 
   const handleSearch = () => {
-    if (currentCompany?.id) {
-      fetchEvents(currentCompany.id, filters);
-    }
+    fetchAuditEvents(filters);
   };
 
   const handleExport = async () => {
-    if (currentCompany?.id) {
-      const csv = await exportEvents(currentCompany.id, filters);
-      if (csv) {
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    }
+    await exportToCSV(filters);
   };
 
   const getActionIcon = (action: string) => {

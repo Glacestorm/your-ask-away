@@ -53,7 +53,7 @@ const initialForm: CreateCompanyForm = {
 
 export function ERPCompaniesManager() {
   const { hasPermission } = useERPContext();
-  const { companies, groups, isLoading, fetchCompanies, createCompany, updateCompany, deleteCompany } = useERPCompanies();
+  const { companies, groups, isLoading, fetchCompanies, createCompany, updateCompany, deactivateCompany } = useERPCompanies();
   
   const [search, setSearch] = useState('');
   const [showDialog, setShowDialog] = useState(false);
@@ -124,14 +124,14 @@ export function ERPCompaniesManager() {
   };
 
   const handleDelete = async (company: ERPCompany) => {
-    if (!confirm(`¿Eliminar la empresa "${company.name}"?`)) return;
+    if (!confirm(`¿Desactivar la empresa "${company.name}"?`)) return;
     
     try {
-      await deleteCompany(company.id);
-      toast.success('Empresa eliminada');
+      await deactivateCompany(company.id);
+      toast.success('Empresa desactivada');
       fetchCompanies();
     } catch (err) {
-      toast.error('Error al eliminar empresa');
+      toast.error('Error al desactivar empresa');
     }
   };
 
