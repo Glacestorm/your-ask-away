@@ -14,4 +14,7 @@ export { useERPStockManager } from './useERPStockManager';
 export { useERPAccounting } from './useERPAccounting';
 export { useERPJournalEntries } from './useERPJournalEntries';
 export { useERPFinancialReports } from './useERPFinancialReports';
+export { useERPForecasting } from './useERPForecasting';
+export { useERPESGCarbon } from './useERPESGCarbon';
+export { useERPAutoReconciliation } from './useERPAutoReconciliation';
 export * from './useMaestros';
