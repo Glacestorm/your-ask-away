@@ -10046,6 +10046,288 @@ export type Database = {
           },
         ]
       }
+      erp_accounting_countries: {
+        Row: {
+          accounting_standard: string
+          country_code: string
+          country_name: string
+          created_at: string | null
+          currency_code: string | null
+          date_format: string | null
+          decimal_separator: string | null
+          fiscal_year_start_month: number | null
+          id: string
+          is_active: boolean | null
+          locale_code: string | null
+          tax_id_format: string | null
+          tax_id_label: string | null
+          thousands_separator: string | null
+          updated_at: string | null
+          vat_rates: Json | null
+        }
+        Insert: {
+          accounting_standard: string
+          country_code: string
+          country_name: string
+          created_at?: string | null
+          currency_code?: string | null
+          date_format?: string | null
+          decimal_separator?: string | null
+          fiscal_year_start_month?: number | null
+          id?: string
+          is_active?: boolean | null
+          locale_code?: string | null
+          tax_id_format?: string | null
+          tax_id_label?: string | null
+          thousands_separator?: string | null
+          updated_at?: string | null
+          vat_rates?: Json | null
+        }
+        Update: {
+          accounting_standard?: string
+          country_code?: string
+          country_name?: string
+          created_at?: string | null
+          currency_code?: string | null
+          date_format?: string | null
+          decimal_separator?: string | null
+          fiscal_year_start_month?: number | null
+          id?: string
+          is_active?: boolean | null
+          locale_code?: string | null
+          tax_id_format?: string | null
+          tax_id_label?: string | null
+          thousands_separator?: string | null
+          updated_at?: string | null
+          vat_rates?: Json | null
+        }
+        Relationships: []
+      }
+      erp_accounting_regulations: {
+        Row: {
+          category: string | null
+          content_markdown: string | null
+          country_code: string
+          created_at: string | null
+          description: string | null
+          effective_date: string | null
+          expiry_date: string | null
+          id: string
+          is_active: boolean | null
+          regulation_code: string | null
+          regulation_type: string
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          content_markdown?: string | null
+          country_code: string
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          regulation_code?: string | null
+          regulation_type: string
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          content_markdown?: string | null
+          country_code?: string
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          regulation_code?: string | null
+          regulation_type?: string
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_accounting_regulations_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_countries"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      erp_advisor_agent_config: {
+        Row: {
+          alert_thresholds: Json | null
+          company_id: string
+          country_code: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          monitoring_scope: Json | null
+          notification_preferences: Json | null
+          specializations: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_thresholds?: Json | null
+          company_id: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          monitoring_scope?: Json | null
+          notification_preferences?: Json | null
+          specializations?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_thresholds?: Json | null
+          company_id?: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          monitoring_scope?: Json | null
+          notification_preferences?: Json | null
+          specializations?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_advisor_agent_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_advisor_agent_config_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_countries"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      erp_advisor_alerts: {
+        Row: {
+          action_taken: string | null
+          affected_entities: Json | null
+          alert_type: string
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_dismissed: boolean | null
+          is_read: boolean | null
+          recommendation: string | null
+          regulation_reference: string | null
+          resolved_at: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          action_taken?: string | null
+          affected_entities?: Json | null
+          alert_type: string
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          recommendation?: string | null
+          regulation_reference?: string | null
+          resolved_at?: string | null
+          severity: string
+          title: string
+        }
+        Update: {
+          action_taken?: string | null
+          affected_entities?: Json | null
+          alert_type?: string
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          is_read?: boolean | null
+          recommendation?: string | null
+          regulation_reference?: string | null
+          resolved_at?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_advisor_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_advisor_process_audit: {
+        Row: {
+          applied_regulations: Json | null
+          company_id: string
+          country_code: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          issues_found: Json | null
+          process_type: string
+          recommendations: Json | null
+          validation_result: string | null
+        }
+        Insert: {
+          applied_regulations?: Json | null
+          company_id: string
+          country_code?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          issues_found?: Json | null
+          process_type: string
+          recommendations?: Json | null
+          validation_result?: string | null
+        }
+        Update: {
+          applied_regulations?: Json | null
+          company_id?: string
+          country_code?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          issues_found?: Json | null
+          process_type?: string
+          recommendations?: Json | null
+          validation_result?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_advisor_process_audit_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_audit_events: {
         Row: {
           action: string
@@ -10095,6 +10377,428 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_statement_lines: {
+        Row: {
+          amount: number
+          created_at: string | null
+          description: string | null
+          id: string
+          is_reconciled: boolean | null
+          line_number: number
+          match_score: number | null
+          matched_entity_id: string | null
+          matched_entity_type: string | null
+          reconciled_at: string | null
+          reconciled_by: string | null
+          reference: string | null
+          running_balance: number | null
+          statement_id: string
+          transaction_date: string
+          updated_at: string | null
+          value_date: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_reconciled?: boolean | null
+          line_number: number
+          match_score?: number | null
+          matched_entity_id?: string | null
+          matched_entity_type?: string | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          reference?: string | null
+          running_balance?: number | null
+          statement_id: string
+          transaction_date: string
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_reconciled?: boolean | null
+          line_number?: number
+          match_score?: number | null
+          matched_entity_id?: string | null
+          matched_entity_type?: string | null
+          reconciled_at?: string | null
+          reconciled_by?: string | null
+          reference?: string | null
+          running_balance?: number | null
+          statement_id?: string
+          transaction_date?: string
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_statement_lines_reconciled_by_fkey"
+            columns: ["reconciled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_statement_lines_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_statements: {
+        Row: {
+          bank_account_id: string | null
+          closing_balance: number | null
+          company_id: string
+          created_at: string | null
+          file_path: string | null
+          id: string
+          imported_at: string | null
+          opening_balance: number | null
+          period_id: string | null
+          source: string | null
+          statement_date: string
+          statement_number: string | null
+          status: string | null
+          total_credits: number | null
+          total_debits: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_account_id?: string | null
+          closing_balance?: number | null
+          company_id: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          imported_at?: string | null
+          opening_balance?: number | null
+          period_id?: string | null
+          source?: string | null
+          statement_date: string
+          statement_number?: string | null
+          status?: string | null
+          total_credits?: number | null
+          total_debits?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_account_id?: string | null
+          closing_balance?: number | null
+          company_id?: string
+          created_at?: string | null
+          file_path?: string | null
+          id?: string
+          imported_at?: string | null
+          opening_balance?: number | null
+          period_id?: string | null
+          source?: string | null
+          statement_date?: string
+          statement_number?: string | null
+          status?: string | null
+          total_credits?: number | null
+          total_debits?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_statements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_statements_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_chart_accounts: {
+        Row: {
+          accepts_entries: boolean | null
+          account_type: string
+          code: string
+          company_id: string
+          country_code: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_header: boolean | null
+          level: number | null
+          name: string
+          normal_balance: string | null
+          notes: string | null
+          parent_id: string | null
+          reconcilable: boolean | null
+          tax_related: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepts_entries?: boolean | null
+          account_type: string
+          code: string
+          company_id: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_header?: boolean | null
+          level?: number | null
+          name: string
+          normal_balance?: string | null
+          notes?: string | null
+          parent_id?: string | null
+          reconcilable?: boolean | null
+          tax_related?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepts_entries?: boolean | null
+          account_type?: string
+          code?: string
+          company_id?: string
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_header?: boolean | null
+          level?: number | null
+          name?: string
+          normal_balance?: string | null
+          notes?: string | null
+          parent_id?: string | null
+          reconcilable?: boolean | null
+          tax_related?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_chart_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_chart_accounts_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_countries"
+            referencedColumns: ["country_code"]
+          },
+          {
+            foreignKeyName: "erp_chart_accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_chart_templates: {
+        Row: {
+          account_groups: Json | null
+          accounts: Json
+          country_code: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_complete: boolean | null
+          is_default: boolean | null
+          source_reference: string | null
+          template_name: string
+          template_version: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_groups?: Json | null
+          accounts?: Json
+          country_code: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_complete?: boolean | null
+          is_default?: boolean | null
+          source_reference?: string | null
+          template_name: string
+          template_version?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_groups?: Json | null
+          accounts?: Json
+          country_code?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_complete?: boolean | null
+          is_default?: boolean | null
+          source_reference?: string | null
+          template_name?: string
+          template_version?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_chart_templates_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_countries"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      erp_chatbot_contexts: {
+        Row: {
+          active_configurations: Json | null
+          company_id: string | null
+          country_code: string | null
+          created_at: string | null
+          id: string
+          installed_modules: Json | null
+          last_updated: string | null
+          organization_id: string | null
+        }
+        Insert: {
+          active_configurations?: Json | null
+          company_id?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          installed_modules?: Json | null
+          last_updated?: string | null
+          organization_id?: string | null
+        }
+        Update: {
+          active_configurations?: Json | null
+          company_id?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          installed_modules?: Json | null
+          last_updated?: string | null
+          organization_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_chatbot_contexts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_chatbot_contexts_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_countries"
+            referencedColumns: ["country_code"]
+          },
+        ]
+      }
+      erp_chatbot_conversations: {
+        Row: {
+          company_id: string | null
+          context_snapshot: Json | null
+          conversation_topic: string | null
+          created_at: string | null
+          ended_at: string | null
+          id: string
+          messages: Json | null
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          context_snapshot?: Json | null
+          conversation_topic?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          messages?: Json | null
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          context_snapshot?: Json | null
+          conversation_topic?: string | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          messages?: Json | null
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_chatbot_conversations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_chatbot_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_closing_events: {
+        Row: {
+          closing_id: string
+          created_at: string | null
+          details: Json | null
+          event_timestamp: string | null
+          event_type: string
+          id: string
+          message: string
+          severity: string | null
+        }
+        Insert: {
+          closing_id: string
+          created_at?: string | null
+          details?: Json | null
+          event_timestamp?: string | null
+          event_type: string
+          id?: string
+          message: string
+          severity?: string | null
+        }
+        Update: {
+          closing_id?: string
+          created_at?: string | null
+          details?: Json | null
+          event_timestamp?: string | null
+          event_type?: string
+          id?: string
+          message?: string
+          severity?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_closing_events_closing_id_fkey"
+            columns: ["closing_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_closings"
             referencedColumns: ["id"]
           },
         ]
@@ -10280,6 +10984,100 @@ export type Database = {
             columns: ["default_series_id"]
             isOneToOne: false
             referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_fiscal_closings: {
+        Row: {
+          closing_entry_id: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string | null
+          fiscal_year_id: string
+          id: string
+          notes: string | null
+          opening_entry_id: string | null
+          performed_by: string | null
+          regularization_entry_id: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          validations_json: Json | null
+        }
+        Insert: {
+          closing_entry_id?: string | null
+          company_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          fiscal_year_id: string
+          id?: string
+          notes?: string | null
+          opening_entry_id?: string | null
+          performed_by?: string | null
+          regularization_entry_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          validations_json?: Json | null
+        }
+        Update: {
+          closing_entry_id?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          fiscal_year_id?: string
+          id?: string
+          notes?: string | null
+          opening_entry_id?: string | null
+          performed_by?: string | null
+          regularization_entry_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          validations_json?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_fiscal_closings_closing_entry_id_fkey"
+            columns: ["closing_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_fiscal_closings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_fiscal_closings_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_fiscal_closings_opening_entry_id_fkey"
+            columns: ["opening_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_fiscal_closings_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_fiscal_closings_regularization_entry_id_fkey"
+            columns: ["regularization_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
             referencedColumns: ["id"]
           },
         ]
@@ -10666,6 +11464,288 @@ export type Database = {
           },
         ]
       }
+      erp_journal_entries: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          entry_date: string
+          entry_number: string
+          fiscal_year_id: string | null
+          id: string
+          is_balanced: boolean | null
+          is_closing_entry: boolean | null
+          is_opening_entry: boolean | null
+          is_posted: boolean | null
+          is_reversed: boolean | null
+          journal_id: string
+          period_id: string | null
+          posted_at: string | null
+          posted_by: string | null
+          reference: string | null
+          reversal_entry_id: string | null
+          source_id: string | null
+          source_type: string | null
+          total_credit: number | null
+          total_debit: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          entry_date: string
+          entry_number: string
+          fiscal_year_id?: string | null
+          id?: string
+          is_balanced?: boolean | null
+          is_closing_entry?: boolean | null
+          is_opening_entry?: boolean | null
+          is_posted?: boolean | null
+          is_reversed?: boolean | null
+          journal_id: string
+          period_id?: string | null
+          posted_at?: string | null
+          posted_by?: string | null
+          reference?: string | null
+          reversal_entry_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          total_credit?: number | null
+          total_debit?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          entry_date?: string
+          entry_number?: string
+          fiscal_year_id?: string | null
+          id?: string
+          is_balanced?: boolean | null
+          is_closing_entry?: boolean | null
+          is_opening_entry?: boolean | null
+          is_posted?: boolean | null
+          is_reversed?: boolean | null
+          journal_id?: string
+          period_id?: string | null
+          posted_at?: string | null
+          posted_by?: string | null
+          reference?: string | null
+          reversal_entry_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          total_credit?: number | null
+          total_debit?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_journal_entries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_journal_id_fkey"
+            columns: ["journal_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_posted_by_fkey"
+            columns: ["posted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entries_reversal_entry_id_fkey"
+            columns: ["reversal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_journal_entry_lines: {
+        Row: {
+          account_id: string
+          amount_currency: number | null
+          cost_center_id: string | null
+          created_at: string | null
+          credit: number | null
+          currency_code: string | null
+          debit: number | null
+          description: string | null
+          entry_id: string
+          exchange_rate: number | null
+          id: string
+          line_number: number
+          partner_id: string | null
+          partner_type: string | null
+          project_id: string | null
+          reconciled: boolean | null
+          reconciliation_id: string | null
+          tax_amount: number | null
+          tax_id: string | null
+        }
+        Insert: {
+          account_id: string
+          amount_currency?: number | null
+          cost_center_id?: string | null
+          created_at?: string | null
+          credit?: number | null
+          currency_code?: string | null
+          debit?: number | null
+          description?: string | null
+          entry_id: string
+          exchange_rate?: number | null
+          id?: string
+          line_number: number
+          partner_id?: string | null
+          partner_type?: string | null
+          project_id?: string | null
+          reconciled?: boolean | null
+          reconciliation_id?: string | null
+          tax_amount?: number | null
+          tax_id?: string | null
+        }
+        Update: {
+          account_id?: string
+          amount_currency?: number | null
+          cost_center_id?: string | null
+          created_at?: string | null
+          credit?: number | null
+          currency_code?: string | null
+          debit?: number | null
+          description?: string | null
+          entry_id?: string
+          exchange_rate?: number | null
+          id?: string
+          line_number?: number
+          partner_id?: string | null
+          partner_type?: string | null
+          project_id?: string | null
+          reconciled?: boolean | null
+          reconciliation_id?: string | null
+          tax_amount?: number | null
+          tax_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entry_lines_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_journals: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string | null
+          default_credit_account_id: string | null
+          default_debit_account_id: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          journal_type: string
+          name: string
+          next_number: number | null
+          sequence_prefix: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string | null
+          default_credit_account_id?: string | null
+          default_debit_account_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          journal_type: string
+          name: string
+          next_number?: number | null
+          sequence_prefix?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string | null
+          default_credit_account_id?: string | null
+          default_debit_account_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          journal_type?: string
+          name?: string
+          next_number?: number | null
+          sequence_prefix?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_journals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journals_default_credit_account_id_fkey"
+            columns: ["default_credit_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journals_default_debit_account_id_fkey"
+            columns: ["default_debit_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_lots: {
         Row: {
           company_id: string
@@ -10716,6 +11796,164 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_payables: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          company_id: string
+          created_at: string | null
+          currency_code: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          paid_amount: number | null
+          payment_id: string | null
+          payment_method: string | null
+          remaining_amount: number | null
+          status: string | null
+          supplier_id: string | null
+          supplier_invoice_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          company_id: string
+          created_at?: string | null
+          currency_code?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          payment_id?: string | null
+          payment_method?: string | null
+          remaining_amount?: number | null
+          status?: string | null
+          supplier_id?: string | null
+          supplier_invoice_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          currency_code?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          payment_id?: string | null
+          payment_method?: string | null
+          remaining_amount?: number | null
+          status?: string | null
+          supplier_id?: string | null
+          supplier_invoice_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_payables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_payables_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_payments: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency_code: string | null
+          id: string
+          journal_entry_id: string | null
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          payment_number: string | null
+          reference: string | null
+          status: string | null
+          supplier_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency_code?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          payment_date: string
+          payment_method: string
+          payment_number?: string | null
+          reference?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency_code?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          payment_number?: string | null
+          reference?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_payments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_payments_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_payments_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -10949,6 +12187,164 @@ export type Database = {
           },
         ]
       }
+      erp_receipts: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency_code: string | null
+          customer_id: string | null
+          id: string
+          journal_entry_id: string | null
+          notes: string | null
+          payment_method: string
+          receipt_date: string
+          receipt_number: string | null
+          reference: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          payment_method: string
+          receipt_date: string
+          receipt_number?: string | null
+          reference?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          payment_method?: string
+          receipt_date?: string
+          receipt_number?: string | null
+          reference?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_receipts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_receipts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_receipts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_receipts_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_receivables: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          collected_amount: number | null
+          company_id: string
+          created_at: string | null
+          currency_code: string | null
+          customer_id: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          receipt_id: string | null
+          remaining_amount: number | null
+          sales_invoice_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          collected_amount?: number | null
+          company_id: string
+          created_at?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_id?: string | null
+          remaining_amount?: number | null
+          sales_invoice_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          collected_amount?: number | null
+          company_id?: string
+          created_at?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          receipt_id?: string | null
+          remaining_amount?: number | null
+          sales_invoice_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_receivables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_receivables_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_role_permissions: {
         Row: {
           created_at: string | null
@@ -11019,6 +12415,339 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sepa_generation_issues: {
+        Row: {
+          created_at: string | null
+          entity_ref: string | null
+          id: string
+          is_resolved: boolean | null
+          issue_code: string | null
+          line_id: string | null
+          message: string
+          remittance_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_ref?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          issue_code?: string | null
+          line_id?: string | null
+          message: string
+          remittance_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_ref?: string | null
+          id?: string
+          is_resolved?: boolean | null
+          issue_code?: string | null
+          line_id?: string | null
+          message?: string
+          remittance_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sepa_generation_issues_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sepa_remittance_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_generation_issues_remittance_id_fkey"
+            columns: ["remittance_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sepa_remittances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_generation_issues_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sepa_mandates: {
+        Row: {
+          bic: string | null
+          company_id: string
+          created_at: string | null
+          customer_id: string | null
+          debtor_address: string | null
+          debtor_name: string
+          iban: string
+          id: string
+          last_used_date: string | null
+          mandate_reference: string
+          mandate_type: string | null
+          sequence_type: string | null
+          signature_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          bic?: string | null
+          company_id: string
+          created_at?: string | null
+          customer_id?: string | null
+          debtor_address?: string | null
+          debtor_name: string
+          iban: string
+          id?: string
+          last_used_date?: string | null
+          mandate_reference: string
+          mandate_type?: string | null
+          sequence_type?: string | null
+          signature_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          bic?: string | null
+          company_id?: string
+          created_at?: string | null
+          customer_id?: string | null
+          debtor_address?: string | null
+          debtor_name?: string
+          iban?: string
+          id?: string
+          last_used_date?: string | null
+          mandate_reference?: string
+          mandate_type?: string | null
+          sequence_type?: string | null
+          signature_date?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sepa_mandates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_mandates_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sepa_remittance_lines: {
+        Row: {
+          amount: number
+          bic: string | null
+          created_at: string | null
+          currency_code: string | null
+          customer_id: string | null
+          debtor_name: string | null
+          due_date: string
+          end_to_end_id: string | null
+          iban: string
+          id: string
+          line_number: number
+          mandate_id: string | null
+          payable_id: string | null
+          receivable_id: string | null
+          rejection_reason: string | null
+          remittance_id: string
+          remittance_info: string | null
+          status: string | null
+          supplier_id: string | null
+        }
+        Insert: {
+          amount: number
+          bic?: string | null
+          created_at?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          debtor_name?: string | null
+          due_date: string
+          end_to_end_id?: string | null
+          iban: string
+          id?: string
+          line_number: number
+          mandate_id?: string | null
+          payable_id?: string | null
+          receivable_id?: string | null
+          rejection_reason?: string | null
+          remittance_id: string
+          remittance_info?: string | null
+          status?: string | null
+          supplier_id?: string | null
+        }
+        Update: {
+          amount?: number
+          bic?: string | null
+          created_at?: string | null
+          currency_code?: string | null
+          customer_id?: string | null
+          debtor_name?: string | null
+          due_date?: string
+          end_to_end_id?: string | null
+          iban?: string
+          id?: string
+          line_number?: number
+          mandate_id?: string | null
+          payable_id?: string | null
+          receivable_id?: string | null
+          rejection_reason?: string | null
+          remittance_id?: string
+          remittance_info?: string | null
+          status?: string | null
+          supplier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_mandate_id_fkey"
+            columns: ["mandate_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sepa_mandates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_payable_id_fkey"
+            columns: ["payable_id"]
+            isOneToOne: false
+            referencedRelation: "erp_payables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_receivable_id_fkey"
+            columns: ["receivable_id"]
+            isOneToOne: false
+            referencedRelation: "erp_receivables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_remittance_id_fkey"
+            columns: ["remittance_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sepa_remittances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittance_lines_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sepa_remittances: {
+        Row: {
+          charge_date: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          creditor_id: string | null
+          currency_code: string | null
+          file_content: string | null
+          file_path: string | null
+          generated_at: string | null
+          id: string
+          notes: string | null
+          presentation_date: string | null
+          remittance_number: string | null
+          remittance_type: string
+          sent_at: string | null
+          series_id: string | null
+          status: string | null
+          total_amount: number | null
+          total_lines: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          charge_date?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          creditor_id?: string | null
+          currency_code?: string | null
+          file_content?: string | null
+          file_path?: string | null
+          generated_at?: string | null
+          id?: string
+          notes?: string | null
+          presentation_date?: string | null
+          remittance_number?: string | null
+          remittance_type: string
+          sent_at?: string | null
+          series_id?: string | null
+          status?: string | null
+          total_amount?: number | null
+          total_lines?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          charge_date?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          creditor_id?: string | null
+          currency_code?: string | null
+          file_content?: string | null
+          file_path?: string | null
+          generated_at?: string | null
+          id?: string
+          notes?: string | null
+          presentation_date?: string | null
+          remittance_number?: string | null
+          remittance_type?: string
+          sent_at?: string | null
+          series_id?: string | null
+          status?: string | null
+          total_amount?: number | null
+          total_lines?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sepa_remittances_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittances_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sepa_remittances_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
             referencedColumns: ["id"]
           },
         ]
@@ -11684,6 +13413,116 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_vat_register: {
+        Row: {
+          base_amount: number
+          company_id: string
+          created_at: string | null
+          direction: string
+          document_date: string
+          document_number: string | null
+          document_type: string
+          fiscal_year_id: string | null
+          id: string
+          is_rectification: boolean | null
+          journal_entry_id: string | null
+          notes: string | null
+          original_document_id: string | null
+          partner_id: string | null
+          partner_name: string | null
+          partner_vat: string | null
+          period_id: string | null
+          source_id: string | null
+          source_type: string | null
+          tax_amount: number
+          tax_id: string | null
+          tax_rate: number
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          base_amount: number
+          company_id: string
+          created_at?: string | null
+          direction: string
+          document_date: string
+          document_number?: string | null
+          document_type: string
+          fiscal_year_id?: string | null
+          id?: string
+          is_rectification?: boolean | null
+          journal_entry_id?: string | null
+          notes?: string | null
+          original_document_id?: string | null
+          partner_id?: string | null
+          partner_name?: string | null
+          partner_vat?: string | null
+          period_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tax_amount: number
+          tax_id?: string | null
+          tax_rate: number
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          base_amount?: number
+          company_id?: string
+          created_at?: string | null
+          direction?: string
+          document_date?: string
+          document_number?: string | null
+          document_type?: string
+          fiscal_year_id?: string | null
+          id?: string
+          is_rectification?: boolean | null
+          journal_entry_id?: string | null
+          notes?: string | null
+          original_document_id?: string | null
+          partner_id?: string | null
+          partner_name?: string | null
+          partner_vat?: string | null
+          period_id?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tax_amount?: number
+          tax_id?: string | null
+          tax_rate?: number
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_vat_register_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_register_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_register_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "erp_journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_register_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
             referencedColumns: ["id"]
           },
         ]
