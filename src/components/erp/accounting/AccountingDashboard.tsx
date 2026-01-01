@@ -56,6 +56,7 @@ import { FiscalClosingWizard } from './FiscalClosingWizard';
 import { TreasuryModule } from './TreasuryModule';
 import { PDFStatementImporter } from './PDFStatementImporter';
 import { FinancialRatiosPanel } from './FinancialRatiosPanel';
+import { CashFlowPanel } from './CashFlowPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -406,6 +407,10 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
             <TabsTrigger value="ratios" className="gap-2">
               <LineChart className="h-4 w-4" />
               Ratios
+            </TabsTrigger>
+            <TabsTrigger value="cash-flow" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Cash Flow
             </TabsTrigger>
             <TabsTrigger value="help" className="gap-2">
               <HelpCircle className="h-4 w-4" />

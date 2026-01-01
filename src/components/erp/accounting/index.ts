@@ -27,3 +27,4 @@ export { FiscalClosingWizard } from './FiscalClosingWizard';
 export { TreasuryModule } from './TreasuryModule';
 export { PDFStatementImporter } from './PDFStatementImporter';
 export { FinancialRatiosPanel } from './FinancialRatiosPanel';
+export { CashFlowPanel } from './CashFlowPanel';
