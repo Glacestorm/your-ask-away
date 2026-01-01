@@ -32,6 +32,8 @@ import { DynamicHelpPanel } from './DynamicHelpPanel';
 import { ChartOfAccountsTree } from './ChartOfAccountsTree';
 import { JournalsList } from './JournalsList';
 import { JournalEntryEditor } from './JournalEntryEditor';
+import { FinancialReportsPanel } from './FinancialReportsPanel';
+import { PeriodClosingPanel } from './PeriodClosingPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -297,7 +299,7 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
 
       {/* Tabs principales */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
           <TabsTrigger value="overview" className="gap-2">
             <FileText className="h-4 w-4" />
             Resumen
@@ -313,6 +315,10 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
           <TabsTrigger value="reports" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Informes
+          </TabsTrigger>
+          <TabsTrigger value="closing" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            Cierres
           </TabsTrigger>
           <TabsTrigger value="help" className="gap-2">
             <HelpCircle className="h-4 w-4" />
@@ -492,15 +498,14 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
           <ChartOfAccountsTree />
         </TabsContent>
 
-        {/* Tab: Informes */}
+        {/* Tab: Informes Financieros */}
         <TabsContent value="reports">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-              <p className="text-muted-foreground">Informes financieros</p>
-              <p className="text-sm text-muted-foreground mt-1">Próximamente: Balance, PyG, Flujo de caja</p>
-            </CardContent>
-          </Card>
+          <FinancialReportsPanel />
+        </TabsContent>
+
+        {/* Tab: Cierres de Período */}
+        <TabsContent value="closing">
+          <PeriodClosingPanel />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
