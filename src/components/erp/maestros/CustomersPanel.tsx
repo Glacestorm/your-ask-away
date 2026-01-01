@@ -53,6 +53,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useMaestros, Customer, CustomerAddress, CustomerContact } from '@/hooks/erp/useMaestros';
+import { useERPContext } from '@/hooks/erp/useERPContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -64,14 +65,32 @@ interface CustomerCreditPolicy {
   allow_override_with_permission: boolean;
 }
 
+type CustomerListItem = {
+  id: string;
+  code: string;
+  legal_name: string;
+  trade_name: string | null;
+  tax_id: string | null;
+  email: string | null;
+  phone: string | null;
+  is_active: boolean;
+  source: 'customers' | 'erp_customers';
+};
+
 export const CustomersPanel: React.FC = () => {
   const { customers, customersLoading, createCustomer, updateCustomer, deleteCustomer, paymentTerms } = useMaestros();
+  const { currentCompany } = useERPContext();
+  const companyId = currentCompany?.id;
+
+  const [erpCustomers, setErpCustomers] = useState<CustomerListItem[]>([]);
+  const [erpCustomersLoading, setErpCustomersLoading] = useState(false);
+
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [activeDetailTab, setActiveDetailTab] = useState('general');
-  
+
   // Form data
   const [formData, setFormData] = useState({
     code: '',
@@ -85,42 +104,70 @@ export const CustomersPanel: React.FC = () => {
     is_active: true
   });
 
-  // Addresses state
-  const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
-  const [newAddress, setNewAddress] = useState({
-    address_type: 'billing' as 'billing' | 'shipping',
-    line1: '',
-    line2: '',
-    city: '',
-    postal_code: '',
-    region: '',
-    country: 'ES',
-    is_default: false
-  });
+  useEffect(() => {
+    const fetchErpCustomers = async () => {
+      if (!companyId) {
+        setErpCustomers([]);
+        return;
+      }
 
-  // Credit policy state
-  const [creditPolicy, setCreditPolicy] = useState<CustomerCreditPolicy | null>(null);
-  const [creditForm, setCreditForm] = useState({
-    credit_limit: 0,
-    block_on_overdue: true,
-    allow_override_with_permission: false
-  });
+      setErpCustomersLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('erp_customers')
+          .select('id, code, name, legal_name, tax_id, email, phone, is_active')
+          .eq('company_id', companyId)
+          .order('name');
 
-  // Contacts state
-  const [contacts, setContacts] = useState<CustomerContact[]>([]);
-  const [newContact, setNewContact] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    role: '',
-    is_primary: false
-  });
+        if (error) throw error;
 
-  const filteredCustomers = customers.filter(c => {
-    const matchesSearch = 
-      c.legal_name.toLowerCase().includes(search.toLowerCase()) ||
-      c.code.toLowerCase().includes(search.toLowerCase()) ||
-      (c.tax_id?.toLowerCase().includes(search.toLowerCase()));
+        const mapped: CustomerListItem[] = (data || []).map((c: any) => ({
+          id: c.id,
+          code: (c.code || '').trim() || '-',
+          legal_name: c.legal_name || c.name || '-',
+          trade_name: null,
+          tax_id: c.tax_id || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          is_active: c.is_active ?? true,
+          source: 'erp_customers',
+        }));
+
+        setErpCustomers(mapped);
+      } catch (err) {
+        console.error('[CustomersPanel] Error loading erp_customers:', err);
+        toast.error('Error al cargar clientes ERP');
+        setErpCustomers([]);
+      } finally {
+        setErpCustomersLoading(false);
+      }
+    };
+
+    fetchErpCustomers();
+  }, [companyId]);
+
+  const customerItems: CustomerListItem[] = [
+    ...customers.map((c) => ({
+      id: c.id,
+      code: c.code,
+      legal_name: c.legal_name,
+      trade_name: c.trade_name,
+      tax_id: c.tax_id,
+      email: c.email,
+      phone: c.phone,
+      is_active: c.is_active,
+      source: 'customers' as const,
+    })),
+    ...erpCustomers,
+  ];
+
+  const filteredCustomers = customerItems.filter((c) => {
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      !q ||
+      c.legal_name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      (c.tax_id?.toLowerCase().includes(q) ?? false);
     const matchesActive = showInactive || c.is_active;
     return matchesSearch && matchesActive;
   });
@@ -230,9 +277,44 @@ export const CustomersPanel: React.FC = () => {
     setIsDialogOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este cliente?')) {
-      await deleteCustomer.mutateAsync(id);
+  const handleDelete = async (customer: CustomerListItem) => {
+    const label = customer.tax_id ? `${customer.legal_name} (${customer.tax_id})` : customer.legal_name;
+    if (!confirm(`¿Estás seguro de eliminar este cliente?\n\n${label}`)) return;
+
+    if (customer.source === 'customers') {
+      await deleteCustomer.mutateAsync(customer.id);
+      return;
+    }
+
+    const { error } = await supabase.from('erp_customers').delete().eq('id', customer.id);
+    if (error) {
+      console.error('[CustomersPanel] delete erp_customer error:', error);
+      toast.error('Error al eliminar cliente ERP');
+      return;
+    }
+
+    toast.success('Cliente ERP eliminado');
+    // refrescar lista ERP
+    if (companyId) {
+      const { data } = await supabase
+        .from('erp_customers')
+        .select('id, code, name, legal_name, tax_id, email, phone, is_active')
+        .eq('company_id', companyId)
+        .order('name');
+
+      setErpCustomers(
+        (data || []).map((c: any) => ({
+          id: c.id,
+          code: (c.code || '').trim() || '-',
+          legal_name: c.legal_name || c.name || '-',
+          trade_name: null,
+          tax_id: c.tax_id || null,
+          email: c.email || null,
+          phone: c.phone || null,
+          is_active: c.is_active ?? true,
+          source: 'erp_customers',
+        }))
+      );
     }
   };
 
@@ -382,7 +464,7 @@ export const CustomersPanel: React.FC = () => {
       </CardHeader>
 
       <CardContent>
-        {customersLoading ? (
+        {(customersLoading || erpCustomersLoading) ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
           </div>
@@ -407,11 +489,18 @@ export const CustomersPanel: React.FC = () => {
               </TableHeader>
               <TableBody>
                 {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="font-mono text-sm">{customer.code}</TableCell>
+                  <TableRow key={`${customer.source}-${customer.id}`}>
+                    <TableCell className="font-mono text-sm">{customer.code || '-'}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{customer.legal_name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{customer.legal_name}</p>
+                          {customer.source === 'erp_customers' && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              ERP
+                            </Badge>
+                          )}
+                        </div>
                         {customer.trade_name && (
                           <p className="text-xs text-muted-foreground">{customer.trade_name}</p>
                         )}
@@ -427,17 +516,22 @@ export const CustomersPanel: React.FC = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        {customer.source === 'customers' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const full = customers.find((c) => c.id === customer.id);
+                              if (full) openEditDialog(full);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openEditDialog(customer)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(customer.id)}
+                          onClick={() => handleDelete(customer)}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
