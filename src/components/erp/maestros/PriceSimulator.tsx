@@ -80,12 +80,15 @@ export const PriceSimulator: React.FC = () => {
                 <Users className="h-4 w-4" />
                 Cliente (opcional)
               </Label>
-              <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+              <Select
+                value={selectedCustomer || '__none__'}
+                onValueChange={(v) => setSelectedCustomer(v === '__none__' ? '' : v)}
+              >
                 <SelectTrigger id="customer">
                   <SelectValue placeholder="Seleccionar cliente para descuentos específicos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin cliente específico</SelectItem>
+                  <SelectItem value="__none__">Sin cliente específico</SelectItem>
                   {customers.filter(c => c.is_active).map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.code} - {c.legal_name}

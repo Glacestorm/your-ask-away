@@ -395,14 +395,14 @@ export function ERPCompaniesManager() {
                 <div className="space-y-2">
                   <Label>Grupo empresarial</Label>
                   <Select 
-                    value={form.group_id || ''} 
-                    onValueChange={(v) => setForm({ ...form, group_id: v || undefined })}
+                    value={form.group_id || '__none__'} 
+                    onValueChange={(v) => setForm({ ...form, group_id: v === '__none__' ? undefined : v })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sin grupo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sin grupo</SelectItem>
+                      <SelectItem value="__none__">Sin grupo</SelectItem>
                       {groups.map((g) => (
                         <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
                       ))}

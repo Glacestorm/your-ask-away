@@ -368,14 +368,14 @@ export const ItemsPanel: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="family_id">Familia</Label>
                     <Select 
-                      value={formData.family_id} 
-                      onValueChange={(v) => setFormData({ ...formData, family_id: v })}
+                      value={formData.family_id || '__none__'} 
+                      onValueChange={(v) => setFormData({ ...formData, family_id: v === '__none__' ? '' : v })}
                     >
                       <SelectTrigger id="family_id">
                         <SelectValue placeholder="Seleccionar familia" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin familia</SelectItem>
+                        <SelectItem value="__none__">Sin familia</SelectItem>
                         {families.map(f => (
                           <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                         ))}
@@ -444,14 +444,14 @@ export const ItemsPanel: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="tax_id">Impuesto (IVA)</Label>
                     <Select 
-                      value={formData.tax_id} 
-                      onValueChange={(v) => setFormData({ ...formData, tax_id: v })}
+                      value={formData.tax_id || '__none__'} 
+                      onValueChange={(v) => setFormData({ ...formData, tax_id: v === '__none__' ? '' : v })}
                     >
                       <SelectTrigger id="tax_id">
                         <SelectValue placeholder="Seleccionar impuesto" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Sin impuesto</SelectItem>
+                        <SelectItem value="__none__">Sin impuesto</SelectItem>
                         {taxes.map(t => (
                           <SelectItem key={t.id} value={t.id}>
                             {t.name} ({t.rate}%)
