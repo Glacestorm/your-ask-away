@@ -44,6 +44,16 @@ import { AnomalyDetectionPanel } from './AnomalyDetectionPanel';
 import { PredictiveAnalyticsPanel } from './PredictiveAnalyticsPanel';
 import { ESGCarbonPanel } from './ESGCarbonPanel';
 import { AutoReconciliationPanel } from './AutoReconciliationPanel';
+// Nuevos paneles integrados
+import { AccountLedgerPanel } from './AccountLedgerPanel';
+import { TrialBalancePanel } from './TrialBalancePanel';
+import { IncomeStatementPanel } from './IncomeStatementPanel';
+import { BalanceSheetPanel } from './BalanceSheetPanel';
+import { AgingPanel } from './AgingPanel';
+import { SEPARemittancesPanel } from './SEPARemittancesPanel';
+import { BankReconciliationPanel } from './BankReconciliationPanel';
+import { FiscalClosingWizard } from './FiscalClosingWizard';
+import { TreasuryModule } from './TreasuryModule';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -351,6 +361,42 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
               <GitMerge className="h-4 w-4" />
               Conciliación
             </TabsTrigger>
+            <TabsTrigger value="ledger" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Mayor
+            </TabsTrigger>
+            <TabsTrigger value="trial-balance" className="gap-2">
+              <Calculator className="h-4 w-4" />
+              Balance Sumas
+            </TabsTrigger>
+            <TabsTrigger value="income-statement" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              PyG
+            </TabsTrigger>
+            <TabsTrigger value="balance-sheet" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              Balance
+            </TabsTrigger>
+            <TabsTrigger value="aging" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Vencimientos
+            </TabsTrigger>
+            <TabsTrigger value="sepa" className="gap-2">
+              <CreditCard className="h-4 w-4" />
+              SEPA
+            </TabsTrigger>
+            <TabsTrigger value="bank-recon" className="gap-2">
+              <Receipt className="h-4 w-4" />
+              Conc. Bancaria
+            </TabsTrigger>
+            <TabsTrigger value="fiscal-closing" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Cierre Fiscal
+            </TabsTrigger>
+            <TabsTrigger value="treasury" className="gap-2">
+              <PiggyBank className="h-4 w-4" />
+              Tesorería
+            </TabsTrigger>
             <TabsTrigger value="help" className="gap-2">
               <HelpCircle className="h-4 w-4" />
               Ayuda
@@ -563,6 +609,51 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Auto-Conciliación */}
         <TabsContent value="reconciliation">
           <AutoReconciliationPanel />
+        </TabsContent>
+
+        {/* Tab: Mayor Contable */}
+        <TabsContent value="ledger">
+          <AccountLedgerPanel />
+        </TabsContent>
+
+        {/* Tab: Balance de Sumas y Saldos */}
+        <TabsContent value="trial-balance">
+          <TrialBalancePanel />
+        </TabsContent>
+
+        {/* Tab: Cuenta de Pérdidas y Ganancias */}
+        <TabsContent value="income-statement">
+          <IncomeStatementPanel />
+        </TabsContent>
+
+        {/* Tab: Balance de Situación */}
+        <TabsContent value="balance-sheet">
+          <BalanceSheetPanel />
+        </TabsContent>
+
+        {/* Tab: Vencimientos (Aging) */}
+        <TabsContent value="aging">
+          <AgingPanel />
+        </TabsContent>
+
+        {/* Tab: Remesas SEPA */}
+        <TabsContent value="sepa">
+          <SEPARemittancesPanel />
+        </TabsContent>
+
+        {/* Tab: Conciliación Bancaria */}
+        <TabsContent value="bank-recon">
+          <BankReconciliationPanel />
+        </TabsContent>
+
+        {/* Tab: Cierre Fiscal */}
+        <TabsContent value="fiscal-closing">
+          <FiscalClosingWizard />
+        </TabsContent>
+
+        {/* Tab: Tesorería */}
+        <TabsContent value="treasury">
+          <TreasuryModule />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
