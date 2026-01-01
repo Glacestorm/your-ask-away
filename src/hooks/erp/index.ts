@@ -17,4 +17,6 @@ export { useERPFinancialReports } from './useERPFinancialReports';
 export { useERPForecasting } from './useERPForecasting';
 export { useERPESGCarbon } from './useERPESGCarbon';
 export { useERPAutoReconciliation } from './useERPAutoReconciliation';
+export { useERPAccountingChatbot } from './useERPAccountingChatbot';
+export { useERPDynamicHelp } from './useERPDynamicHelp';
 export * from './useMaestros';
