@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { 
   Building2,
@@ -25,7 +26,9 @@ import {
   CheckCircle2,
   Loader2,
   Sparkles,
-  BookOpen
+  BookOpen,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useERPContext, ERPProvider } from '@/hooks/erp/useERPContext';
 import { ERPCompanySelector } from './config/ERPCompanySelector';
@@ -46,6 +49,10 @@ function ERPModularDashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
   const [needsSetup, setNeedsSetup] = useState(false);
   const [checkingSetup, setCheckingSetup] = useState(true);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
+
+  // Módulos instalados (tienen tab funcional)
+  const installedModuleIds = ['masters', 'sales'];
 
   // Verificar si necesita configuración inicial
   useEffect(() => {
@@ -228,19 +235,31 @@ function ERPModularDashboardContent() {
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                   {availableModules.map((module) => {
                     const Icon = module.icon;
+                    const isInstalled = installedModuleIds.includes(module.id);
                     return (
                       <Card 
                         key={module.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow"
+                        className={cn(
+                          "cursor-pointer hover:shadow-md transition-shadow",
+                          isInstalled && "ring-1 ring-green-500/30"
+                        )}
+                        onClick={() => isInstalled && setActiveTab(module.id === 'masters' ? 'maestros' : module.id)}
                       >
                         <CardContent className="p-4 text-center">
                           <div className={cn("w-12 h-12 rounded-lg mx-auto mb-3 flex items-center justify-center", module.color)}>
                             <Icon className="h-6 w-6 text-white" />
                           </div>
                           <p className="font-medium text-sm">{module.name}</p>
-                          <Badge variant="outline" className="mt-2 text-xs">
-                            Próximamente
-                          </Badge>
+                          {isInstalled ? (
+                            <Badge variant="default" className="mt-2 text-xs bg-green-600 hover:bg-green-700">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Instalado
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="mt-2 text-xs">
+                              Próximamente
+                            </Badge>
+                          )}
                         </CardContent>
                       </Card>
                     );
@@ -248,28 +267,49 @@ function ERPModularDashboardContent() {
                 </div>
               </div>
 
-              {/* Permissions Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Shield className="h-4 w-4" />
-                    Tus Permisos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {userPermissions.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Sin permisos asignados</p>
-                    ) : (
-                      userPermissions.map((perm) => (
-                        <Badge key={perm} variant="secondary" className="text-xs">
-                          {perm}
-                        </Badge>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Permissions Summary - Collapsible */}
+              <Collapsible open={permissionsOpen} onOpenChange={setPermissionsOpen}>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full justify-between p-0 h-auto hover:bg-transparent"
+                      >
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <Shield className="h-4 w-4" />
+                          {hasPermission('admin.all') ? 'Superadministrador' : 'Administrador'}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Badge variant="secondary" className="text-xs">
+                            {userPermissions.length} permisos
+                          </Badge>
+                          {permissionsOpen ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </div>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </CardHeader>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <div className="flex flex-wrap gap-2">
+                        {userPermissions.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">Sin permisos asignados</p>
+                        ) : (
+                          userPermissions.map((perm) => (
+                            <Badge key={perm} variant="secondary" className="text-xs">
+                              {perm}
+                            </Badge>
+                          ))
+                        )}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             </>
           )}
         </TabsContent>
