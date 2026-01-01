@@ -86,7 +86,7 @@ export function JournalEntryEditor({
   const { chartOfAccounts, journals, periods, fetchJournals, fetchPeriods } = useERPAccounting();
   const { createEntry, updateEntry, isLoading } = useERPJournalEntries();
 
-  const countryCode = currentCompany?.country_code || 'ES';
+  const countryCode = currentCompany?.country || 'ES';
   const currency = getCountryCurrency(countryCode);
 
   // Form state
@@ -155,14 +155,14 @@ export function JournalEntryEditor({
   const selectedPeriod = periods.find(p => p.id === periodId);
   const isPeriodClosed = selectedPeriod?.is_closed || false;
 
-  // Filtrar cuentas para búsqueda
+  // Filtrar cuentas para búsqueda (solo las que aceptan movimientos)
   const filteredAccounts = useMemo(() => {
-    if (!accountSearchTerm) return chartOfAccounts.filter(a => !a.is_header).slice(0, 20);
+    if (!accountSearchTerm) return chartOfAccounts.filter(a => a.accepts_entries !== false).slice(0, 20);
     const term = accountSearchTerm.toLowerCase();
     return chartOfAccounts
-      .filter(a => !a.is_header && (
-        a.code?.toLowerCase().includes(term) ||
-        a.name?.toLowerCase().includes(term)
+      .filter(a => a.accepts_entries !== false && (
+        a.account_code?.toLowerCase().includes(term) ||
+        a.account_name?.toLowerCase().includes(term)
       ))
       .slice(0, 20);
   }, [chartOfAccounts, accountSearchTerm]);
@@ -254,6 +254,7 @@ export function JournalEntryEditor({
       company_id: currentCompany.id,
       journal_id: journalId,
       period_id: periodId,
+      entry_number: editingEntry?.entry_number || `NEW-${Date.now()}`, // Número temporal, el backend asignará el definitivo
       entry_date: format(entryDate, 'yyyy-MM-dd'),
       reference,
       description,
@@ -301,7 +302,7 @@ export function JournalEntryEditor({
             {editingEntry ? 'Editar Asiento' : 'Nuevo Asiento Contable'}
             <HelpTooltip 
               content="Registro contable de partida doble. Debe y Haber deben cuadrar."
-              regulation={countryCode === 'ES' ? 'pgc' : undefined}
+              regulationRef={countryCode === 'ES' ? 'pgc' : undefined}
             />
           </DialogTitle>
           <DialogDescription>
@@ -568,8 +569,8 @@ export function JournalEntryEditor({
                     className="w-full justify-start text-left"
                     onClick={() => selectAccount(account)}
                   >
-                    <span className="font-mono text-sm mr-2">{account.code}</span>
-                    <span className="truncate">{account.name}</span>
+                    <span className="font-mono text-sm mr-2">{account.account_code}</span>
+                    <span className="truncate">{account.account_name}</span>
                   </Button>
                 ))}
                 {filteredAccounts.length === 0 && (

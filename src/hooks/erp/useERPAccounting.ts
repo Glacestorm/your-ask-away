@@ -262,6 +262,9 @@ export function useERPAccounting() {
       return [];
     }
   }, [currentCompany?.id]);
+
+  // === BUSCAR Y ACTUALIZAR NORMATIVAS ===
+  const searchAndUpdateRegulations = useCallback(async (countryCode?: string) => {
     const country = countryCode || currentCompany?.country || 'ES';
 
     setIsSearchingRegulations(true);
