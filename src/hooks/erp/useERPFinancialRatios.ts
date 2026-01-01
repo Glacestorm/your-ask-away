@@ -355,7 +355,7 @@ export function useERPFinancialRatios() {
           income_statements(*)
         `)
         .eq('company_id', companyId)
-        .eq('fiscal_year', year)
+        .eq('fiscal_year', Number(year))
         .eq('is_archived', false)
         .order('created_at', { ascending: false })
         .limit(1);
