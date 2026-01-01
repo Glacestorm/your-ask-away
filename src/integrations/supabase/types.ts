@@ -30751,6 +30751,10 @@ export type Database = {
         }
         Returns: string
       }
+      erp_company_has_role_permissions: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
       erp_company_has_roles: {
         Args: { p_company_id: string }
         Returns: boolean
