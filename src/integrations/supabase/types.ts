@@ -10103,6 +10103,78 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_accounting_plans: {
+        Row: {
+          asset_groups: Json | null
+          chart_accounts_template: Json | null
+          country_code: string
+          country_name: string
+          created_at: string | null
+          detection_patterns: Json | null
+          effective_date: string | null
+          equity_groups: Json | null
+          expense_groups: Json | null
+          id: string
+          income_groups: Json | null
+          is_active: boolean | null
+          is_default: boolean | null
+          liability_groups: Json | null
+          notes: string | null
+          ocr_field_mappings: Json | null
+          plan_code: string
+          plan_name: string
+          plan_version: string | null
+          regulatory_reference: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          asset_groups?: Json | null
+          chart_accounts_template?: Json | null
+          country_code: string
+          country_name: string
+          created_at?: string | null
+          detection_patterns?: Json | null
+          effective_date?: string | null
+          equity_groups?: Json | null
+          expense_groups?: Json | null
+          id?: string
+          income_groups?: Json | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          liability_groups?: Json | null
+          notes?: string | null
+          ocr_field_mappings?: Json | null
+          plan_code: string
+          plan_name: string
+          plan_version?: string | null
+          regulatory_reference?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          asset_groups?: Json | null
+          chart_accounts_template?: Json | null
+          country_code?: string
+          country_name?: string
+          created_at?: string | null
+          detection_patterns?: Json | null
+          effective_date?: string | null
+          equity_groups?: Json | null
+          expense_groups?: Json | null
+          id?: string
+          income_groups?: Json | null
+          is_active?: boolean | null
+          is_default?: boolean | null
+          liability_groups?: Json | null
+          notes?: string | null
+          ocr_field_mappings?: Json | null
+          plan_code?: string
+          plan_name?: string
+          plan_version?: string | null
+          regulatory_reference?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       erp_accounting_regulations: {
         Row: {
           category: string | null
@@ -12888,6 +12960,109 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_statement_imports: {
+        Row: {
+          accounting_plan_id: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          detected_country: string | null
+          detected_language: string | null
+          detected_plan: string | null
+          detection_confidence: number | null
+          entry_count: number | null
+          extracted_data: Json | null
+          file_name: string
+          file_size_bytes: number | null
+          file_url: string | null
+          fiscal_year_id: string | null
+          generated_entries: Json | null
+          id: string
+          imported_at: string | null
+          imported_by: string | null
+          mapped_accounts: Json | null
+          processed_at: string | null
+          statement_type: string
+          status: string | null
+          updated_at: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          accounting_plan_id?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          detected_country?: string | null
+          detected_language?: string | null
+          detected_plan?: string | null
+          detection_confidence?: number | null
+          entry_count?: number | null
+          extracted_data?: Json | null
+          file_name: string
+          file_size_bytes?: number | null
+          file_url?: string | null
+          fiscal_year_id?: string | null
+          generated_entries?: Json | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          mapped_accounts?: Json | null
+          processed_at?: string | null
+          statement_type: string
+          status?: string | null
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          accounting_plan_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          detected_country?: string | null
+          detected_language?: string | null
+          detected_plan?: string | null
+          detection_confidence?: number | null
+          entry_count?: number | null
+          extracted_data?: Json | null
+          file_name?: string
+          file_size_bytes?: number | null
+          file_url?: string | null
+          fiscal_year_id?: string | null
+          generated_entries?: Json | null
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          mapped_accounts?: Json | null
+          processed_at?: string | null
+          statement_type?: string
+          status?: string | null
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_statement_imports_accounting_plan_id_fkey"
+            columns: ["accounting_plan_id"]
+            isOneToOne: false
+            referencedRelation: "erp_accounting_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_statement_imports_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_statement_imports_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
             referencedColumns: ["id"]
           },
         ]
