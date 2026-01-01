@@ -52,7 +52,7 @@ function ERPModularDashboardContent() {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   // Módulos instalados (tienen tab funcional)
-  const installedModuleIds = ['masters', 'sales'];
+  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory'];
 
   // Verificar si necesita configuración inicial
   useEffect(() => {
