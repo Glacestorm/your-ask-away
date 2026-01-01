@@ -3,7 +3,7 @@
  * Incluye documentación completa de contabilidad, menús y procedimientos
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,11 +34,13 @@ import {
   FileCheck,
   Sparkles,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AccountingChatbot } from './AccountingChatbot';
 import { RegulationsPanel } from './RegulationsPanel';
+import { useERPDynamicHelp } from '@/hooks/erp/useERPDynamicHelp';
 
 interface HelpSection {
   id: string;
@@ -405,6 +407,12 @@ export function DynamicHelpPanel({
 }: DynamicHelpPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('modules');
+  
+  const {
+    isLoading: isSearchingAI,
+    suggestedTopics,
+    searchHelp
+  } = useERPDynamicHelp();
 
   // Filtrar secciones según módulos instalados
   const availableSections = useMemo(() => {
@@ -413,7 +421,7 @@ export function DynamicHelpPanel({
       .filter(Boolean);
   }, [installedModules]);
 
-  // Búsqueda global
+  // Búsqueda global local
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
 
@@ -446,6 +454,13 @@ export function DynamicHelpPanel({
 
     return results;
   }, [searchQuery, availableSections]);
+
+  // Búsqueda con IA cuando no hay resultados locales
+  const handleAISearch = useCallback(async () => {
+    if (searchQuery.trim() && searchResults.length === 0) {
+      await searchHelp(searchQuery);
+    }
+  }, [searchQuery, searchResults.length, searchHelp]);
 
   return (
     <div className={cn("space-y-6", className)}>
