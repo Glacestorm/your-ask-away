@@ -347,7 +347,7 @@ export function SalesModule() {
 
         {/* Dialog para el editor de documentos */}
         <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent id="erp-sales-editor-dialog" className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <SalesDocumentEditor 
               documentType={editorType} 
               onClose={() => setEditorOpen(false)}
