@@ -3,11 +3,10 @@
  * Responde consultas sobre normativa, asientos, cuentas y procedimientos
  */
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -26,24 +25,14 @@ import {
   BookOpen,
   Calculator,
   FileText,
-  AlertTriangle,
-  HelpCircle,
-  X
+  AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  isLoading?: boolean;
-  sources?: string[];
-}
+import { useERPAccountingChatbot } from '@/hooks/erp/useERPAccountingChatbot';
+import { useERPContext } from '@/hooks/erp/useERPContext';
 
 interface AccountingChatbotProps {
   country?: string;
@@ -65,9 +54,16 @@ export function AccountingChatbot({
   installedModules = [],
   className
 }: AccountingChatbotProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { currentCompany } = useERPContext();
+  const {
+    messages,
+    isLoading,
+    sendMessage: hookSendMessage,
+    clearChat,
+    addSystemMessage
+  } = useERPAccountingChatbot();
+
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -84,10 +80,7 @@ export function AccountingChatbot({
   // Mensaje de bienvenida
   useEffect(() => {
     if (messages.length === 0) {
-      const welcomeMessage: ChatMessage = {
-        id: 'welcome',
-        role: 'assistant',
-        content: `¡Hola! 👋 Soy tu asistente contable IA. Estoy especializado en:
+      const welcomeContent = `¡Hola! 👋 Soy tu asistente contable IA. Estoy especializado en:
 
 • **Normativa contable** de ${country}
 • **Plan General Contable** y cuentas
@@ -98,118 +91,29 @@ export function AccountingChatbot({
 
 ${installedModules.length > 0 ? `\n📦 Módulos activos: ${installedModules.join(', ')}` : ''}
 
-¿En qué puedo ayudarte hoy?`,
-        timestamp: new Date(),
-      };
-      setMessages([welcomeMessage]);
+¿En qué puedo ayudarte hoy?`;
+      addSystemMessage(welcomeContent);
     }
-  }, [country, installedModules]);
+  }, []);
 
-  const sendMessage = useCallback(async (messageText: string) => {
+  const handleSendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
 
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: messageText.trim(),
-      timestamp: new Date(),
-    };
-
-    const loadingMessage: ChatMessage = {
-      id: `loading-${Date.now()}`,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isLoading: true,
-    };
-
-    setMessages(prev => [...prev, userMessage, loadingMessage]);
+    await hookSendMessage(messageText, {
+      company_id: currentCompany?.id || '',
+      company_name: companyName || currentCompany?.name,
+      current_module: 'accounting'
+    });
     setInput('');
-    setIsLoading(true);
-
-    try {
-      // Construir contexto con módulos instalados
-      const moduleContext = installedModules.length > 0
-        ? `Módulos ERP activos: ${installedModules.join(', ')}`
-        : 'Sin módulos específicos';
-
-      const systemPrompt = `Eres un experto contable y asesor fiscal especializado en ${country}. 
-Tu rol es ayudar con consultas sobre:
-- Plan General Contable (PGC) y normativa local
-- Asientos contables y partida doble
-- Obligaciones fiscales (IVA, IRPF, Impuesto de Sociedades)
-- Estados financieros y cierres contables
-- Normativas internacionales (NIIF/IFRS) cuando aplique
-
-Contexto actual:
-- País: ${country}
-${companyName ? `- Empresa: ${companyName}` : ''}
-- ${moduleContext}
-
-IMPORTANTE:
-1. Responde siempre en español
-2. Cita normativas específicas cuando sea relevante (ej: PGC, Ley del IVA, etc.)
-3. Incluye ejemplos prácticos con asientos cuando sea útil
-4. Usa formato Markdown para estructurar respuestas
-5. Si no estás seguro, indícalo claramente
-6. Para preguntas sobre módulos ERP específicos, explica cómo se integran con la contabilidad`;
-
-      const conversationHistory = messages
-        .filter(m => !m.isLoading && m.id !== 'welcome')
-        .slice(-10)
-        .map(m => ({
-          role: m.role,
-          content: m.content
-        }));
-
-      const { data, error } = await supabase.functions.invoke('obelixia-vertical-copilot', {
-        body: {
-          action: 'chat',
-          verticalType: 'accounting',
-          message: messageText,
-          systemPrompt,
-          conversationHistory,
-          context: {
-            country,
-            companyName,
-            installedModules,
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      const assistantMessage: ChatMessage = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: data.response || 'Lo siento, no pude procesar tu consulta.',
-        timestamp: new Date(),
-        sources: data.sources,
-      };
-
-      setMessages(prev => prev.filter(m => !m.isLoading).concat(assistantMessage));
-    } catch (err) {
-      console.error('[AccountingChatbot] Error:', err);
-      const errorMessage: ChatMessage = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: '❌ Error al procesar tu consulta. Por favor, inténtalo de nuevo.',
-        timestamp: new Date(),
-      };
-      setMessages(prev => prev.filter(m => !m.isLoading).concat(errorMessage));
-      toast.error('Error al conectar con el asistente');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [messages, isLoading, country, companyName, installedModules]);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    sendMessage(input);
+    handleSendMessage(input);
   };
 
   const handleQuickQuestion = (query: string) => {
-    sendMessage(query);
+    handleSendMessage(query);
   };
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -223,8 +127,8 @@ IMPORTANTE:
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
+  const handleClearChat = () => {
+    clearChat();
     toast.success('Conversación limpiada');
   };
 
@@ -295,7 +199,7 @@ IMPORTANTE:
             <Button
               variant="ghost"
               size="icon"
-              onClick={clearChat}
+              onClick={handleClearChat}
               className="h-8 w-8"
               title="Limpiar chat"
             >
@@ -326,7 +230,7 @@ IMPORTANTE:
                 )}
               >
                 <Avatar className="h-8 w-8 flex-shrink-0">
-                  {message.role === 'assistant' ? (
+                  {message.role === 'assistant' || message.role === 'system' ? (
                     <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs">
                       <Bot className="h-4 w-4" />
                     </AvatarFallback>
@@ -343,40 +247,46 @@ IMPORTANTE:
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
                 )}>
-                  {message.isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm">Pensando...</span>
+                  <div className="text-sm prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+                    {message.content}
+                  </div>
+                  {(message.role === 'assistant' || message.role === 'system') && (
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(message.timestamp, { locale: es, addSuffix: true })}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => copyToClipboard(message.content, message.id)}
+                      >
+                        {copiedId === message.id ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
                     </div>
-                  ) : (
-                    <>
-                      <div className="text-sm prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
-                        {message.content}
-                      </div>
-                      {message.role === 'assistant' && !message.isLoading && (
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(message.timestamp, { locale: es, addSuffix: true })}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => copyToClipboard(message.content, message.id)}
-                          >
-                            {copiedId === message.id ? (
-                              <Check className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </>
                   )}
                 </div>
               </div>
             ))}
+            {isLoading && (
+              <div className="flex gap-3">
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs">
+                    <Bot className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="bg-muted rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Pensando...</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
 
