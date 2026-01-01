@@ -78,7 +78,7 @@ const mockAccountingEntries: AccountingEntry[] = [
 ];
 
 export function BankReconciliationPanel() {
-  const { selectedCompany } = useERPContext();
+  const { currentCompany } = useERPContext();
   const [bankMovements, setBankMovements] = useState(mockBankMovements);
   const [accountingEntries, setAccountingEntries] = useState(mockAccountingEntries);
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
@@ -186,7 +186,7 @@ export function BankReconciliationPanel() {
     }, 2000);
   };
 
-  if (!selectedCompany) {
+  if (!currentCompany) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-10 text-center text-muted-foreground">

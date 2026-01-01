@@ -87,7 +87,7 @@ const generateCashFlowProjection = (): CashFlowProjection[] => {
 };
 
 export function TreasuryModule() {
-  const { selectedCompany } = useERPContext();
+  const { currentCompany } = useERPContext();
   const [activeTab, setActiveTab] = useState('overview');
   const [cashFlowData] = useState(generateCashFlowProjection);
 
@@ -117,7 +117,7 @@ export function TreasuryModule() {
     return { totalInflows, totalOutflows, minBalance, maxBalance };
   }, [cashFlowData]);
 
-  if (!selectedCompany) {
+  if (!currentCompany) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-10 text-center text-muted-foreground">
