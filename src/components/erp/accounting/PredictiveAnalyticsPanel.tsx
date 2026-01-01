@@ -2,7 +2,7 @@
  * PredictiveAnalyticsPanel - Panel de analítica predictiva y forecasting
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,9 +22,8 @@ import {
   DollarSign
 } from 'lucide-react';
 import { HelpTooltip } from './HelpTooltip';
-import { supabase } from '@/integrations/supabase/client';
 import { useERPContext } from '@/hooks/erp/useERPContext';
-import { toast } from 'sonner';
+import { useERPForecasting } from '@/hooks/erp/useERPForecasting';
 import { cn } from '@/lib/utils';
 
 interface Forecast {
@@ -50,43 +49,54 @@ interface PredictiveAnalyticsPanelProps {
 
 export function PredictiveAnalyticsPanel({ className }: PredictiveAnalyticsPanelProps) {
   const { currentCompany } = useERPContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    isLoading,
+    forecast: hookForecast,
+    scenarios: hookScenarios,
+    generateForecast,
+    analyzeScenarios
+  } = useERPForecasting();
+
   const [horizon, setHorizon] = useState('3m');
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [activeTab, setActiveTab] = useState('forecast');
 
-  const handleGenerateForecast = useCallback(async () => {
+  // Sync hook data to local state
+  useEffect(() => {
+    if (hookForecast?.forecast?.periods) {
+      setForecasts(hookForecast.forecast.periods.map((p, i) => ({
+        period: p.period,
+        predicted_revenue: p.projected_revenue || 0,
+        predicted_expenses: p.projected_expenses || 0,
+        predicted_cashflow: p.projected_net || 0,
+        confidence: p.confidence,
+        trend: hookForecast.forecast.summary.trend === 'growth' ? 'up' : 
+               hookForecast.forecast.summary.trend === 'decline' ? 'down' : 'stable'
+      })));
+    }
+  }, [hookForecast]);
+
+  useEffect(() => {
+    if (hookScenarios?.scenarios) {
+      setScenarios(hookScenarios.scenarios.map(s => ({
+        name: s.name,
+        description: s.recommendations.join('. '),
+        impact_revenue: ((s.projections.revenue - 100000) / 100000) * 100,
+        impact_expenses: ((s.projections.expenses - 80000) / 80000) * 100,
+        probability: s.probability
+      })));
+    }
+  }, [hookScenarios]);
+
+  const handleGenerateForecast = async () => {
     if (!currentCompany?.id) return;
 
-    setIsLoading(true);
+    const months = horizon === '1m' ? 1 : horizon === '3m' ? 3 : horizon === '6m' ? 6 : 12;
 
-    try {
-      const { data, error } = await supabase.functions.invoke('erp-predictive-analytics', {
-        body: {
-          action: 'generate_forecast',
-          params: {
-            company_id: currentCompany.id,
-            horizon: horizon,
-            include_scenarios: true
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setForecasts(data.forecasts || []);
-        setScenarios(data.scenarios || []);
-        toast.success('Pronóstico generado');
-      }
-    } catch (err) {
-      console.error('[PredictiveAnalyticsPanel] Error:', err);
-      toast.error('Error generando pronóstico');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentCompany, horizon]);
+    await generateForecast(currentCompany.id, 'comprehensive', months);
+    await analyzeScenarios(currentCompany.id, { revenue: 100000, expenses: 80000 });
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {

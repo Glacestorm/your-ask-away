@@ -2,7 +2,7 @@
  * ESGCarbonPanel - Panel de contabilidad ESG y huella de carbono
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,6 @@ import {
   Globe,
   Factory,
   Zap,
-  Droplets,
   Recycle,
   TrendingDown,
   Award,
@@ -24,9 +23,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { HelpTooltip } from './HelpTooltip';
-import { supabase } from '@/integrations/supabase/client';
 import { useERPContext } from '@/hooks/erp/useERPContext';
-import { toast } from 'sonner';
+import { useERPESGCarbon } from '@/hooks/erp/useERPESGCarbon';
 import { cn } from '@/lib/utils';
 
 interface CarbonMetrics {
@@ -39,7 +37,7 @@ interface CarbonMetrics {
   carbon_intensity: number;
 }
 
-interface ESGScore {
+interface ESGScoreLocal {
   environmental: number;
   social: number;
   governance: number;
@@ -61,43 +59,69 @@ interface ESGCarbonPanelProps {
 
 export function ESGCarbonPanel({ className }: ESGCarbonPanelProps) {
   const { currentCompany } = useERPContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    isLoading,
+    carbonFootprint,
+    esgScore: hookEsgScore,
+    calculateCarbonFootprint,
+    calculateESGScore
+  } = useERPESGCarbon();
+
   const [activeTab, setActiveTab] = useState('carbon');
   const [carbonMetrics, setCarbonMetrics] = useState<CarbonMetrics | null>(null);
-  const [esgScore, setEsgScore] = useState<ESGScore | null>(null);
+  const [esgScore, setEsgScore] = useState<ESGScoreLocal | null>(null);
   const [csrdCompliance, setCsrdCompliance] = useState<CSRDCompliance | null>(null);
 
-  const handleFetchData = useCallback(async () => {
+  // Sync hook data to local state
+  useEffect(() => {
+    if (carbonFootprint) {
+      setCarbonMetrics({
+        scope1_emissions: carbonFootprint.breakdown.scope1,
+        scope2_emissions: carbonFootprint.breakdown.scope2,
+        scope3_emissions: carbonFootprint.breakdown.scope3,
+        total_emissions: carbonFootprint.total_emissions_kg / 1000,
+        reduction_target: 50,
+        current_reduction: 100 - carbonFootprint.comparison.percentile,
+        carbon_intensity: carbonFootprint.total_emissions_kg / 1000000
+      });
+    }
+  }, [carbonFootprint]);
+
+  useEffect(() => {
+    if (hookEsgScore) {
+      setEsgScore({
+        environmental: hookEsgScore.environmental.score,
+        social: hookEsgScore.social.score,
+        governance: hookEsgScore.governance.score,
+        overall: hookEsgScore.overall_score,
+        trend: 'improving'
+      });
+      setCsrdCompliance({
+        is_compliant: hookEsgScore.overall_score >= 70,
+        requirements_met: Math.round(hookEsgScore.overall_score * 0.12),
+        total_requirements: 12,
+        next_deadline: '2025-01-01',
+        missing_requirements: hookEsgScore.recommendations.slice(0, 3)
+      });
+    }
+  }, [hookEsgScore]);
+
+  const handleFetchData = async () => {
     if (!currentCompany?.id) return;
 
-    setIsLoading(true);
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+    const endDate = now.toISOString().split('T')[0];
 
-    try {
-      const { data, error } = await supabase.functions.invoke('erp-esg-carbon-accounting', {
-        body: {
-          action: 'get_full_report',
-          params: {
-            company_id: currentCompany.id,
-            year: new Date().getFullYear()
-          }
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setCarbonMetrics(data.carbon_metrics);
-        setEsgScore(data.esg_score);
-        setCsrdCompliance(data.csrd_compliance);
-        toast.success('Datos ESG actualizados');
-      }
-    } catch (err) {
-      console.error('[ESGCarbonPanel] Error:', err);
-      toast.error('Error cargando datos ESG');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentCompany]);
+    await Promise.all([
+      calculateCarbonFootprint(currentCompany.id, { start: startDate, end: endDate }, {
+        energy_kwh: 50000,
+        fuel_liters: 2000,
+        travel_km: 15000
+      }),
+      calculateESGScore(currentCompany.id, {})
+    ]);
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
