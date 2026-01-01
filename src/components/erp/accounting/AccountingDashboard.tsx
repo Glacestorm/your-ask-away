@@ -54,6 +54,7 @@ import { SEPARemittancesPanel } from './SEPARemittancesPanel';
 import { BankReconciliationPanel } from './BankReconciliationPanel';
 import { FiscalClosingWizard } from './FiscalClosingWizard';
 import { TreasuryModule } from './TreasuryModule';
+import { PDFStatementImporter } from './PDFStatementImporter';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -397,6 +398,10 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
               <PiggyBank className="h-4 w-4" />
               Tesorería
             </TabsTrigger>
+            <TabsTrigger value="import-statements" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Importar Estados
+            </TabsTrigger>
             <TabsTrigger value="help" className="gap-2">
               <HelpCircle className="h-4 w-4" />
               Ayuda
@@ -654,6 +659,11 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Tesorería */}
         <TabsContent value="treasury">
           <TreasuryModule />
+        </TabsContent>
+
+        {/* Tab: Importar Estados Financieros */}
+        <TabsContent value="import-statements">
+          <PDFStatementImporter />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
