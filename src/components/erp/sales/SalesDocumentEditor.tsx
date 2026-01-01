@@ -472,10 +472,10 @@ export function SalesDocumentEditor({
             <div className="space-y-2">
               <Label>Cliente *</Label>
               <Select value={customerId} onValueChange={handleCustomerChange}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleccionar cliente" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="item-aligned">
                   {customers.map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name} {c.tax_id && `(${c.tax_id})`}
@@ -488,10 +488,10 @@ export function SalesDocumentEditor({
             <div className="space-y-2">
               <Label>Serie *</Label>
               <Select value={seriesId} onValueChange={setSeriesId}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleccionar serie" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="item-aligned">
                   {series.map(s => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name} ({s.prefix})
