@@ -9,9 +9,9 @@ export function HelpButton() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - positioned top left near company name */}
       <motion.div
-        className="fixed bottom-6 right-6 z-40"
+        className="fixed top-3 left-3 z-40"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.5, type: 'spring', stiffness: 300 }}
