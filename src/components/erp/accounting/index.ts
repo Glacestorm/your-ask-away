@@ -8,3 +8,7 @@ export { ESGCarbonPanel } from './ESGCarbonPanel';
 export { AutoReconciliationPanel } from './AutoReconciliationPanel';
 export { AccountingChatbot } from './AccountingChatbot';
 export { DynamicHelpPanel } from './DynamicHelpPanel';
+export { ChartOfAccountsTree } from './ChartOfAccountsTree';
+export { JournalEntryEditor } from './JournalEntryEditor';
+export { JournalsList } from './JournalsList';
+export { CreateAccountDialog } from './CreateAccountDialog';
