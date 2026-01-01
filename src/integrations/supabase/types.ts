@@ -10331,6 +10331,282 @@ export type Database = {
           },
         ]
       }
+      erp_goods_receipt_lines: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          item_id: string | null
+          line_number: number
+          location_id: string | null
+          lot_number: string | null
+          order_line_id: string | null
+          quantity: number
+          receipt_id: string
+          serial_number: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          line_number: number
+          location_id?: string | null
+          lot_number?: string | null
+          order_line_id?: string | null
+          quantity?: number
+          receipt_id: string
+          serial_number?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          item_id?: string | null
+          line_number?: number
+          location_id?: string | null
+          lot_number?: string | null
+          order_line_id?: string | null
+          quantity?: number
+          receipt_id?: string
+          serial_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_goods_receipt_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipt_lines_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipt_lines_order_line_id_fkey"
+            columns: ["order_line_id"]
+            isOneToOne: false
+            referencedRelation: "erp_purchase_order_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipt_lines_receipt_id_fkey"
+            columns: ["receipt_id"]
+            isOneToOne: false
+            referencedRelation: "erp_goods_receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_goods_receipts: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          document_number: string | null
+          id: string
+          notes: string | null
+          purchase_order_id: string | null
+          receipt_date: string
+          series_id: string | null
+          status: string | null
+          supplier_id: string | null
+          updated_at: string | null
+          warehouse_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          document_number?: string | null
+          id?: string
+          notes?: string | null
+          purchase_order_id?: string | null
+          receipt_date?: string
+          series_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          warehouse_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          document_number?: string | null
+          id?: string
+          notes?: string | null
+          purchase_order_id?: string | null
+          receipt_date?: string
+          series_id?: string | null
+          status?: string | null
+          supplier_id?: string | null
+          updated_at?: string | null
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_goods_receipts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipts_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "erp_purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipts_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_goods_receipts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_inventory_count_lines: {
+        Row: {
+          count_id: string
+          counted_at: string | null
+          counted_by: string | null
+          counted_qty: number | null
+          created_at: string | null
+          difference: number | null
+          id: string
+          item_id: string
+          location_id: string | null
+          notes: string | null
+          system_qty: number | null
+        }
+        Insert: {
+          count_id: string
+          counted_at?: string | null
+          counted_by?: string | null
+          counted_qty?: number | null
+          created_at?: string | null
+          difference?: number | null
+          id?: string
+          item_id: string
+          location_id?: string | null
+          notes?: string | null
+          system_qty?: number | null
+        }
+        Update: {
+          count_id?: string
+          counted_at?: string | null
+          counted_by?: string | null
+          counted_qty?: number | null
+          created_at?: string | null
+          difference?: number | null
+          id?: string
+          item_id?: string
+          location_id?: string | null
+          notes?: string | null
+          system_qty?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_inventory_count_lines_count_id_fkey"
+            columns: ["count_id"]
+            isOneToOne: false
+            referencedRelation: "erp_inventory_counts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_count_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_count_lines_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_inventory_counts: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          company_id: string
+          count_date: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          status: string | null
+          updated_at: string | null
+          warehouse_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id: string
+          count_date?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+          warehouse_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          company_id?: string
+          count_date?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_inventory_counts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_inventory_counts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_items: {
         Row: {
           category: string | null
@@ -10386,6 +10662,60 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_lots: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          expiration_date: string | null
+          id: string
+          is_blocked: boolean | null
+          item_id: string
+          lot_number: string
+          manufacturing_date: string | null
+          notes: string | null
+          supplier_lot: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          is_blocked?: boolean | null
+          item_id: string
+          lot_number: string
+          manufacturing_date?: string | null
+          notes?: string | null
+          supplier_lot?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: string
+          is_blocked?: boolean | null
+          item_id?: string
+          lot_number?: string
+          manufacturing_date?: string | null
+          notes?: string | null
+          supplier_lot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_lots_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_lots_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
             referencedColumns: ["id"]
           },
         ]
@@ -10477,6 +10807,148 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_purchase_order_lines: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_percent: number | null
+          id: string
+          item_id: string | null
+          line_number: number
+          order_id: string
+          quantity: number
+          received_qty: number | null
+          subtotal: number | null
+          tax_rate: number | null
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
+          id?: string
+          item_id?: string | null
+          line_number: number
+          order_id: string
+          quantity?: number
+          received_qty?: number | null
+          subtotal?: number | null
+          tax_rate?: number | null
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
+          id?: string
+          item_id?: string | null
+          line_number?: number
+          order_id?: string
+          quantity?: number
+          received_qty?: number | null
+          subtotal?: number | null
+          tax_rate?: number | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_purchase_order_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_purchase_order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "erp_purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_purchase_orders: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          document_number: string | null
+          exchange_rate: number | null
+          expected_date: string | null
+          id: string
+          notes: string | null
+          order_date: string
+          series_id: string | null
+          status: string | null
+          subtotal: number | null
+          supplier_id: string | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          document_number?: string | null
+          exchange_rate?: number | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          document_number?: string | null
+          exchange_rate?: number | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_date?: string
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_purchase_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_purchase_orders_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_purchase_orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_role_permissions: {
         Row: {
           created_at: string | null
@@ -10551,6 +11023,81 @@ export type Database = {
           },
         ]
       }
+      erp_serials: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          item_id: string
+          location_id: string | null
+          lot_id: string | null
+          notes: string | null
+          serial_number: string
+          status: string | null
+          warehouse_id: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          item_id: string
+          location_id?: string | null
+          lot_id?: string | null
+          notes?: string | null
+          serial_number: string
+          status?: string | null
+          warehouse_id?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          location_id?: string | null
+          lot_id?: string | null
+          notes?: string | null
+          serial_number?: string
+          status?: string | null
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_serials_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_serials_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_serials_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_serials_lot_id_fkey"
+            columns: ["lot_id"]
+            isOneToOne: false
+            referencedRelation: "erp_lots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_serials_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_series: {
         Row: {
           code: string
@@ -10609,6 +11156,403 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_stock_movements: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          item_id: string
+          location_id: string | null
+          movement_date: string | null
+          movement_type: string
+          notes: string | null
+          quantity: number
+          reference_id: string | null
+          reference_type: string | null
+          unit_cost: number | null
+          warehouse_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          item_id: string
+          location_id?: string | null
+          movement_date?: string | null
+          movement_type: string
+          notes?: string | null
+          quantity: number
+          reference_id?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+          warehouse_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          item_id?: string
+          location_id?: string | null
+          movement_date?: string | null
+          movement_type?: string
+          notes?: string | null
+          quantity?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          unit_cost?: number | null
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_stock_movements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_movements_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_movements_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_stock_transfer_lines: {
+        Row: {
+          created_at: string | null
+          from_location_id: string | null
+          id: string
+          item_id: string
+          quantity: number
+          received_qty: number | null
+          to_location_id: string | null
+          transfer_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          from_location_id?: string | null
+          id?: string
+          item_id: string
+          quantity: number
+          received_qty?: number | null
+          to_location_id?: string | null
+          transfer_id: string
+        }
+        Update: {
+          created_at?: string | null
+          from_location_id?: string | null
+          id?: string
+          item_id?: string
+          quantity?: number
+          received_qty?: number | null
+          to_location_id?: string | null
+          transfer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_stock_transfer_lines_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfer_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfer_lines_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfer_lines_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_stock_transfers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_stock_transfers: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          document_number: string | null
+          from_warehouse_id: string
+          id: string
+          notes: string | null
+          received_at: string | null
+          received_by: string | null
+          series_id: string | null
+          shipped_at: string | null
+          status: string | null
+          to_warehouse_id: string
+          transfer_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          document_number?: string | null
+          from_warehouse_id: string
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          series_id?: string | null
+          shipped_at?: string | null
+          status?: string | null
+          to_warehouse_id: string
+          transfer_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          document_number?: string | null
+          from_warehouse_id?: string
+          id?: string
+          notes?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          series_id?: string | null
+          shipped_at?: string | null
+          status?: string | null
+          to_warehouse_id?: string
+          transfer_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_stock_transfers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfers_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfers_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_stock_transfers_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_supplier_invoice_lines: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_percent: number | null
+          goods_receipt_id: string | null
+          id: string
+          invoice_id: string
+          item_id: string | null
+          line_number: number
+          quantity: number
+          subtotal: number | null
+          tax_rate: number | null
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
+          goods_receipt_id?: string | null
+          id?: string
+          invoice_id: string
+          item_id?: string | null
+          line_number: number
+          quantity?: number
+          subtotal?: number | null
+          tax_rate?: number | null
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
+          goods_receipt_id?: string | null
+          id?: string
+          invoice_id?: string
+          item_id?: string | null
+          line_number?: number
+          quantity?: number
+          subtotal?: number | null
+          tax_rate?: number | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_supplier_invoice_lines_goods_receipt_id_fkey"
+            columns: ["goods_receipt_id"]
+            isOneToOne: false
+            referencedRelation: "erp_goods_receipts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "erp_supplier_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoice_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_supplier_invoices: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          document_number: string | null
+          due_date: string | null
+          exchange_rate: number | null
+          fiscal_year_id: string | null
+          id: string
+          invoice_date: string
+          notes: string | null
+          period_id: string | null
+          series_id: string | null
+          status: string | null
+          subtotal: number | null
+          supplier_id: string | null
+          supplier_invoice_number: string | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          document_number?: string | null
+          due_date?: string | null
+          exchange_rate?: number | null
+          fiscal_year_id?: string | null
+          id?: string
+          invoice_date?: string
+          notes?: string | null
+          period_id?: string | null
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_invoice_number?: string | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          document_number?: string | null
+          due_date?: string | null
+          exchange_rate?: number | null
+          fiscal_year_id?: string | null
+          id?: string
+          invoice_date?: string
+          notes?: string | null
+          period_id?: string | null
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          supplier_id?: string | null
+          supplier_invoice_number?: string | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_supplier_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoices_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoices_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoices_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_supplier_invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "erp_suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -10787,6 +11731,80 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "erp_warehouse_locations_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_warehouse_stock: {
+        Row: {
+          available_qty: number | null
+          avg_cost: number | null
+          company_id: string
+          created_at: string | null
+          id: string
+          item_id: string
+          last_movement_at: string | null
+          location_id: string | null
+          quantity: number
+          reserved_qty: number | null
+          updated_at: string | null
+          warehouse_id: string
+        }
+        Insert: {
+          available_qty?: number | null
+          avg_cost?: number | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          item_id: string
+          last_movement_at?: string | null
+          location_id?: string | null
+          quantity?: number
+          reserved_qty?: number | null
+          updated_at?: string | null
+          warehouse_id: string
+        }
+        Update: {
+          available_qty?: number | null
+          avg_cost?: number | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          last_movement_at?: string | null
+          location_id?: string | null
+          quantity?: number
+          reserved_qty?: number | null
+          updated_at?: string | null
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_warehouse_stock_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_warehouse_stock_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_warehouse_stock_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouse_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_warehouse_stock_warehouse_id_fkey"
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "erp_warehouses"
