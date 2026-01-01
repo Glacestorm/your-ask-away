@@ -148,29 +148,42 @@ export function SalesDocumentEditor({
     setIsLoading(true);
     try {
       // Load series for this document type
-      const docTypeMap: Record<DocumentType, string> = {
+      const docTypeMap: Record<DocumentType, string | string[]> = {
         quote: 'quote',
         order: 'order',
-        delivery: 'delivery_note',
+        // compat: algunas pantallas usan "delivery" y otras "delivery_note"
+        delivery: ['delivery_note', 'delivery'],
         invoice: 'invoice',
         credit: 'credit_note',
       };
 
-      const [seriesResult, customersResult, itemsResult] = await Promise.all([
-        supabase
-          .from('erp_series')
-          .select('id, name, prefix')
-          .eq('company_id', currentCompany.id)
-          .eq('module', 'sales')
-          .eq('document_type', docTypeMap[documentType])
-          .eq('is_active', true)
-          .order('is_default', { ascending: false }),
+      const docTypeFilter = docTypeMap[documentType];
+
+      const seriesQuery = supabase
+        .from('erp_series')
+        .select('id, name, prefix')
+        .eq('company_id', currentCompany.id)
+        .eq('module', 'sales')
+        .eq('is_active', true)
+        .order('is_default', { ascending: false });
+
+      const seriesResult = Array.isArray(docTypeFilter)
+        ? await seriesQuery.in('document_type', docTypeFilter)
+        : await seriesQuery.eq('document_type', docTypeFilter);
+
+      const [erpCustomersResult, customersResult, itemsResult] = await Promise.all([
         supabase
           .from('erp_customers')
           .select('id, name, tax_id')
           .eq('company_id', currentCompany.id)
           .eq('is_active', true)
           .order('name'),
+        supabase
+          .from('customers')
+          .select('id, legal_name, trade_name, tax_id')
+          .eq('company_id', currentCompany.id)
+          .eq('is_active', true)
+          .order('legal_name'),
         supabase
           .from('erp_items')
           .select('id, code, name, default_price, tax_rate')
@@ -186,9 +199,28 @@ export function SalesDocumentEditor({
         }
       }
 
-      if (customersResult.data) {
-        setCustomers(customersResult.data);
+      const mergedCustomers: Customer[] = [];
+
+      if (erpCustomersResult.data) {
+        mergedCustomers.push(...(erpCustomersResult.data as Customer[]));
       }
+
+      if (customersResult.data) {
+        mergedCustomers.push(
+          ...(customersResult.data as any[]).map((c) => ({
+            id: c.id,
+            name: (c.trade_name || c.legal_name || '').trim() || '-',
+            tax_id: c.tax_id || null,
+          }))
+        );
+      }
+
+      // dedupe por id (por si existe en ambas fuentes)
+      const uniqueCustomers = Array.from(new Map(mergedCustomers.map((c) => [c.id, c])).values()).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+
+      setCustomers(uniqueCustomers);
 
       if (itemsResult.data) {
         setItems(itemsResult.data.map(i => ({
