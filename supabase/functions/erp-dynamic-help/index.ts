@@ -6,13 +6,16 @@ const corsHeaders = {
 };
 
 interface HelpRequest {
-  action: 'get_contextual_help';
-  context: {
-    module: string;
-    action?: string;
-    entityType?: string;
-    entityData?: Record<string, unknown>;
+  action: 'contextual_help' | 'search' | 'regulation_info';
+  context?: {
+    current_screen?: string;
+    current_action?: string;
+    selected_account?: string;
+    error_message?: string;
+    module?: string;
   };
+  query?: string;
+  regulation_code?: string;
 }
 
 serve(async (req) => {
@@ -26,25 +29,49 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const { action, context } = await req.json() as HelpRequest;
+    const { action, context, query, regulation_code } = await req.json() as HelpRequest;
 
-    if (action !== 'get_contextual_help') {
-      throw new Error(`Acción no soportada: ${action}`);
-    }
+    console.log(`[erp-dynamic-help] Action: ${action}`);
 
-    console.log(`[erp-dynamic-help] Getting help for: ${context.module} - ${context.action}`);
+    let systemPrompt = '';
+    let userPrompt = '';
 
-    const systemPrompt = `Eres un sistema de ayuda contextual para un ERP contable español.
-Genera ayuda relevante basada en el contexto proporcionado.
+    switch (action) {
+      case 'contextual_help':
+        systemPrompt = `Eres un sistema de ayuda contextual para un ERP contable español.
+        
+PROPORCIONA:
+1. Un resumen breve del contexto actual
+2. Detalles relevantes sobre la pantalla o acción
+3. Temas relacionados que podrían interesar
+4. Ejemplos prácticos si aplica
+5. Referencias a normativa si es relevante
 
-MÓDULOS DISPONIBLES:
-- plan-cuentas: Gestión del plan de cuentas (PGC)
-- asientos: Libro diario y asientos contables
-- mayor: Libro mayor
-- balance: Balances de situación y comprobación
-- resultados: Cuenta de pérdidas y ganancias
-- iva: Gestión de IVA y modelos fiscales
-- cierre: Cierre de ejercicio
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "summary": "Resumen breve",
+  "details": "Explicación detallada",
+  "related_topics": ["tema1", "tema2"],
+  "examples": ["ejemplo1"],
+  "regulations": ["normativa aplicable"]
+}`;
+
+        userPrompt = `Proporciona ayuda contextual para:
+- Pantalla: ${context?.current_screen || 'General'}
+- Acción: ${context?.current_action || 'Navegación'}
+- Cuenta: ${context?.selected_account || 'Ninguna'}
+- Módulo: ${context?.module || 'Contabilidad'}
+${context?.error_message ? `- Error: ${context.error_message}` : ''}`;
+        break;
+
+      case 'search':
+        systemPrompt = `Eres un buscador de ayuda para un ERP contable español.
+
+BUSCA Y DEVUELVE información sobre:
+- Plan General Contable (PGC)
+- Normativa fiscal española
+- Procedimientos contables
+- Funcionalidades del sistema
 
 FORMATO DE RESPUESTA (JSON estricto):
 {
@@ -52,35 +79,37 @@ FORMATO DE RESPUESTA (JSON estricto):
     {
       "id": "unique_id",
       "title": "Título del tema",
-      "summary": "Resumen breve (1-2 líneas)",
-      "content": "Contenido detallado con información práctica",
-      "category": "normativa|procedimiento|ejemplo|tip",
-      "relevance": 0-100,
-      "source": "Fuente (opcional, ej: 'Art. 35 PGC')"
+      "content": "Contenido resumido",
+      "category": "normativa|procedimiento|ejemplo",
+      "relevance": 0.95
     }
   ],
-  "tips": [
-    {
-      "id": "tip_id",
-      "type": "info|warning|success",
-      "message": "Mensaje del tip contextual",
-      "action": "Acción sugerida (opcional)"
+  "suggestions": ["sugerencia1", "sugerencia2"]
+}`;
+
+        userPrompt = `Busca información sobre: "${query}"`;
+        break;
+
+      case 'regulation_info':
+        systemPrompt = `Eres un experto en normativa contable y fiscal española.
+
+PROPORCIONA información detallada sobre regulaciones.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "regulation_name": "Nombre completo",
+  "summary": "Resumen ejecutivo",
+  "key_points": ["punto1", "punto2"],
+  "practical_implications": ["implicación1"],
+  "related_regulations": ["normativa relacionada"]
+}`;
+
+        userPrompt = `Proporciona información sobre: "${regulation_code}"`;
+        break;
+
+      default:
+        throw new Error(`Acción no soportada: ${action}`);
     }
-  ]
-}
-
-REGLAS:
-1. Genera 3-5 topics relevantes ordenados por relevancia
-2. Genera 1-3 tips contextuales si aplican
-3. Prioriza información práctica y aplicable
-4. Cita normativa específica cuando sea posible
-5. Los ejemplos deben ser realistas y útiles`;
-
-    const userPrompt = `Genera ayuda contextual para:
-Módulo: ${context.module}
-Acción: ${context.action || 'visualización'}
-Tipo de entidad: ${context.entityType || 'general'}
-Datos adicionales: ${context.entityData ? JSON.stringify(context.entityData) : 'ninguno'}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -94,19 +123,18 @@ Datos adicionales: ${context.entityData ? JSON.stringify(context.entityData) : '
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.6,
-        max_tokens: 2000,
+        temperature: 0.5,
+        max_tokens: 1500,
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded',
-          topics: [],
-          tips: [{ id: 'rate_limit', type: 'warning', message: 'Ayuda temporal no disponible. Intenta más tarde.' }]
+          success: false,
+          error: 'Límite de solicitudes alcanzado' 
         }), {
-          status: 200,
+          status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -116,26 +144,28 @@ Datos adicionales: ${context.entityData ? JSON.stringify(context.entityData) : '
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content;
 
-    if (!content) throw new Error('No content in AI response');
+    if (!content) throw new Error('No se recibió respuesta');
 
+    // Parse JSON response
     let result;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         result = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error('No JSON found');
+        result = { rawContent: content };
       }
     } catch (parseError) {
       console.error('[erp-dynamic-help] JSON parse error:', parseError);
-      result = { topics: [], tips: [], parseError: true };
+      result = { rawContent: content };
     }
 
-    console.log(`[erp-dynamic-help] Generated ${result.topics?.length || 0} topics, ${result.tips?.length || 0} tips`);
+    console.log(`[erp-dynamic-help] Success: ${action}`);
 
     return new Response(JSON.stringify({
       success: true,
-      ...result,
+      action,
+      data: result,
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -145,8 +175,6 @@ Datos adicionales: ${context.entityData ? JSON.stringify(context.entityData) : '
     console.error('[erp-dynamic-help] Error:', error);
     return new Response(JSON.stringify({
       success: false,
-      topics: [],
-      tips: [],
       error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
