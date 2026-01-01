@@ -338,6 +338,16 @@ function ERPModularDashboardContent() {
           <SalesModule />
         </TabsContent>
 
+        {/* Purchases Tab */}
+        <TabsContent value="purchases">
+          <PurchasesModule />
+        </TabsContent>
+
+        {/* Inventory Tab */}
+        <TabsContent value="inventory">
+          <InventoryModule />
+        </TabsContent>
+
         {/* Companies Tab */}
         <TabsContent value="companies">
           <ERPCompaniesManager />
