@@ -6,3 +6,5 @@ export { AnomalyDetectionPanel } from './AnomalyDetectionPanel';
 export { PredictiveAnalyticsPanel } from './PredictiveAnalyticsPanel';
 export { ESGCarbonPanel } from './ESGCarbonPanel';
 export { AutoReconciliationPanel } from './AutoReconciliationPanel';
+export { AccountingChatbot } from './AccountingChatbot';
+export { DynamicHelpPanel } from './DynamicHelpPanel';
