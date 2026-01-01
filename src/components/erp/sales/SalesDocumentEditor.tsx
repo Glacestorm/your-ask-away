@@ -59,6 +59,14 @@ interface Customer {
   id: string;
   name: string;
   tax_id?: string | null;
+  source?: 'erp' | 'maestros';
+}
+
+interface Series {
+  id: string;
+  name: string;
+  prefix: string;
+  document_type?: string;
 }
 
 interface Item {
@@ -104,7 +112,7 @@ export function SalesDocumentEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
-  const [series, setSeries] = useState<Array<{ id: string; name: string; prefix: string }>>([]);
+  const [series, setSeries] = useState<Series[]>([]);;
 
   // Portal container for Select dropdowns inside Dialog (prevents click/overlay issues)
   const [selectPortalContainer, setSelectPortalContainer] = useState<HTMLElement | null>(null);
@@ -161,7 +169,7 @@ export function SalesDocumentEditor({
 
       const seriesQuery = supabase
         .from('erp_series')
-        .select('id, name, prefix')
+        .select('id, name, prefix, document_type')
         .eq('company_id', currentCompany.id)
         .eq('module', 'sales')
         .eq('is_active', true)
@@ -193,7 +201,7 @@ export function SalesDocumentEditor({
       ]);
 
       if (seriesResult.data) {
-        setSeries(seriesResult.data);
+        setSeries(seriesResult.data.map((s: any) => ({ ...s, source: 'erp' })) as Series[]);
         if (seriesResult.data.length > 0) {
           setSeriesId(seriesResult.data[0].id);
         }
@@ -202,7 +210,14 @@ export function SalesDocumentEditor({
       const mergedCustomers: Customer[] = [];
 
       if (erpCustomersResult.data) {
-        mergedCustomers.push(...(erpCustomersResult.data as Customer[]));
+        mergedCustomers.push(
+          ...(erpCustomersResult.data as any[]).map((c) => ({
+            id: c.id,
+            name: c.name || '-',
+            tax_id: c.tax_id || null,
+            source: 'erp' as const,
+          }))
+        );
       }
 
       if (customersResult.data) {
@@ -211,6 +226,7 @@ export function SalesDocumentEditor({
             id: c.id,
             name: (c.trade_name || c.legal_name || '').trim() || '-',
             tax_id: c.tax_id || null,
+            source: 'maestros' as const,
           }))
         );
       }
@@ -516,7 +532,12 @@ export function SalesDocumentEditor({
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
                   {customers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.tax_id ? `${c.name} (${c.tax_id})` : c.name}
+                      <span className="flex items-center gap-2">
+                        {c.tax_id ? `${c.name} (${c.tax_id})` : c.name}
+                        {c.source === 'erp' && (
+                          <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">ERP</span>
+                        )}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -532,7 +553,12 @@ export function SalesDocumentEditor({
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
                   {series.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {`${s.name} (${s.prefix})`}
+                      <span className="flex items-center gap-2">
+                        {`${s.name} (${s.prefix})`}
+                        {s.document_type && (
+                          <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">{s.document_type}</span>
+                        )}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
