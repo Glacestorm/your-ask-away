@@ -104,6 +104,37 @@ export const CustomersPanel: React.FC = () => {
     is_active: true
   });
 
+  // Addresses state
+  const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
+  const [newAddress, setNewAddress] = useState({
+    address_type: 'billing' as 'billing' | 'shipping',
+    line1: '',
+    line2: '',
+    city: '',
+    postal_code: '',
+    region: '',
+    country: 'ES',
+    is_default: false
+  });
+
+  // Credit policy state
+  const [creditPolicy, setCreditPolicy] = useState<CustomerCreditPolicy | null>(null);
+  const [creditForm, setCreditForm] = useState({
+    credit_limit: 0,
+    block_on_overdue: true,
+    allow_override_with_permission: false
+  });
+
+  // Contacts state
+  const [contacts, setContacts] = useState<CustomerContact[]>([]);
+  const [newContact, setNewContact] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: '',
+    is_primary: false
+  });
+
   useEffect(() => {
     const fetchErpCustomers = async () => {
       if (!companyId) {
