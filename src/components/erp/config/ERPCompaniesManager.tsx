@@ -30,11 +30,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Building2, Plus, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
+import { Building2, Plus, Pencil, Trash2, Search, Loader2, Power, AlertTriangle } from 'lucide-react';
 import { useERPCompanies } from '@/hooks/erp/useERPCompanies';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { ERPCompany, CreateCompanyForm } from '@/types/erp';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const initialForm: CreateCompanyForm = {
   name: '',
@@ -53,13 +63,16 @@ const initialForm: CreateCompanyForm = {
 
 export function ERPCompaniesManager() {
   const { hasPermission } = useERPContext();
-  const { companies, groups, isLoading, fetchCompanies, createCompany, updateCompany, deactivateCompany } = useERPCompanies();
+  const { companies, groups, isLoading, fetchCompanies, createCompany, updateCompany, deactivateCompany, deleteCompany } = useERPCompanies();
   
   const [search, setSearch] = useState('');
   const [showDialog, setShowDialog] = useState(false);
   const [editingCompany, setEditingCompany] = useState<ERPCompany | null>(null);
   const [form, setForm] = useState<CreateCompanyForm>(initialForm);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<ERPCompany | null>(null);
+  const [deleteType, setDeleteType] = useState<'deactivate' | 'permanent'>('deactivate');
 
   const canWrite = hasPermission('admin.all');
 
@@ -123,15 +136,27 @@ export function ERPCompaniesManager() {
     }
   };
 
-  const handleDelete = async (company: ERPCompany) => {
-    if (!confirm(`¿Desactivar la empresa "${company.name}"?`)) return;
+  const handleOpenDeleteDialog = (company: ERPCompany, type: 'deactivate' | 'permanent') => {
+    setCompanyToDelete(company);
+    setDeleteType(type);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!companyToDelete) return;
     
     try {
-      await deactivateCompany(company.id);
-      toast.success('Empresa desactivada');
+      if (deleteType === 'permanent') {
+        await deleteCompany(companyToDelete.id);
+      } else {
+        await deactivateCompany(companyToDelete.id);
+      }
       fetchCompanies();
     } catch (err) {
-      toast.error('Error al desactivar empresa');
+      toast.error('Error al procesar la acción');
+    } finally {
+      setDeleteDialogOpen(false);
+      setCompanyToDelete(null);
     }
   };
 
@@ -215,10 +240,15 @@ export function ERPCompaniesManager() {
                       {canWrite && (
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(company)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(company)} title="Editar">
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(company)}>
+                            {company.is_active && (
+                              <Button variant="ghost" size="icon" onClick={() => handleOpenDeleteDialog(company, 'deactivate')} title="Desactivar">
+                                <Power className="h-4 w-4 text-yellow-500" />
+                              </Button>
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => handleOpenDeleteDialog(company, 'permanent')} title="Eliminar permanentemente">
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
@@ -393,6 +423,42 @@ export function ERPCompaniesManager() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog Confirmar Eliminar */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                {deleteType === 'permanent' ? 'Eliminar empresa permanentemente' : 'Desactivar empresa'}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteType === 'permanent' ? (
+                  <>
+                    ¿Estás seguro de que deseas eliminar permanentemente la empresa <strong>"{companyToDelete?.name}"</strong>?
+                    <br /><br />
+                    <span className="text-destructive font-medium">Esta acción no se puede deshacer.</span> Se eliminarán todos los datos asociados a esta empresa.
+                  </>
+                ) : (
+                  <>
+                    ¿Deseas desactivar la empresa <strong>"{companyToDelete?.name}"</strong>?
+                    <br /><br />
+                    La empresa quedará inactiva pero sus datos se conservarán. Podrás reactivarla más tarde.
+                  </>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleConfirmDelete}
+                className={deleteType === 'permanent' ? 'bg-destructive hover:bg-destructive/90' : ''}
+              >
+                {deleteType === 'permanent' ? 'Eliminar permanentemente' : 'Desactivar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
