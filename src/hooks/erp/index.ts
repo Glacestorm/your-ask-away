@@ -11,4 +11,5 @@ export { useERPRoles } from './useERPRoles';
 export { useERPPurchases } from './useERPPurchases';
 export { useERPInventory } from './useERPInventory';
 export { useERPStockManager } from './useERPStockManager';
+export { useERPAccounting } from './useERPAccounting';
 export * from './useMaestros';
