@@ -30785,6 +30785,11 @@ export type Database = {
         Args: { p_company_id: string; p_user_id: string }
         Returns: boolean
       }
+      erp_role_belongs_to_company: {
+        Args: { p_company_id: string; p_role_id: string }
+        Returns: boolean
+      }
+      erp_role_company_id: { Args: { p_role_id: string }; Returns: string }
       expire_open_banking_consents: { Args: never; Returns: undefined }
       expire_pending_approval_requests: { Args: never; Returns: undefined }
       find_applicable_bundles: {
