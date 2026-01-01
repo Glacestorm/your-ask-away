@@ -482,9 +482,9 @@ export function SalesDocumentEditor({
                   <SelectValue placeholder="Seleccionar cliente" />
                 </SelectTrigger>
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
-                  {customers.map(c => (
+                  {customers.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name} {c.tax_id && `(${c.tax_id})`}
+                      {c.tax_id ? `${c.name} (${c.tax_id})` : c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -498,9 +498,9 @@ export function SalesDocumentEditor({
                   <SelectValue placeholder="Seleccionar serie" />
                 </SelectTrigger>
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
-                  {series.map(s => (
+                  {series.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.name} ({s.prefix})
+                      {`${s.name} (${s.prefix})`}
                     </SelectItem>
                   ))}
                 </SelectContent>
