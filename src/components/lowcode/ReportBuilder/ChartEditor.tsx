@@ -142,22 +142,22 @@ export function ChartEditor({ config, onChange, availableFields }: ChartEditorPr
 
             <div className="space-y-2">
               <Label>Agrupar por (opcional)</Label>
-              <Select
-                value={config.groupBy || ''}
-                onValueChange={(value) => updateConfig({ groupBy: value || undefined })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sin agrupación" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Sin agrupación</SelectItem>
-                  {availableFields.map((field) => (
-                    <SelectItem key={field.key} value={field.key}>
-                      {field.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+               <Select
+                 value={config.groupBy || '__none__'}
+                 onValueChange={(value) => updateConfig({ groupBy: value === '__none__' ? undefined : value })}
+               >
+                 <SelectTrigger>
+                   <SelectValue placeholder="Sin agrupación" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="__none__">Sin agrupación</SelectItem>
+                   {availableFields.map((field) => (
+                     <SelectItem key={field.key} value={field.key}>
+                       {field.label}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
             </div>
           </div>
 

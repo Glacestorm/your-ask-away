@@ -318,14 +318,14 @@ export function AppEditor({ open, onOpenChange, app, partnerCompanyId }: AppEdit
                   <div className="space-y-2">
                     <Label>Plan mínimo requerido</Label>
                     <Select
-                      value={formData.min_plan}
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, min_plan: value }))}
+                      value={formData.min_plan || '__none__'}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, min_plan: value === '__none__' ? '' : value }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Ninguno" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Ninguno</SelectItem>
+                        <SelectItem value="__none__">Ninguno</SelectItem>
                         <SelectItem value="starter">Starter</SelectItem>
                         <SelectItem value="professional">Professional</SelectItem>
                         <SelectItem value="enterprise">Enterprise</SelectItem>

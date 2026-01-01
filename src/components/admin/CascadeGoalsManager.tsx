@@ -476,14 +476,14 @@ export function CascadeGoalsManager() {
                 <div>
                   <Label>Objetivo padre (opcional)</Label>
                   <Select
-                    value={formData.parent_goal_id}
-                    onValueChange={(v) => setFormData({ ...formData, parent_goal_id: v })}
+                    value={formData.parent_goal_id || '__none__'}
+                    onValueChange={(v) => setFormData({ ...formData, parent_goal_id: v === '__none__' ? '' : v })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Sin objetivo padre..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Sin objetivo padre</SelectItem>
+                      <SelectItem value="__none__">Sin objetivo padre</SelectItem>
                       {goals.filter(g => 
                         (formData.goal_level === 'oficina' && g.goal_level === 'empresa') ||
                         (formData.goal_level === 'individual' && g.goal_level === 'oficina')

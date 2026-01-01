@@ -152,14 +152,14 @@ export function ComponentEditor({ component, onChange, onDelete, onDuplicate }: 
             <div className="space-y-2">
               <Label>Fuente de Datos</Label>
               <Select
-                value={(component.props?.dataSource as string) || ''}
-                onValueChange={(value) => updateProps({ dataSource: value })}
+                value={(component.props?.dataSource as string) || '__none__'}
+                onValueChange={(value) => updateProps({ dataSource: value === '__none__' ? undefined : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Ninguna</SelectItem>
+                  <SelectItem value="__none__">Ninguna</SelectItem>
                   <SelectItem value="companies">Empresas</SelectItem>
                   <SelectItem value="visits">Visitas</SelectItem>
                   <SelectItem value="products">Productos</SelectItem>
