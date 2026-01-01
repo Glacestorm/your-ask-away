@@ -14,3 +14,14 @@ export { ChartOfAccountsTree } from './ChartOfAccountsTree';
 export { JournalEntryEditor } from './JournalEntryEditor';
 export { JournalsList } from './JournalsList';
 export { CreateAccountDialog } from './CreateAccountDialog';
+
+// Nuevos componentes implementados
+export { AccountLedgerPanel } from './AccountLedgerPanel';
+export { TrialBalancePanel } from './TrialBalancePanel';
+export { IncomeStatementPanel } from './IncomeStatementPanel';
+export { BalanceSheetPanel } from './BalanceSheetPanel';
+export { AgingPanel } from './AgingPanel';
+export { SEPARemittancesPanel } from './SEPARemittancesPanel';
+export { BankReconciliationPanel } from './BankReconciliationPanel';
+export { FiscalClosingWizard } from './FiscalClosingWizard';
+export { TreasuryModule } from './TreasuryModule';
