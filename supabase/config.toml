@@ -830,3 +830,12 @@ verify_jwt = true
 
 [functions.erp-dynamic-help]
 verify_jwt = true
+
+[functions.erp-financial-forecasting]
+verify_jwt = true
+
+[functions.erp-esg-carbon]
+verify_jwt = true
+
+[functions.erp-regulations-ai]
+verify_jwt = true
