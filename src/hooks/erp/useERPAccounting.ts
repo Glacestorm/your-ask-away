@@ -99,6 +99,27 @@ export interface RegulationSearchResult {
   searchTimestamp: string;
 }
 
+// === INTERFACES ADICIONALES ===
+
+export interface ERPJournal {
+  id: string;
+  code: string;
+  name: string;
+  journal_type: string;
+  default_debit_account_id?: string;
+  default_credit_account_id?: string;
+  is_active: boolean;
+}
+
+export interface ERPAccountingPeriod {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_closed: boolean;
+  fiscal_year_id: string;
+}
+
 // === HOOK ===
 
 export function useERPAccounting() {
@@ -109,6 +130,8 @@ export function useERPAccounting() {
   const [dashboard, setDashboard] = useState<AccountingDashboard | null>(null);
   const [chartOfAccounts, setChartOfAccounts] = useState<ChartOfAccount[]>([]);
   const [regulations, setRegulations] = useState<AccountingRegulation[]>([]);
+  const [journals, setJournals] = useState<ERPJournal[]>([]);
+  const [periods, setPeriods] = useState<ERPAccountingPeriod[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [isSearchingRegulations, setIsSearchingRegulations] = useState(false);
@@ -193,10 +216,52 @@ export function useERPAccounting() {
     }
   }, [currentCompany?.country]);
 
-  // === BUSCAR Y ACTUALIZAR NORMATIVAS ===
-  const searchAndUpdateRegulations = useCallback(async (
-    countryCode?: string
-  ): Promise<RegulationSearchResult | null> => {
+  // === FETCH JOURNALS ===
+  const fetchJournals = useCallback(async () => {
+    if (!currentCompany?.id) return [];
+
+    try {
+      const { data, error } = await supabase
+        .from('erp_journals')
+        .select('*')
+        .eq('company_id', currentCompany.id)
+        .eq('is_active', true)
+        .order('code');
+
+      if (error) throw error;
+      setJournals((data || []) as ERPJournal[]);
+      return data || [];
+    } catch (err) {
+      console.error('[useERPAccounting] fetchJournals error:', err);
+      return [];
+    }
+  }, [currentCompany?.id]);
+
+  // === FETCH PERIODS ===
+  const fetchPeriods = useCallback(async (fiscalYearId?: string) => {
+    if (!currentCompany?.id) return [];
+
+    try {
+      let query = supabase
+        .from('erp_periods')
+        .select('*')
+        .eq('company_id', currentCompany.id)
+        .order('start_date', { ascending: false });
+
+      if (fiscalYearId) {
+        query = query.eq('fiscal_year_id', fiscalYearId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setPeriods((data || []) as ERPAccountingPeriod[]);
+      return data || [];
+    } catch (err) {
+      console.error('[useERPAccounting] fetchPeriods error:', err);
+      return [];
+    }
+  }, [currentCompany?.id]);
     const country = countryCode || currentCompany?.country || 'ES';
 
     setIsSearchingRegulations(true);
@@ -388,6 +453,8 @@ export function useERPAccounting() {
     dashboard,
     chartOfAccounts,
     regulations,
+    journals,
+    periods,
     error,
     lastRefresh,
     isSearchingRegulations,
@@ -397,6 +464,8 @@ export function useERPAccounting() {
     fetchDashboard,
     fetchChartOfAccounts,
     fetchRegulations,
+    fetchJournals,
+    fetchPeriods,
     searchAndUpdateRegulations,
     createJournalEntry,
     postJournalEntry,

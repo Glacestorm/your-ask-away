@@ -74,7 +74,7 @@ export function ChartOfAccountsTree({
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [filterType, setFilterType] = useState<string | null>(null);
 
-  const countryCode = currentCompany?.country_code || 'ES';
+  const countryCode = currentCompany?.country?.substring(0, 2).toUpperCase() || 'ES';
 
   // Cargar cuentas al montar
   useEffect(() => {
@@ -87,8 +87,8 @@ export function ChartOfAccountsTree({
   const groupedAccounts = useMemo(() => {
     const filtered = chartOfAccounts.filter(account => {
       const matchesSearch = !searchTerm || 
-        account.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        account.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        account.account_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        account.account_name?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesType = !filterType || account.account_type === filterType;
       
@@ -110,7 +110,7 @@ export function ChartOfAccountsTree({
 
     // Asignar cuentas a grupos
     filtered.forEach(account => {
-      const group = getAccountGroup(account.code || '1');
+      const group = getAccountGroup(account.account_code || '1');
       if (groups[group]) {
         groups[group].accounts.push(account);
       }
@@ -118,7 +118,7 @@ export function ChartOfAccountsTree({
 
     // Ordenar cuentas dentro de cada grupo
     Object.values(groups).forEach(group => {
-      group.accounts.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+      group.accounts.sort((a, b) => (a.account_code || '').localeCompare(b.account_code || ''));
     });
 
     return Object.values(groups).filter(g => g.accounts.length > 0 || !searchTerm);
@@ -187,7 +187,7 @@ export function ChartOfAccountsTree({
             <CardTitle className="text-lg">Plan de Cuentas</CardTitle>
             <HelpTooltip 
               content="Plan General de Contabilidad adaptado a la normativa del país seleccionado."
-              regulation={countryCode === 'ES' ? 'pgc' : countryCode === 'AD' ? 'pgc_andorra' : undefined}
+              regulationRef={countryCode === 'ES' ? 'PGC' : countryCode === 'AD' ? 'PGC Andorra' : undefined}
             />
           </div>
           <div className="flex items-center gap-2">
@@ -298,27 +298,26 @@ export function ChartOfAccountsTree({
                             className={cn(
                               'cursor-pointer transition-colors',
                               selectionMode && 'hover:bg-primary/10',
-                              account.is_header && 'bg-muted/30 font-medium'
+                              !account.accepts_entries && 'bg-muted/30 font-medium'
                             )}
                             onClick={() => handleAccountClick(account)}
                           >
                             <TableCell className="font-mono text-sm">
                               <div className="flex items-center gap-1">
-                                {account.is_header ? (
+                                {!account.accepts_entries ? (
                                   <FolderTree className="h-3 w-3 text-muted-foreground" />
                                 ) : (
                                   <FileText className="h-3 w-3 text-muted-foreground" />
                                 )}
-                                {account.code}
+                                {account.account_code}
                               </div>
                             </TableCell>
                             <TableCell>
                               <span className={cn(
-                                account.level === 1 && 'font-semibold',
-                                account.level === 2 && 'font-medium',
-                                account.level > 3 && 'text-muted-foreground'
+                                account.account_group === 1 && 'font-semibold',
+                                account.account_group === 2 && 'font-medium'
                               )}>
-                                {account.name}
+                                {account.account_name}
                               </span>
                             </TableCell>
                             <TableCell>
