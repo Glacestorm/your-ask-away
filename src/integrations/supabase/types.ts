@@ -10613,6 +10613,89 @@ export type Database = {
           },
         ]
       }
+      erp_suppliers: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string | null
+          company_id: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          legal_name: string | null
+          name: string
+          notes: string | null
+          payment_terms: number | null
+          phone: string | null
+          postal_code: string | null
+          tax_id: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          company_id: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          name: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          company_id?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          name?: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_suppliers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_user_companies: {
         Row: {
           company_id: string
@@ -10657,6 +10740,109 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_warehouse_locations: {
+        Row: {
+          aisle: string | null
+          bin: string | null
+          code: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string | null
+          rack: string | null
+          shelf: string | null
+          warehouse_id: string
+          zone: string | null
+        }
+        Insert: {
+          aisle?: string | null
+          bin?: string | null
+          code: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          rack?: string | null
+          shelf?: string | null
+          warehouse_id: string
+          zone?: string | null
+        }
+        Update: {
+          aisle?: string | null
+          bin?: string | null
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string | null
+          rack?: string | null
+          shelf?: string | null
+          warehouse_id?: string
+          zone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_warehouse_locations_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_warehouses: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string
+          company_id: string
+          country: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          postal_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code: string
+          company_id: string
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string
+          company_id?: string
+          country?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          postal_code?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_warehouses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
             referencedColumns: ["id"]
           },
         ]
