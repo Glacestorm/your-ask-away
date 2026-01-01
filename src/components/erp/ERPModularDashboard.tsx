@@ -37,6 +37,7 @@ import { ERPAuditViewer } from './audit/ERPAuditViewer';
 import { ERPInitialSetup } from './config/ERPInitialSetup';
 import { ERPUserAssignment } from './config/ERPUserAssignment';
 import { MaestrosLayout } from './maestros';
+import { SalesModule } from './sales';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -135,6 +136,12 @@ function ERPModularDashboardContent() {
             <TabsTrigger value="maestros" className="gap-2">
               <BookOpen className="h-4 w-4" />
               Maestros
+            </TabsTrigger>
+          )}
+          {hasPermission('sales.read') && (
+            <TabsTrigger value="sales" className="gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              Ventas
             </TabsTrigger>
           )}
           {hasPermission('admin.all') && (
@@ -270,6 +277,11 @@ function ERPModularDashboardContent() {
         {/* Maestros Tab */}
         <TabsContent value="maestros">
           {currentCompany && <MaestrosLayout companyId={currentCompany.id} />}
+        </TabsContent>
+
+        {/* Sales Tab */}
+        <TabsContent value="sales">
+          <SalesModule />
         </TabsContent>
 
         {/* Companies Tab */}
