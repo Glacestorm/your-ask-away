@@ -34,21 +34,23 @@ export interface JournalEntry {
   company_id: string;
   journal_id: string;
   journal_name?: string;
-  period_id: string;
+  period_id?: string | null;
   period_name?: string;
-  fiscal_year_id?: string;
-  entry_number?: string;
+  fiscal_year_id?: string | null;
+  entry_number: string;
   entry_date: string;
-  reference?: string;
-  description?: string;
+  reference?: string | null;
+  description?: string | null;
   total_debit: number;
   total_credit: number;
-  is_balanced: boolean;
-  is_posted: boolean;
-  is_cancelled?: boolean;
-  cancelled_reason?: string;
-  source_document?: string;
-  source_document_id?: string;
+  is_balanced?: boolean;
+  is_posted?: boolean;
+  is_reversed?: boolean;
+  is_opening_entry?: boolean;
+  is_closing_entry?: boolean;
+  reversal_entry_id?: string | null;
+  source_type?: string | null;
+  source_id?: string | null;
   lines?: JournalEntryLine[];
   created_at?: string;
   updated_at?: string;
@@ -59,7 +61,7 @@ export interface JournalEntryFilters {
   periodId?: string;
   fiscalYearId?: string;
   isPosted?: boolean;
-  isCancelled?: boolean;
+  isReversed?: boolean;
   dateFrom?: string;
   dateTo?: string;
   search?: string;
@@ -87,13 +89,10 @@ export function useERPJournalEntries() {
     setError(null);
 
     try {
+      // Query base con type assertion para evitar errores de tipo infinito
       let query = supabase
         .from('erp_journal_entries')
-        .select(`
-          *,
-          erp_journals!inner(name, journal_type),
-          erp_periods!inner(name, start_date, end_date)
-        `, { count: 'exact' })
+        .select('*', { count: 'exact' })
         .eq('company_id', currentCompany.id)
         .order('entry_date', { ascending: false })
         .order('entry_number', { ascending: false });
@@ -111,8 +110,8 @@ export function useERPJournalEntries() {
       if (filters.isPosted !== undefined) {
         query = query.eq('is_posted', filters.isPosted);
       }
-      if (filters.isCancelled !== undefined) {
-        query = query.eq('is_cancelled', filters.isCancelled);
+      if (filters.isReversed !== undefined) {
+        query = query.eq('is_reversed', filters.isReversed);
       }
       if (filters.dateFrom) {
         query = query.gte('entry_date', filters.dateFrom);
@@ -134,9 +133,7 @@ export function useERPJournalEntries() {
       if (fetchError) throw fetchError;
 
       const mappedEntries: JournalEntry[] = (data || []).map((entry: any) => ({
-        ...entry,
-        journal_name: entry.erp_journals?.name,
-        period_name: entry.erp_periods?.name
+        ...entry
       }));
 
       setEntries(mappedEntries);
@@ -228,7 +225,7 @@ export function useERPJournalEntries() {
 
   // === CREATE ENTRY ===
   const createEntry = useCallback(async (
-    entry: Omit<JournalEntry, 'id' | 'entry_number' | 'created_at' | 'updated_at'>,
+    entry: Omit<JournalEntry, 'id' | 'created_at' | 'updated_at'>,
     lines: Omit<JournalEntryLine, 'id' | 'entry_id'>[]
   ) => {
     if (!currentCompany?.id) {
@@ -236,11 +233,13 @@ export function useERPJournalEntries() {
       return null;
     }
 
-    // Validar período abierto
-    const isOpen = await checkPeriodOpen(entry.period_id);
-    if (!isOpen) {
-      toast.error('El período está cerrado. No se pueden crear asientos.');
-      return null;
+    // Validar período abierto si se proporciona
+    if (entry.period_id) {
+      const isOpen = await checkPeriodOpen(entry.period_id);
+      if (!isOpen) {
+        toast.error('El período está cerrado. No se pueden crear asientos.');
+        return null;
+      }
     }
 
     // Validar cuadre
@@ -264,6 +263,7 @@ export function useERPJournalEntries() {
           journal_id: entry.journal_id,
           period_id: entry.period_id,
           fiscal_year_id: entry.fiscal_year_id,
+          entry_number: entry.entry_number,
           entry_date: entry.entry_date,
           reference: entry.reference,
           description: entry.description,
@@ -271,8 +271,8 @@ export function useERPJournalEntries() {
           total_credit: totalCredit,
           is_balanced: true,
           is_posted: false,
-          source_document: entry.source_document,
-          source_document_id: entry.source_document_id
+          source_type: entry.source_type,
+          source_id: entry.source_id
         })
         .select()
         .single();
@@ -503,6 +503,7 @@ export function useERPJournalEntries() {
         journal_id: original.journal_id,
         period_id: original.period_id,
         fiscal_year_id: original.fiscal_year_id,
+        entry_number: `REV-${original.entry_number}`,
         entry_date: new Date().toISOString().split('T')[0],
         reference: `REV-${original.entry_number}`,
         description: `Anulación de ${original.entry_number}: ${reason}`,
@@ -510,8 +511,8 @@ export function useERPJournalEntries() {
         total_credit: original.total_debit,
         is_balanced: true,
         is_posted: false,
-        source_document: 'reversal',
-        source_document_id: entryId
+        source_type: 'reversal',
+        source_id: entryId
       }, reversedLines);
 
       if (reversal) {
@@ -519,8 +520,8 @@ export function useERPJournalEntries() {
         await supabase
           .from('erp_journal_entries')
           .update({
-            is_cancelled: true,
-            cancelled_reason: reason,
+            is_reversed: true,
+            reversal_entry_id: reversal.id,
             updated_at: new Date().toISOString()
           })
           .eq('id', entryId);

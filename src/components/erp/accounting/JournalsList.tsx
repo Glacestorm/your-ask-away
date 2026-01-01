@@ -80,7 +80,7 @@ export function JournalsList({ className }: JournalsListProps) {
     reverseEntry
   } = useERPJournalEntries();
 
-  const countryCode = currentCompany?.country_code || 'ES';
+  const countryCode = currentCompany?.country || 'ES';
   const currency = getCountryCurrency(countryCode);
 
   // Filtros
@@ -142,7 +142,7 @@ export function JournalsList({ className }: JournalsListProps) {
     if (selectAll) {
       setSelectedIds(new Set());
     } else {
-      const draftIds = entries.filter(e => !e.is_posted && !e.is_cancelled).map(e => e.id!);
+      const draftIds = entries.filter(e => !e.is_posted && !e.is_reversed).map(e => e.id!);
       setSelectedIds(new Set(draftIds));
     }
     setSelectAll(!selectAll);
@@ -173,7 +173,7 @@ export function JournalsList({ className }: JournalsListProps) {
   };
 
   const handleReverse = async (entry: JournalEntry) => {
-    if (!entry.is_posted || entry.is_cancelled) return;
+    if (!entry.is_posted || entry.is_reversed) return;
     const reason = prompt('Motivo de la anulación:');
     if (reason) {
       await reverseEntry(entry.id!, reason);
@@ -215,7 +215,7 @@ export function JournalsList({ className }: JournalsListProps) {
   // Obtener estado visual
   const getStatusBadge = (entry: JournalEntry) => {
     let status = 'draft';
-    if (entry.is_cancelled) status = 'cancelled';
+    if (entry.is_reversed) status = 'cancelled';
     else if (entry.is_posted) status = 'posted';
 
     const colorClass = ENTRY_STATUS_COLORS[status];
@@ -245,7 +245,7 @@ export function JournalsList({ className }: JournalsListProps) {
             <CardTitle className="text-lg">Asientos Contables</CardTitle>
             <HelpTooltip 
               content="Registro de asientos de diario según el principio de partida doble."
-              regulation={countryCode === 'ES' ? 'pgc' : undefined}
+              regulationRef={countryCode === 'ES' ? 'pgc' : undefined}
             />
             <Badge variant="secondary" className="ml-2">
               {totalCount} registros
@@ -378,14 +378,14 @@ export function JournalsList({ className }: JournalsListProps) {
                   <TableRow
                     key={entry.id}
                     className={cn(
-                      entry.is_cancelled && 'opacity-50 line-through'
+                      entry.is_reversed && 'opacity-50 line-through'
                     )}
                   >
                     <TableCell>
                       <Checkbox
                         checked={selectedIds.has(entry.id!)}
                         onCheckedChange={() => toggleSelect(entry.id!)}
-                        disabled={entry.is_posted || entry.is_cancelled}
+                        disabled={entry.is_posted || entry.is_reversed}
                       />
                     </TableCell>
                     <TableCell className="font-mono text-sm">
@@ -420,7 +420,7 @@ export function JournalsList({ className }: JournalsListProps) {
                             <Eye className="h-4 w-4 mr-2" />
                             Ver
                           </DropdownMenuItem>
-                          {!entry.is_posted && !entry.is_cancelled && (
+                          {!entry.is_posted && !entry.is_reversed && (
                             <>
                               <DropdownMenuItem onClick={() => handleEdit(entry)}>
                                 <Edit className="h-4 w-4 mr-2" />
@@ -440,7 +440,7 @@ export function JournalsList({ className }: JournalsListProps) {
                               </DropdownMenuItem>
                             </>
                           )}
-                          {entry.is_posted && !entry.is_cancelled && (
+                          {entry.is_posted && !entry.is_reversed && (
                             <DropdownMenuItem onClick={() => handleReverse(entry)}>
                               <XCircle className="h-4 w-4 mr-2" />
                               Anular

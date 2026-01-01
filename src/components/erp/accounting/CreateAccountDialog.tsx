@@ -101,9 +101,9 @@ export function CreateAccountDialog({
     setFormData(prev => ({ ...prev, level }));
   }, [formData.code]);
 
-  // Cuentas padre disponibles (solo headers)
+  // Cuentas padre disponibles (solo headers - cuentas que no aceptan movimientos)
   const parentAccounts = chartOfAccounts.filter(a => 
-    a.is_header && a.code && formData.code.startsWith(a.code.substring(0, a.code.length - 1))
+    !a.accepts_entries && a.account_code && formData.code.startsWith(a.account_code.substring(0, a.account_code.length - 1))
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -242,7 +242,7 @@ export function CreateAccountDialog({
                   <SelectItem value="">Sin padre</SelectItem>
                   {parentAccounts.map(acc => (
                     <SelectItem key={acc.id} value={acc.id}>
-                      {acc.code} - {acc.name}
+                      {acc.account_code} - {acc.account_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

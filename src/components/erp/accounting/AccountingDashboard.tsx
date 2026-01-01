@@ -29,6 +29,9 @@ import {
 } from 'lucide-react';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
 import { DynamicHelpPanel } from './DynamicHelpPanel';
+import { ChartOfAccountsTree } from './ChartOfAccountsTree';
+import { JournalsList } from './JournalsList';
+import { JournalEntryEditor } from './JournalEntryEditor';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -52,6 +55,7 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
   } = useERPAccounting();
 
   const [activeTab, setActiveTab] = useState('overview');
+  const [showNewEntryEditor, setShowNewEntryEditor] = useState(false);
 
   // Auto-refresh al montar
   useEffect(() => {
@@ -129,11 +133,21 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
             <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} />
             Actualizar
           </Button>
-          <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" onClick={() => setShowNewEntryEditor(true)}>
             <Plus className="h-4 w-4" />
             Nuevo Asiento
           </Button>
         </div>
+
+        {/* Editor de nuevo asiento */}
+        <JournalEntryEditor
+          open={showNewEntryEditor}
+          onOpenChange={setShowNewEntryEditor}
+          onSave={() => {
+            setShowNewEntryEditor(false);
+            fetchDashboard();
+          }}
+        />
       </div>
 
       {/* KPIs */}
@@ -470,24 +484,12 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
 
         {/* Tab: Asientos */}
         <TabsContent value="entries">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-              <p className="text-muted-foreground">Gestión de asientos contables</p>
-              <p className="text-sm text-muted-foreground mt-1">Próximamente: Libro diario completo</p>
-            </CardContent>
-          </Card>
+          <JournalsList />
         </TabsContent>
 
         {/* Tab: Cuentas */}
         <TabsContent value="accounts">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-              <p className="text-muted-foreground">Plan General de Cuentas</p>
-              <p className="text-sm text-muted-foreground mt-1">Próximamente: Configuración del PGC</p>
-            </CardContent>
-          </Card>
+          <ChartOfAccountsTree />
         </TabsContent>
 
         {/* Tab: Informes */}
