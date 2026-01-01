@@ -344,6 +344,20 @@ export function SalesModule() {
             </>
           )}
         </Tabs>
+
+        {/* Dialog para el editor de documentos */}
+        <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <SalesDocumentEditor 
+              documentType={editorType} 
+              onClose={() => setEditorOpen(false)}
+              onSave={() => {
+                setEditorOpen(false);
+                loadData();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
