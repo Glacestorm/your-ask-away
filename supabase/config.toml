@@ -797,3 +797,6 @@ verify_jwt = true
 
 [functions.obelixia-compliance-audit]
 verify_jwt = true
+
+[functions.erp-stock-manager]
+verify_jwt = true
