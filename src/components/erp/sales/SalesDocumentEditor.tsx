@@ -105,6 +105,12 @@ export function SalesDocumentEditor({
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [series, setSeries] = useState<Array<{ id: string; name: string; prefix: string }>>([]);
+
+  // Portal container for Select dropdowns inside Dialog (prevents click/overlay issues)
+  const [selectPortalContainer, setSelectPortalContainer] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setSelectPortalContainer(document.getElementById('erp-sales-editor-dialog') as HTMLElement | null);
+  }, []);
   
   // Form state
   const [customerId, setCustomerId] = useState('');
@@ -475,7 +481,7 @@ export function SalesDocumentEditor({
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleccionar cliente" />
                 </SelectTrigger>
-                <SelectContent position="item-aligned">
+                <SelectContent portalContainer={selectPortalContainer} position="popper">
                   {customers.map(c => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name} {c.tax_id && `(${c.tax_id})`}
@@ -491,7 +497,7 @@ export function SalesDocumentEditor({
                 <SelectTrigger className="h-12 text-base">
                   <SelectValue placeholder="Seleccionar serie" />
                 </SelectTrigger>
-                <SelectContent position="item-aligned">
+                <SelectContent portalContainer={selectPortalContainer} position="popper">
                   {series.map(s => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name} ({s.prefix})
