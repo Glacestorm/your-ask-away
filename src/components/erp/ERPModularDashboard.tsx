@@ -43,6 +43,7 @@ import { MaestrosLayout } from './maestros';
 import { SalesModule } from './sales';
 import { PurchasesModule } from './purchases';
 import { InventoryModule } from './inventory';
+import { AccountingDashboard } from './accounting';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -54,7 +55,7 @@ function ERPModularDashboardContent() {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   // Módulos instalados (tienen tab funcional)
-  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory'];
+  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory', 'accounting'];
 
   // Verificar si necesita configuración inicial
   useEffect(() => {
@@ -163,6 +164,12 @@ function ERPModularDashboardContent() {
             <TabsTrigger value="inventory" className="gap-2">
               <Package className="h-4 w-4" />
               Almacén
+            </TabsTrigger>
+          )}
+          {hasPermission('accounting.read') && (
+            <TabsTrigger value="accounting" className="gap-2">
+              <Calculator className="h-4 w-4" />
+              Contabilidad
             </TabsTrigger>
           )}
           {hasPermission('admin.all') && (
@@ -346,6 +353,11 @@ function ERPModularDashboardContent() {
         {/* Inventory Tab */}
         <TabsContent value="inventory">
           <InventoryModule />
+        </TabsContent>
+
+        {/* Accounting Tab */}
+        <TabsContent value="accounting">
+          <AccountingDashboard />
         </TabsContent>
 
         {/* Companies Tab */}

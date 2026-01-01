@@ -1,7 +1,8 @@
-/**
- * Accounting Components - Barrel Export
- */
-
 export { AccountingDashboard } from './AccountingDashboard';
-export { RegulationsPanel } from './RegulationsPanel';
 export { HelpTooltip, HelpLabel } from './HelpTooltip';
+export { RegulationsPanel } from './RegulationsPanel';
+export { AIJournalEntriesPanel } from './AIJournalEntriesPanel';
+export { AnomalyDetectionPanel } from './AnomalyDetectionPanel';
+export { PredictiveAnalyticsPanel } from './PredictiveAnalyticsPanel';
+export { ESGCarbonPanel } from './ESGCarbonPanel';
+export { AutoReconciliationPanel } from './AutoReconciliationPanel';
