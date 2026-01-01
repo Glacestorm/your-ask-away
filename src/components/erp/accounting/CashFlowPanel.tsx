@@ -94,6 +94,8 @@ export function CashFlowPanel({ className }: CashFlowPanelProps) {
   const [projectionHorizon, setProjectionHorizon] = useState('90');
 
   // Contexto para las llamadas
+
+  // Contexto para las llamadas
   const context = useMemo(() => {
     if (!currentCompany) return null;
     const today = new Date();
@@ -106,7 +108,7 @@ export function CashFlowPanel({ className }: CashFlowPanelProps) {
       endDate: format(today, 'yyyy-MM-dd'),
       currency: currentCompany.currency || 'EUR'
     };
-  }, [currentCompany, currentFiscalYear]);
+  }, [currentCompany, currentYear]);
 
   // Cargar datos al montar
   useEffect(() => {

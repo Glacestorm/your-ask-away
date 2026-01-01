@@ -30,7 +30,8 @@ import {
   Search,
   LineChart,
   Leaf,
-  GitMerge
+  GitMerge,
+  DollarSign
 } from 'lucide-react';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
 import { DynamicHelpPanel } from './DynamicHelpPanel';
