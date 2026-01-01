@@ -800,3 +800,24 @@ verify_jwt = true
 
 [functions.erp-stock-manager]
 verify_jwt = true
+
+[functions.erp-regulations-search]
+verify_jwt = true
+
+[functions.erp-ai-journal-entries]
+verify_jwt = true
+
+[functions.erp-anomaly-detection]
+verify_jwt = true
+
+[functions.erp-auto-reconciliation]
+verify_jwt = true
+
+[functions.erp-predictive-analytics]
+verify_jwt = true
+
+[functions.erp-esg-carbon-accounting]
+verify_jwt = true
+
+[functions.obelixia-accounting-engine]
+verify_jwt = true
