@@ -10,9 +10,9 @@ export function FloatingChatButton() {
 
   return (
     <>
-      {/* Floating Button - positioned to the left of help button */}
+      {/* Floating Button - positioned top left next to help button */}
       <motion.div
-        className="fixed bottom-6 right-24 z-40"
+        className="fixed top-3 left-20 z-40"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.7, type: 'spring', stiffness: 300 }}
