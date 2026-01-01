@@ -824,3 +824,9 @@ verify_jwt = true
 
 [functions.erp-financial-reports]
 verify_jwt = true
+
+[functions.erp-accounting-chatbot]
+verify_jwt = true
+
+[functions.erp-dynamic-help]
+verify_jwt = true
