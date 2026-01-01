@@ -61,7 +61,7 @@ const mockAgingData: AgingItem[] = [
 ];
 
 export function AgingPanel() {
-  const { selectedCompany } = useERPContext();
+  const { currentCompany } = useERPContext();
   const [activeTab, setActiveTab] = useState<'receivable' | 'payable'>('receivable');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -107,7 +107,7 @@ export function AgingPanel() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: selectedCompany?.currency || 'EUR'
+      currency: currentCompany?.currency || 'EUR'
     }).format(amount);
   };
 
@@ -124,7 +124,7 @@ export function AgingPanel() {
     }
   };
 
-  if (!selectedCompany) {
+  if (!currentCompany) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-10 text-center text-muted-foreground">

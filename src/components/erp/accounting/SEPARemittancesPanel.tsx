@@ -84,7 +84,7 @@ const mockPendingItems: RemittanceItem[] = [
 ];
 
 export function SEPARemittancesPanel() {
-  const { selectedCompany } = useERPContext();
+  const { currentCompany } = useERPContext();
   const [activeTab, setActiveTab] = useState('remittances');
   const [remittanceType, setRemittanceType] = useState<RemittanceType>('collection');
   const [pendingItems, setPendingItems] = useState(mockPendingItems);
@@ -164,7 +164,7 @@ export function SEPARemittancesPanel() {
     toast.success('Remesa enviada al banco');
   };
 
-  if (!selectedCompany) {
+  if (!currentCompany) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-10 text-center text-muted-foreground">

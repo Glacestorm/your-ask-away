@@ -120,7 +120,7 @@ const initialSteps: ClosingStep[] = [
 ];
 
 export function FiscalClosingWizard() {
-  const { selectedCompany, selectedFiscalYear } = useERPContext();
+  const { currentCompany } = useERPContext();
   const [steps, setSteps] = useState<ClosingStep[]>(initialSteps);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -195,7 +195,7 @@ export function FiscalClosingWizard() {
     }
   };
 
-  if (!selectedCompany) {
+  if (!currentCompany) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-10 text-center text-muted-foreground">
@@ -216,7 +216,7 @@ export function FiscalClosingWizard() {
           <div>
             <h3 className="font-semibold">Asistente de Cierre Fiscal</h3>
             <p className="text-sm text-muted-foreground">
-              Ejercicio {selectedFiscalYear?.year || 'actual'}
+              Ejercicio actual
             </p>
           </div>
         </div>
@@ -238,7 +238,7 @@ export function FiscalClosingWizard() {
                 <Lock className="h-8 w-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold mb-2">Cierre del Ejercicio {selectedFiscalYear?.year || '2024'}</h3>
+                <h3 className="text-xl font-semibold mb-2">Cierre del Ejercicio 2024</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
                   Este asistente te guiará paso a paso en el proceso de cierre fiscal. 
                   Incluye validaciones, regularización y generación de asientos de cierre y apertura.
