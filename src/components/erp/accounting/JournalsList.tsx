@@ -279,36 +279,36 @@ export function JournalsList({ className }: JournalsListProps) {
             />
           </div>
 
-          <Select value={filterJournal} onValueChange={setFilterJournal}>
+          <Select value={filterJournal || 'all'} onValueChange={(v) => setFilterJournal(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Diario" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {journals.map(j => (
                 <SelectItem key={j.id} value={j.id}>{j.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+          <Select value={filterPeriod || 'all'} onValueChange={(v) => setFilterPeriod(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {periods.map(p => (
                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus || 'all'} onValueChange={(v) => setFilterStatus(v === 'all' ? '' : v)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="draft">{getEntryStatusLabel('draft', countryCode)}</SelectItem>
               <SelectItem value="posted">{getEntryStatusLabel('posted', countryCode)}</SelectItem>
               <SelectItem value="cancelled">{getEntryStatusLabel('cancelled', countryCode)}</SelectItem>
