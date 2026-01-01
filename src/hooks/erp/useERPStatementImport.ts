@@ -74,6 +74,7 @@ export interface OCRExtractionResult {
     assets_equals_liabilities: boolean;
     errors: string[];
   };
+  [key: string]: unknown; // Index signature for Json compatibility
 }
 
 export function useERPStatementImport() {
@@ -340,15 +341,15 @@ export function useERPStatementImport() {
         detected_plan: detection.detected_plan,
         detection_confidence: detection.confidence,
         detected_language: detection.detected_language,
-        extracted_data: extraction,
-        mapped_accounts: mapping?.mapped_accounts || [],
+        extracted_data: JSON.parse(JSON.stringify(extraction)),
+        mapped_accounts: mapping?.mapped_accounts ? JSON.parse(JSON.stringify(mapping.mapped_accounts)) : [],
         status: 'extracted' as const,
         validation_errors: extraction.validation?.errors?.map((e: string) => ({ field: 'general', message: e })) || []
       };
 
       const { data: importRecord, error: insertError } = await supabase
         .from('erp_statement_imports')
-        .insert([insertData])
+        .insert([insertData] as any)
         .select()
         .single();
 

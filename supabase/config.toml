@@ -498,6 +498,9 @@ verify_jwt = true
 [functions.academia-learning-path]
 verify_jwt = true
 
+[functions.erp-financial-statement-ocr]
+verify_jwt = true
+
 [functions.academia-gamification]
 verify_jwt = true
 
