@@ -25,7 +25,12 @@ import {
   ArrowDownRight,
   HelpCircle,
   Loader2,
-  Plus
+  Plus,
+  Bot,
+  Search,
+  LineChart,
+  Leaf,
+  GitMerge
 } from 'lucide-react';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
 import { DynamicHelpPanel } from './DynamicHelpPanel';
@@ -34,6 +39,11 @@ import { JournalsList } from './JournalsList';
 import { JournalEntryEditor } from './JournalEntryEditor';
 import { FinancialReportsPanel } from './FinancialReportsPanel';
 import { PeriodClosingPanel } from './PeriodClosingPanel';
+import { AIJournalEntriesPanel } from './AIJournalEntriesPanel';
+import { AnomalyDetectionPanel } from './AnomalyDetectionPanel';
+import { PredictiveAnalyticsPanel } from './PredictiveAnalyticsPanel';
+import { ESGCarbonPanel } from './ESGCarbonPanel';
+import { AutoReconciliationPanel } from './AutoReconciliationPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -299,32 +309,54 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
 
       {/* Tabs principales */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
-          <TabsTrigger value="overview" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Resumen
-          </TabsTrigger>
-          <TabsTrigger value="entries" className="gap-2">
-            <Receipt className="h-4 w-4" />
-            Asientos
-          </TabsTrigger>
-          <TabsTrigger value="accounts" className="gap-2">
-            <BookOpen className="h-4 w-4" />
-            Cuentas
-          </TabsTrigger>
-          <TabsTrigger value="reports" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Informes
-          </TabsTrigger>
-          <TabsTrigger value="closing" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            Cierres
-          </TabsTrigger>
-          <TabsTrigger value="help" className="gap-2">
-            <HelpCircle className="h-4 w-4" />
-            Ayuda
-          </TabsTrigger>
-        </TabsList>
+        <ScrollArea className="w-full">
+          <TabsList className="inline-flex w-auto min-w-full gap-1 p-1">
+            <TabsTrigger value="overview" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Resumen
+            </TabsTrigger>
+            <TabsTrigger value="entries" className="gap-2">
+              <Receipt className="h-4 w-4" />
+              Asientos
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Cuentas
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Informes
+            </TabsTrigger>
+            <TabsTrigger value="closing" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Cierres
+            </TabsTrigger>
+            <TabsTrigger value="ai-entries" className="gap-2">
+              <Bot className="h-4 w-4" />
+              IA Asientos
+            </TabsTrigger>
+            <TabsTrigger value="anomalies" className="gap-2">
+              <Search className="h-4 w-4" />
+              Anomalías
+            </TabsTrigger>
+            <TabsTrigger value="predictive" className="gap-2">
+              <LineChart className="h-4 w-4" />
+              Predicciones
+            </TabsTrigger>
+            <TabsTrigger value="esg" className="gap-2">
+              <Leaf className="h-4 w-4" />
+              ESG
+            </TabsTrigger>
+            <TabsTrigger value="reconciliation" className="gap-2">
+              <GitMerge className="h-4 w-4" />
+              Conciliación
+            </TabsTrigger>
+            <TabsTrigger value="help" className="gap-2">
+              <HelpCircle className="h-4 w-4" />
+              Ayuda
+            </TabsTrigger>
+          </TabsList>
+        </ScrollArea>
 
         {/* Tab: Resumen */}
         <TabsContent value="overview" className="space-y-4">
@@ -506,6 +538,31 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Cierres de Período */}
         <TabsContent value="closing">
           <PeriodClosingPanel />
+        </TabsContent>
+
+        {/* Tab: IA Asientos Contables */}
+        <TabsContent value="ai-entries">
+          <AIJournalEntriesPanel />
+        </TabsContent>
+
+        {/* Tab: Detección de Anomalías */}
+        <TabsContent value="anomalies">
+          <AnomalyDetectionPanel />
+        </TabsContent>
+
+        {/* Tab: Análisis Predictivo */}
+        <TabsContent value="predictive">
+          <PredictiveAnalyticsPanel />
+        </TabsContent>
+
+        {/* Tab: ESG y Huella de Carbono */}
+        <TabsContent value="esg">
+          <ESGCarbonPanel />
+        </TabsContent>
+
+        {/* Tab: Auto-Conciliación */}
+        <TabsContent value="reconciliation">
+          <AutoReconciliationPanel />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
