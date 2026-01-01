@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
   FileText, ShoppingCart, Truck, Receipt, CreditCard, 
   Plus, Search, RefreshCw, ArrowRight, Loader2 
 } from 'lucide-react';
 import { useERPSales } from '@/hooks/erp/useERPSales';
 import { useERPContext } from '@/hooks/erp/useERPContext';
+import { SalesDocumentEditor, DocumentType } from './SalesDocumentEditor';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -81,6 +83,8 @@ export function SalesModule() {
   const [creditNotes, setCreditNotes] = useState<any[]>([]);
   const [receivables, setReceivables] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorType, setEditorType] = useState<DocumentType>('quote');
 
   useEffect(() => {
     if (currentCompany) {
@@ -117,6 +121,11 @@ export function SalesModule() {
 
   const formatDate = (date: string) => {
     return format(new Date(date), 'dd/MM/yyyy', { locale: es });
+  };
+
+  const openEditor = (type: DocumentType) => {
+    setEditorType(type);
+    setEditorOpen(true);
   };
 
   if (!currentCompany) {
@@ -187,7 +196,15 @@ export function SalesModule() {
                 className="pl-10"
               />
             </div>
-            <Button className="gap-2">
+            <Button 
+              className="gap-2"
+              onClick={() => openEditor(
+                activeTab === 'quotes' ? 'quote' : 
+                activeTab === 'orders' ? 'order' : 
+                activeTab === 'delivery' ? 'delivery' : 
+                activeTab === 'invoices' ? 'invoice' : 'credit'
+              )}
+            >
               <Plus className="h-4 w-4" />
               Nuevo
             </Button>
