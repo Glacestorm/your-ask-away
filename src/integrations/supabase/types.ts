@@ -12683,6 +12683,7 @@ export type Database = {
           total_amount: number | null
           total_lines: number | null
           updated_at: string | null
+          xml_content: string | null
         }
         Insert: {
           charge_date?: string | null
@@ -12705,6 +12706,7 @@ export type Database = {
           total_amount?: number | null
           total_lines?: number | null
           updated_at?: string | null
+          xml_content?: string | null
         }
         Update: {
           charge_date?: string | null
@@ -12727,6 +12729,7 @@ export type Database = {
           total_amount?: number | null
           total_lines?: number | null
           updated_at?: string | null
+          xml_content?: string | null
         }
         Relationships: [
           {
@@ -35061,8 +35064,28 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: boolean
       }
+      erp_create_journal_entry_from_sales_invoice: {
+        Args: { p_invoice_id: string; p_sales_journal_id?: string }
+        Returns: string
+      }
+      erp_create_journal_entry_from_supplier_invoice: {
+        Args: { p_invoice_id: string; p_purchase_journal_id?: string }
+        Returns: string
+      }
+      erp_generate_sepa_xml: {
+        Args: { p_remittance_id: string }
+        Returns: string
+      }
       erp_get_next_document_number: {
         Args: { p_company_id: string; p_series_id: string }
+        Returns: string
+      }
+      erp_get_next_entry_number: {
+        Args: {
+          p_company_id: string
+          p_fiscal_year_id: string
+          p_journal_id: string
+        }
         Returns: string
       }
       erp_get_user_companies: { Args: { p_user_id: string }; Returns: string[] }
@@ -35088,6 +35111,10 @@ export type Database = {
         Returns: boolean
       }
       erp_role_company_id: { Args: { p_role_id: string }; Returns: string }
+      erp_validate_period_open: {
+        Args: { p_entry_date?: string; p_period_id: string }
+        Returns: boolean
+      }
       expire_open_banking_consents: { Args: never; Returns: undefined }
       expire_pending_approval_requests: { Args: never; Returns: undefined }
       find_applicable_bundles: {
