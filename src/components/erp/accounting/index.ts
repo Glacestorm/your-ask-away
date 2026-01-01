@@ -1,4 +1,6 @@
 export { AccountingDashboard } from './AccountingDashboard';
+export { FinancialReportsPanel } from './FinancialReportsPanel';
+export { PeriodClosingPanel } from './PeriodClosingPanel';
 export { HelpTooltip, HelpLabel } from './HelpTooltip';
 export { RegulationsPanel } from './RegulationsPanel';
 export { AIJournalEntriesPanel } from './AIJournalEntriesPanel';
