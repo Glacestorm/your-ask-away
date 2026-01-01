@@ -168,17 +168,14 @@ export function SalesDocumentEditor({
 
       const docTypeFilter = docTypeMap[documentType];
 
-      const seriesQuery = supabase
+      // Cargar todas las series de ventas (sin filtrar por document_type)
+      const seriesResult = await supabase
         .from('erp_series')
         .select('id, name, code, prefix, document_type')
         .eq('company_id', currentCompany.id)
         .eq('module', 'sales')
         .eq('is_active', true)
         .order('is_default', { ascending: false });
-
-      const seriesResult = Array.isArray(docTypeFilter)
-        ? await seriesQuery.in('document_type', docTypeFilter)
-        : await seriesQuery.eq('document_type', docTypeFilter);
 
       const [erpCustomersResult, customersResult, itemsResult] = await Promise.all([
         supabase
@@ -539,16 +536,20 @@ export function SalesDocumentEditor({
                   <SelectValue placeholder="Seleccionar cliente" />
                 </SelectTrigger>
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
-                  {customers.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <span className="flex items-center gap-2">
-                        {c.tax_id ? `${c.name} (${c.tax_id})` : c.name}
-                        {c.source === 'erp' && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">ERP</span>
-                        )}
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {customers.map((c) => {
+                    const displayName = c.name && c.name !== '-' ? c.name : c.id.slice(0, 8);
+                    const label = c.tax_id ? `${displayName} (${c.tax_id})` : displayName;
+                    return (
+                      <SelectItem key={c.id} value={c.id} textValue={label}>
+                        <span className="flex items-center gap-2">
+                          {label}
+                          {c.source === 'erp' && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded">ERP</span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -560,16 +561,20 @@ export function SalesDocumentEditor({
                   <SelectValue placeholder="Seleccionar serie" />
                 </SelectTrigger>
                 <SelectContent portalContainer={selectPortalContainer} position="popper">
-                  {series.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      <span className="flex items-center gap-2">
-                        {`${s.name} (${s.prefix})`}
-                        {s.document_type && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">{s.document_type}</span>
-                        )}
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {series.map((s) => {
+                    const codeLabel = s.code ? `${s.code} - ` : '';
+                    const label = `${codeLabel}${s.name} (${s.prefix})`;
+                    return (
+                      <SelectItem key={s.id} value={s.id} textValue={label}>
+                        <span className="flex items-center gap-2">
+                          {label}
+                          {s.document_type && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">{s.document_type}</span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
