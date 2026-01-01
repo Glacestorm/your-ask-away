@@ -10200,6 +10200,90 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_customers: {
+        Row: {
+          address: string | null
+          city: string | null
+          code: string | null
+          company_id: string
+          contact_person: string | null
+          country: string | null
+          created_at: string
+          default_series_id: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          legal_name: string | null
+          name: string
+          notes: string | null
+          payment_method: string | null
+          payment_terms_days: number | null
+          phone: string | null
+          postal_code: string | null
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          company_id: string
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          default_series_id?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          name: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_terms_days?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          code?: string | null
+          company_id?: string
+          contact_person?: string | null
+          country?: string | null
+          created_at?: string
+          default_series_id?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          legal_name?: string | null
+          name?: string
+          notes?: string | null
+          payment_method?: string | null
+          payment_terms_days?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_customers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_customers_default_series_id_fkey"
+            columns: ["default_series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_fiscal_years: {
         Row: {
           closed_at: string | null
@@ -10240,6 +10324,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "erp_fiscal_years_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_items: {
+        Row: {
+          category: string | null
+          code: string
+          company_id: string
+          cost_price: number | null
+          created_at: string
+          default_price: number | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          item_type: string | null
+          name: string
+          tax_rate: number | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          code: string
+          company_id: string
+          cost_price?: number | null
+          created_at?: string
+          default_price?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          item_type?: string | null
+          name: string
+          tax_rate?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          code?: string
+          company_id?: string
+          cost_price?: number | null
+          created_at?: string
+          default_price?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          item_type?: string | null
+          name?: string
+          tax_rate?: number | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_items_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"

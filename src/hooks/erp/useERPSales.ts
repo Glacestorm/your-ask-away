@@ -549,6 +549,52 @@ export function useERPSales() {
     }
   }, [currentCompany, user, fetchQuoteWithLines]);
 
+  const createOrder = useCallback(async (
+    order: Omit<SalesOrder, 'id' | 'created_at' | 'company_id' | 'lines'>,
+    lines: Omit<SalesOrderLine, 'id' | 'order_id'>[],
+    skipCreditCheck: boolean = false
+  ): Promise<SalesOrder | null> => {
+    if (!currentCompany || !user) return null;
+
+    setIsLoading(true);
+    try {
+      const { data: newOrder, error: orderError } = await supabase
+        .from('sales_orders')
+        .insert([{
+          ...order,
+          company_id: currentCompany.id,
+          credit_check_passed: skipCreditCheck || order.credit_check_passed,
+          created_by: user.id,
+        }])
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      if (lines.length > 0) {
+        const linesToInsert = lines.map((line, idx) => ({
+          ...line,
+          order_id: newOrder.id,
+          line_number: idx + 1,
+          qty_delivered: 0,
+          qty_invoiced: 0,
+        }));
+
+        await supabase.from('sales_order_lines').insert(linesToInsert as never[]);
+      }
+
+      await logSalesAudit('ORDER_CREATED', 'order', newOrder.id, null, newOrder);
+      toast.success('Pedido creado');
+      return newOrder as SalesOrder;
+    } catch (err) {
+      console.error('[useERPSales] createOrder error:', err);
+      toast.error('Error al crear pedido');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentCompany, user]);
+
   const confirmOrder = useCallback(async (orderId: string): Promise<boolean> => {
     setIsLoading(true);
     try {
@@ -1146,6 +1192,7 @@ export function useERPSales() {
     // Pedidos
     fetchOrders,
     fetchOrderWithLines,
+    createOrder,
     convertQuoteToOrder,
     confirmOrder,
     // Albaranes

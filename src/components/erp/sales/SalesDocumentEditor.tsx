@@ -98,7 +98,7 @@ export function SalesDocumentEditor({
   onSave 
 }: SalesDocumentEditorProps) {
   const { currentCompany, hasPermission } = useERPContext();
-  const { createQuote, checkCustomerCredit } = useERPSales();
+  const { createQuote, createOrder, checkCustomerCredit } = useERPSales();
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -150,24 +150,49 @@ export function SalesDocumentEditor({
         credit: 'credit_note',
       };
 
-      const { data: seriesData } = await supabase
-        .from('erp_series')
-        .select('id, name, prefix')
-        .eq('company_id', currentCompany.id)
-        .eq('module', 'sales')
-        .eq('document_type', docTypeMap[documentType])
-        .eq('is_active', true)
-        .order('is_default', { ascending: false });
-      
-      if (seriesData) {
-        setSeries(seriesData);
-        if (seriesData.length > 0) {
-          setSeriesId(seriesData[0].id);
+      const [seriesResult, customersResult, itemsResult] = await Promise.all([
+        supabase
+          .from('erp_series')
+          .select('id, name, prefix')
+          .eq('company_id', currentCompany.id)
+          .eq('module', 'sales')
+          .eq('document_type', docTypeMap[documentType])
+          .eq('is_active', true)
+          .order('is_default', { ascending: false }),
+        supabase
+          .from('erp_customers')
+          .select('id, name, tax_id')
+          .eq('company_id', currentCompany.id)
+          .eq('is_active', true)
+          .order('name'),
+        supabase
+          .from('erp_items')
+          .select('id, code, name, default_price, tax_rate')
+          .eq('company_id', currentCompany.id)
+          .eq('is_active', true)
+          .order('code'),
+      ]);
+
+      if (seriesResult.data) {
+        setSeries(seriesResult.data);
+        if (seriesResult.data.length > 0) {
+          setSeriesId(seriesResult.data[0].id);
         }
       }
 
-      // TODO: Load customers and items from maestros tables when available
-      // For now, these will be empty until erp_customers/erp_items are created
+      if (customersResult.data) {
+        setCustomers(customersResult.data);
+      }
+
+      if (itemsResult.data) {
+        setItems(itemsResult.data.map(i => ({
+          id: i.id,
+          code: i.code,
+          name: i.name,
+          default_price: Number(i.default_price) || 0,
+          tax_rate: Number(i.tax_rate) || 21,
+        })));
+      }
     } catch (error) {
       console.error('[SalesDocumentEditor] Error loading master data:', error);
     } finally {
@@ -332,6 +357,47 @@ export function SalesDocumentEditor({
         }));
 
         const result = await createQuote(quoteData, linesData);
+        if (result) {
+          toast.success(`${documentTypeLabels[documentType]} guardado correctamente`);
+          onSave?.();
+          onClose();
+        }
+      } else if (documentType === 'order') {
+        const orderData = {
+          series_id: seriesId,
+          customer_id: customerId,
+          customer_name: customer?.name,
+          customer_tax_id: customer?.tax_id,
+          date,
+          delivery_date: deliveryDate || undefined,
+          status: status as 'draft' | 'confirmed' | 'partial' | 'completed' | 'cancelled',
+          currency: currentCompany.currency,
+          notes,
+          subtotal,
+          discount_total: 0,
+          tax_total: taxTotal,
+          total,
+          credit_check_passed: !creditCheck || creditCheck.allowed,
+        };
+
+        const linesData = lines.map((line, idx) => ({
+          line_number: idx + 1,
+          item_id: line.item_id,
+          item_code: line.item_code,
+          description: line.description,
+          qty: line.qty,
+          qty_delivered: 0,
+          qty_invoiced: 0,
+          unit: 'UND',
+          unit_price: line.unit_price,
+          discount_percent: line.discount_percent,
+          discount_total: line.discount_total,
+          tax_rate: line.tax_rate,
+          tax_total: line.tax_total,
+          line_total: line.line_total,
+        }));
+
+        const result = await createOrder(orderData, linesData);
         if (result) {
           toast.success(`${documentTypeLabels[documentType]} guardado correctamente`);
           onSave?.();
