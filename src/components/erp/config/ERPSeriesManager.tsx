@@ -88,7 +88,7 @@ const initialForm: CreateSeriesForm = {
 
 export function ERPSeriesManager() {
   const { currentCompany, hasPermission } = useERPContext();
-  const { series, isLoading, fetchSeries, createSeries, updateSeries } = useERPSeries();
+  const { series, isLoading, fetchSeries, createSeries, updateSeries, deleteSeries } = useERPSeries();
   
   const [showDialog, setShowDialog] = useState(false);
   const [editingSeries, setEditingSeries] = useState<ERPSeries | null>(null);
@@ -149,14 +149,12 @@ export function ERPSeriesManager() {
   };
 
   const handleDelete = async (s: ERPSeries) => {
-    if (!confirm(`¿Desactivar la serie "${s.name}"?`)) return;
+    if (!confirm(`¿Eliminar permanentemente la serie "${s.name}"?`)) return;
     
     try {
-      await updateSeries(s.id, { is_active: false } as any);
-      toast.success('Serie desactivada');
-      fetchSeries();
+      await deleteSeries(s.id);
     } catch (err) {
-      toast.error('Error al desactivar serie');
+      toast.error('Error al eliminar serie');
     }
   };
 

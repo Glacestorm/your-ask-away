@@ -120,6 +120,31 @@ export function useERPSeries() {
     }
   }, [hasPermission, fetchSeries]);
 
+  // Eliminar serie
+  const deleteSeries = useCallback(async (seriesId: string): Promise<boolean> => {
+    if (!hasPermission('config.write')) {
+      toast.error('Sin permisos');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('erp_series')
+        .delete()
+        .eq('id', seriesId);
+
+      if (error) throw error;
+
+      toast.success('Serie eliminada');
+      await fetchSeries();
+      return true;
+    } catch (err) {
+      console.error('[useERPSeries] deleteSeries error:', err);
+      toast.error('Error eliminando serie');
+      return false;
+    }
+  }, [hasPermission, fetchSeries]);
+
   // Obtener siguiente número
   const getNextNumber = useCallback(async (seriesId: string): Promise<string | null> => {
     if (!currentCompany?.id) return null;
@@ -156,6 +181,7 @@ export function useERPSeries() {
     fetchSeries,
     createSeries,
     updateSeries,
+    deleteSeries,
     getNextNumber,
     getDefaultSeries,
   };
