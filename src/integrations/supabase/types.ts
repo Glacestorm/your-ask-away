@@ -8897,6 +8897,175 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_note_lines: {
+        Row: {
+          created_at: string | null
+          delivery_note_id: string
+          description: string
+          id: string
+          item_code: string | null
+          item_id: string | null
+          line_number: number
+          line_total: number | null
+          notes: string | null
+          order_line_id: string | null
+          qty: number
+          qty_invoiced: number | null
+          tax_rate: number | null
+          tax_total: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_note_id: string
+          description: string
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_line_id?: string | null
+          qty?: number
+          qty_invoiced?: number | null
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          delivery_note_id?: string
+          description?: string
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_line_id?: string | null
+          qty?: number
+          qty_invoiced?: number | null
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_note_lines_delivery_note_id_fkey"
+            columns: ["delivery_note_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_note_lines_order_line_id_fkey"
+            columns: ["order_line_id"]
+            isOneToOne: false
+            referencedRelation: "sales_order_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_notes: {
+        Row: {
+          carrier: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          customer_id: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          date: string
+          delivery_address: string | null
+          id: string
+          internal_notes: string | null
+          notes: string | null
+          number: string | null
+          order_id: string | null
+          series_id: string | null
+          shipped_at: string | null
+          status: string
+          subtotal: number | null
+          tax_total: number | null
+          total: number | null
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          carrier?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          delivery_address?: string | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          order_id?: string | null
+          series_id?: string | null
+          shipped_at?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          carrier?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          delivery_address?: string | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          order_id?: string | null
+          series_id?: string | null
+          shipped_at?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_notes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_requests: {
         Row: {
           assigned_to: string | null
@@ -9483,6 +9652,74 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      email_outbox: {
+        Row: {
+          attachments_json: Json | null
+          attempts: number | null
+          bcc_email: string | null
+          body: string | null
+          body_html: string | null
+          cc_email: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          document_id: string | null
+          document_type: string | null
+          error_message: string | null
+          id: string
+          sent_at: string | null
+          status: string
+          subject: string
+          to_email: string
+        }
+        Insert: {
+          attachments_json?: Json | null
+          attempts?: number | null
+          bcc_email?: string | null
+          body?: string | null
+          body_html?: string | null
+          cc_email?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          document_id?: string | null
+          document_type?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject: string
+          to_email: string
+        }
+        Update: {
+          attachments_json?: Json | null
+          attempts?: number | null
+          bcc_email?: string | null
+          body?: string | null
+          body_html?: string | null
+          cc_email?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          document_id?: string | null
+          document_type?: string | null
+          error_message?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          to_email?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_outbox_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_reminder_preferences: {
         Row: {
@@ -21730,6 +21967,69 @@ export type Database = {
           },
         ]
       }
+      receivables: {
+        Row: {
+          amount: number
+          company_id: string
+          created_at: string | null
+          customer_id: string
+          customer_name: string | null
+          due_date: string
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          paid_amount: number | null
+          payment_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          company_id: string
+          created_at?: string | null
+          customer_id: string
+          customer_name?: string | null
+          due_date: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          payment_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          company_id?: string
+          created_at?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          due_date?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          paid_amount?: number | null
+          payment_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receivables_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registered_tpps: {
         Row: {
           authorization_status: string
@@ -23271,6 +23571,457 @@ export type Database = {
           },
         ]
       }
+      sales_audit_events: {
+        Row: {
+          action: string
+          company_id: string | null
+          created_at: string | null
+          document_id: string
+          document_type: string
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          notes: string | null
+          old_data: Json | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          company_id?: string | null
+          created_at?: string | null
+          document_id: string
+          document_type: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          notes?: string | null
+          old_data?: Json | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          company_id?: string | null
+          created_at?: string | null
+          document_id?: string
+          document_type?: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          notes?: string | null
+          old_data?: Json | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_audit_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_credit_note_lines: {
+        Row: {
+          created_at: string | null
+          credit_note_id: string
+          description: string
+          id: string
+          invoice_line_id: string | null
+          item_code: string | null
+          item_id: string | null
+          line_number: number
+          line_total: number | null
+          notes: string | null
+          qty: number
+          tax_rate: number | null
+          tax_total: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          credit_note_id: string
+          description: string
+          id?: string
+          invoice_line_id?: string | null
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          qty?: number
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          credit_note_id?: string
+          description?: string
+          id?: string
+          invoice_line_id?: string | null
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          qty?: number
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_credit_note_lines_credit_note_id_fkey"
+            columns: ["credit_note_id"]
+            isOneToOne: false
+            referencedRelation: "sales_credit_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_credit_note_lines_invoice_line_id_fkey"
+            columns: ["invoice_line_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoice_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_credit_notes: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          customer_address: string | null
+          customer_id: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          date: string
+          exchange_rate: number | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          number: string | null
+          reason: string | null
+          series_id: string | null
+          status: string
+          subtotal: number | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          exchange_rate?: number | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          number?: string | null
+          reason?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          exchange_rate?: number | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          number?: string | null
+          reason?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_credit_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_credit_notes_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_credit_notes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_document_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          source_id?: string
+          source_type?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
+      sales_invoice_lines: {
+        Row: {
+          created_at: string | null
+          delivery_note_line_id: string | null
+          description: string
+          discount_amount: number | null
+          discount_percent: number | null
+          discount_total: number | null
+          id: string
+          invoice_id: string
+          item_code: string | null
+          item_id: string | null
+          line_number: number
+          line_total: number | null
+          notes: string | null
+          order_line_id: string | null
+          pricing_breakdown_json: Json | null
+          qty: number
+          tax_rate: number | null
+          tax_total: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          delivery_note_line_id?: string | null
+          description: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          invoice_id: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_line_id?: string | null
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          delivery_note_line_id?: string | null
+          description?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          invoice_id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_line_id?: string | null
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoice_lines_delivery_note_line_id_fkey"
+            columns: ["delivery_note_line_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_note_lines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoice_lines_order_line_id_fkey"
+            columns: ["order_line_id"]
+            isOneToOne: false
+            referencedRelation: "sales_order_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_invoices: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          credit_check_passed: boolean | null
+          credit_override_by: string | null
+          credit_override_reason: string | null
+          currency: string
+          customer_address: string | null
+          customer_id: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          discount_total: number | null
+          due_date: string | null
+          due_dates_json: Json | null
+          exchange_rate: number | null
+          id: string
+          internal_notes: string | null
+          invoice_date: string
+          notes: string | null
+          number: string | null
+          paid_amount: number | null
+          payment_method: string | null
+          payment_terms: string | null
+          pdf_url: string | null
+          sent_at: string | null
+          series_id: string | null
+          status: string
+          subtotal: number | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          credit_check_passed?: boolean | null
+          credit_override_by?: string | null
+          credit_override_reason?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          discount_total?: number | null
+          due_date?: string | null
+          due_dates_json?: Json | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          invoice_date?: string
+          notes?: string | null
+          number?: string | null
+          paid_amount?: number | null
+          payment_method?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          credit_check_passed?: boolean | null
+          credit_override_by?: string | null
+          credit_override_reason?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          discount_total?: number | null
+          due_date?: string | null
+          due_dates_json?: Json | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          invoice_date?: string
+          notes?: string | null
+          number?: string | null
+          paid_amount?: number | null
+          payment_method?: string | null
+          payment_terms?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_invoices_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_leaderboard: {
         Row: {
           achievements_count: number | null
@@ -23329,6 +24080,202 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_order_lines: {
+        Row: {
+          created_at: string | null
+          description: string
+          discount_amount: number | null
+          discount_percent: number | null
+          discount_total: number | null
+          id: string
+          item_code: string | null
+          item_id: string | null
+          line_number: number
+          line_total: number | null
+          notes: string | null
+          order_id: string
+          pricing_breakdown_json: Json | null
+          qty: number
+          qty_delivered: number | null
+          qty_invoiced: number | null
+          quote_line_id: string | null
+          tax_rate: number | null
+          tax_total: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_id: string
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          qty_delivered?: number | null
+          qty_invoiced?: number | null
+          quote_line_id?: string | null
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          order_id?: string
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          qty_delivered?: number | null
+          qty_invoiced?: number | null
+          quote_line_id?: string | null
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_lines_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_lines_quote_line_id_fkey"
+            columns: ["quote_line_id"]
+            isOneToOne: false
+            referencedRelation: "sales_quote_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_orders: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          credit_check_passed: boolean | null
+          credit_override_by: string | null
+          credit_override_reason: string | null
+          currency: string
+          customer_address: string | null
+          customer_id: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          date: string
+          delivery_date: string | null
+          discount_total: number | null
+          exchange_rate: number | null
+          id: string
+          internal_notes: string | null
+          notes: string | null
+          number: string | null
+          quote_id: string | null
+          series_id: string | null
+          status: string
+          subtotal: number | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          credit_check_passed?: boolean | null
+          credit_override_by?: string | null
+          credit_override_reason?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          delivery_date?: string | null
+          discount_total?: number | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          quote_id?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          credit_check_passed?: boolean | null
+          credit_override_by?: string | null
+          credit_override_reason?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          delivery_date?: string | null
+          discount_total?: number | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          quote_id?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "sales_quotes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_orders_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
             referencedColumns: ["id"]
           },
         ]
@@ -23404,6 +24351,167 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_quote_lines: {
+        Row: {
+          created_at: string | null
+          description: string
+          discount_amount: number | null
+          discount_percent: number | null
+          discount_total: number | null
+          id: string
+          item_code: string | null
+          item_id: string | null
+          line_number: number
+          line_total: number | null
+          notes: string | null
+          pricing_breakdown_json: Json | null
+          qty: number
+          quote_id: string
+          tax_rate: number | null
+          tax_total: number | null
+          unit: string | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          quote_id: string
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          discount_total?: number | null
+          id?: string
+          item_code?: string | null
+          item_id?: string | null
+          line_number?: number
+          line_total?: number | null
+          notes?: string | null
+          pricing_breakdown_json?: Json | null
+          qty?: number
+          quote_id?: string
+          tax_rate?: number | null
+          tax_total?: number | null
+          unit?: string | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_quote_lines_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "sales_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_quotes: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          customer_address: string | null
+          customer_id: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          date: string
+          discount_total: number | null
+          exchange_rate: number | null
+          id: string
+          internal_notes: string | null
+          notes: string | null
+          number: string | null
+          series_id: string | null
+          status: string
+          subtotal: number | null
+          tax_total: number | null
+          total: number | null
+          updated_at: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          discount_total?: number | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          customer_address?: string | null
+          customer_id?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          date?: string
+          discount_total?: number | null
+          exchange_rate?: number | null
+          id?: string
+          internal_notes?: string | null
+          notes?: string | null
+          number?: string | null
+          series_id?: string | null
+          status?: string
+          subtotal?: number | null
+          tax_total?: number | null
+          total?: number | null
+          updated_at?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_quotes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_quotes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
             referencedColumns: ["id"]
           },
         ]
@@ -30718,6 +31826,10 @@ export type Database = {
         Args: { _user_id: string; _visit_sheet_id: string }
         Returns: boolean
       }
+      check_customer_credit: {
+        Args: { p_amount: number; p_company_id: string; p_customer_id: string }
+        Returns: Json
+      }
       check_expiring_acknowledgments: { Args: never; Returns: undefined }
       check_low_usage_alerts: { Args: never; Returns: undefined }
       check_pending_acknowledgments: { Args: never; Returns: undefined }
@@ -30808,6 +31920,14 @@ export type Database = {
       }
       generate_remote_access_pin: {
         Args: { p_installation_id: string; p_valid_hours?: number }
+        Returns: string
+      }
+      generate_sales_document_number: {
+        Args: {
+          p_company_id: string
+          p_document_type: string
+          p_series_id: string
+        }
         Returns: string
       }
       get_company_chart_of_accounts: {
