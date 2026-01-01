@@ -21,3 +21,4 @@ export { useERPAccountingChatbot } from './useERPAccountingChatbot';
 export { useERPDynamicHelp } from './useERPDynamicHelp';
 export * from './useMaestros';
 export { useERPFinancialRatios } from './useERPFinancialRatios';
+export { useERPCashFlow } from './useERPCashFlow';
