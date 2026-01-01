@@ -1,0 +1,1 @@
+export { PurchasesModule } from './PurchasesModule';

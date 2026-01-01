@@ -41,6 +41,8 @@ import { ERPInitialSetup } from './config/ERPInitialSetup';
 import { ERPUserAssignment } from './config/ERPUserAssignment';
 import { MaestrosLayout } from './maestros';
 import { SalesModule } from './sales';
+import { PurchasesModule } from './purchases';
+import { InventoryModule } from './inventory';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -149,6 +151,18 @@ function ERPModularDashboardContent() {
             <TabsTrigger value="sales" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
               Ventas
+            </TabsTrigger>
+          )}
+          {hasPermission('purchases.read') && (
+            <TabsTrigger value="purchases" className="gap-2">
+              <Package className="h-4 w-4" />
+              Compras
+            </TabsTrigger>
+          )}
+          {hasPermission('inventory.read') && (
+            <TabsTrigger value="inventory" className="gap-2">
+              <Package className="h-4 w-4" />
+              Almacén
             </TabsTrigger>
           )}
           {hasPermission('admin.all') && (
