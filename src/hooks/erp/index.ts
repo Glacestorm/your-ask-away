@@ -22,3 +22,4 @@ export { useERPDynamicHelp } from './useERPDynamicHelp';
 export * from './useMaestros';
 export { useERPFinancialRatios } from './useERPFinancialRatios';
 export { useERPCashFlow } from './useERPCashFlow';
+export { useERPBudget } from './useERPBudget';
