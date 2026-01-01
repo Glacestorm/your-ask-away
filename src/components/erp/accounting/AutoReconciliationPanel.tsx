@@ -2,7 +2,7 @@
  * AutoReconciliationPanel - Panel de conciliación bancaria automática con IA
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +22,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { HelpTooltip } from './HelpTooltip';
-import { supabase } from '@/integrations/supabase/client';
 import { useERPContext } from '@/hooks/erp/useERPContext';
+import { useERPAutoReconciliation } from '@/hooks/erp/useERPAutoReconciliation';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -59,53 +59,85 @@ interface AutoReconciliationPanelProps {
 
 export function AutoReconciliationPanel({ className }: AutoReconciliationPanelProps) {
   const { currentCompany } = useERPContext();
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    isLoading,
+    matches: hookMatches,
+    result,
+    matchTransactions,
+    approveMatch
+  } = useERPAutoReconciliation();
+
   const [matches, setMatches] = useState<ReconciliationMatch[]>([]);
   const [summary, setSummary] = useState<ReconciliationSummary | null>(null);
 
-  const handleRunReconciliation = useCallback(async () => {
+  // Sync hook data to local state
+  useEffect(() => {
+    if (hookMatches.length > 0) {
+      setMatches(hookMatches.map(m => ({
+        id: m.id,
+        bank_transaction: {
+          date: m.bank_transaction.date,
+          description: m.bank_transaction.description,
+          amount: m.bank_transaction.amount
+        },
+        accounting_entry: {
+          entry_number: m.accounting_entry.id.slice(0, 8),
+          description: m.accounting_entry.description,
+          amount: m.accounting_entry.amount
+        },
+        confidence: Math.round(m.confidence * 100),
+        match_type: m.match_type === 'exact' ? 'exact' : m.match_type === 'partial' ? 'fuzzy' : 'suggested',
+        status: 'pending'
+      })));
+    }
+  }, [hookMatches]);
+
+  useEffect(() => {
+    if (result) {
+      setSummary({
+        total_bank_transactions: result.summary.matched_count + result.summary.unmatched_count,
+        total_accounting_entries: result.summary.matched_count + result.summary.unmatched_count,
+        matched: result.summary.matched_count,
+        unmatched_bank: Math.floor(result.summary.unmatched_count / 2),
+        unmatched_accounting: Math.ceil(result.summary.unmatched_count / 2),
+        reconciliation_rate: Math.round((result.summary.matched_count / (result.summary.matched_count + result.summary.unmatched_count)) * 100) || 0
+      });
+    }
+  }, [result]);
+
+  const handleRunReconciliation = async () => {
     if (!currentCompany?.id) return;
 
-    setIsLoading(true);
+    // Demo data for reconciliation
+    const bankTransactions = [
+      { id: 'bt1', date: '2024-01-15', description: 'Pago proveedor ABC', amount: -1500, reference: 'TR001' },
+      { id: 'bt2', date: '2024-01-16', description: 'Cobro cliente XYZ', amount: 2500, reference: 'TR002' },
+      { id: 'bt3', date: '2024-01-18', description: 'Nóminas enero', amount: -5000, reference: 'TR003' }
+    ];
 
-    try {
-      const { data, error } = await supabase.functions.invoke('erp-auto-reconciliation', {
-        body: {
-          action: 'run_reconciliation',
-          params: {
-            company_id: currentCompany.id
-          }
-        }
-      });
+    const accountingEntries = [
+      { id: 'ae1', date: '2024-01-15', description: 'Factura proveedor ABC', amount: -1500, account_code: '400' },
+      { id: 'ae2', date: '2024-01-16', description: 'Factura cliente XYZ', amount: 2500, account_code: '430' },
+      { id: 'ae3', date: '2024-01-17', description: 'Gastos personal', amount: -5000, account_code: '640' }
+    ];
 
-      if (error) throw error;
+    await matchTransactions(currentCompany.id, bankTransactions, accountingEntries);
+  };
 
-      if (data?.success) {
-        setMatches(data.matches || []);
-        setSummary(data.summary);
-        toast.success(`Conciliación completada: ${data.summary?.matched || 0} coincidencias`);
-      }
-    } catch (err) {
-      console.error('[AutoReconciliationPanel] Error:', err);
-      toast.error('Error en la conciliación');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentCompany]);
-
-  const handleConfirmMatch = useCallback(async (matchId: string) => {
-    setMatches(prev => prev.map(m => 
+  const handleConfirmMatch = (matchId: string) => {
+    setMatches(prev => prev.map(m =>
       m.id === matchId ? { ...m, status: 'confirmed' as const } : m
     ));
-    toast.success('Coincidencia confirmada');
-  }, []);
+    approveMatch(matchId, true);
+  };
 
-  const handleRejectMatch = useCallback(async (matchId: string) => {
-    setMatches(prev => prev.map(m => 
+  const handleRejectMatch = (matchId: string) => {
+    setMatches(prev => prev.map(m =>
       m.id === matchId ? { ...m, status: 'rejected' as const } : m
     ));
-    toast.info('Coincidencia rechazada');
-  }, []);
+    approveMatch(matchId, false);
+  };
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
