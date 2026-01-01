@@ -154,6 +154,34 @@ export function useERPCompanies() {
     }
   }, [hasPermission, refreshCompanies]);
 
+  // Borrar empresa permanentemente
+  const deleteCompany = useCallback(async (companyId: string): Promise<boolean> => {
+    if (!hasPermission('admin.all')) {
+      toast.error('Sin permisos para eliminar empresas');
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('erp_companies')
+        .delete()
+        .eq('id', companyId);
+
+      if (error) throw error;
+
+      toast.success('Empresa eliminada permanentemente');
+      await refreshCompanies();
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error eliminando empresa';
+      toast.error(message);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [hasPermission, refreshCompanies]);
+
   // Crear grupo
   const createGroup = useCallback(async (name: string, description?: string): Promise<ERPCompanyGroup | null> => {
     if (!hasPermission('admin.all')) {
@@ -188,6 +216,7 @@ export function useERPCompanies() {
     createCompany,
     updateCompany,
     deactivateCompany,
+    deleteCompany,
     createGroup,
   };
 }
