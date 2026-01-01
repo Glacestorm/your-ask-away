@@ -28,7 +28,7 @@ import {
   Plus
 } from 'lucide-react';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
-import { RegulationsPanel } from './RegulationsPanel';
+import { DynamicHelpPanel } from './DynamicHelpPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -503,7 +503,12 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
 
         {/* Tab: Ayuda y Normativas */}
         <TabsContent value="help" className="space-y-4">
-          <RegulationsPanel className="min-h-[600px]" />
+          <DynamicHelpPanel
+            installedModules={['accounting', 'sales', 'purchases', 'inventory', 'masters']}
+            country={currentCompany?.country || 'España'}
+            companyName={currentCompany?.name}
+            className="min-h-[600px]"
+          />
         </TabsContent>
       </Tabs>
     </div>
