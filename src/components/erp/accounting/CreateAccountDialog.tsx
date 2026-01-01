@@ -232,14 +232,14 @@ export function CreateAccountDialog({
             <div className="space-y-2">
               <Label htmlFor="parent_id">Cuenta Padre</Label>
               <Select
-                value={formData.parent_id}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, parent_id: value }))}
+                value={formData.parent_id || 'none'}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, parent_id: value === 'none' ? '' : value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sin padre" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin padre</SelectItem>
+                  <SelectItem value="none">Sin padre</SelectItem>
                   {parentAccounts.map(acc => (
                     <SelectItem key={acc.id} value={acc.id}>
                       {acc.account_code} - {acc.account_name}
