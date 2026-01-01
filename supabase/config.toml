@@ -821,3 +821,6 @@ verify_jwt = true
 
 [functions.obelixia-accounting-engine]
 verify_jwt = true
+
+[functions.erp-financial-reports]
+verify_jwt = true
