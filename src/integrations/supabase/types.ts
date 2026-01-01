@@ -30759,6 +30759,10 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: boolean
       }
+      erp_company_has_users: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
       erp_get_next_document_number: {
         Args: { p_company_id: string; p_series_id: string }
         Returns: string
