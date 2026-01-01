@@ -65,8 +65,9 @@ interface Customer {
 interface Series {
   id: string;
   name: string;
+  code?: string | null;
   prefix: string;
-  document_type?: string;
+  document_type?: string | null;
 }
 
 interface Item {
@@ -112,7 +113,7 @@ export function SalesDocumentEditor({
   const [isSaving, setIsSaving] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [items, setItems] = useState<Item[]>([]);
-  const [series, setSeries] = useState<Series[]>([]);;
+  const [series, setSeries] = useState<Series[]>([]);
 
   // Portal container for Select dropdowns inside Dialog (prevents click/overlay issues)
   const [selectPortalContainer, setSelectPortalContainer] = useState<HTMLElement | null>(null);
@@ -169,7 +170,7 @@ export function SalesDocumentEditor({
 
       const seriesQuery = supabase
         .from('erp_series')
-        .select('id, name, prefix, document_type')
+        .select('id, name, code, prefix, document_type')
         .eq('company_id', currentCompany.id)
         .eq('module', 'sales')
         .eq('is_active', true)
@@ -201,7 +202,15 @@ export function SalesDocumentEditor({
       ]);
 
       if (seriesResult.data) {
-        setSeries(seriesResult.data.map((s: any) => ({ ...s, source: 'erp' })) as Series[]);
+        setSeries(
+          (seriesResult.data as any[]).map((s) => ({
+            id: s.id,
+            name: s.name,
+            code: s.code ?? null,
+            prefix: s.prefix,
+            document_type: s.document_type ?? null,
+          })) as Series[]
+        );
         if (seriesResult.data.length > 0) {
           setSeriesId(seriesResult.data[0].id);
         }
