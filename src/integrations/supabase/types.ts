@@ -10677,6 +10677,13 @@ export type Database = {
             foreignKeyName: "erp_chart_accounts_parent_id_fkey"
             columns: ["parent_id"]
             isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_chart_accounts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
             referencedRelation: "erp_chart_accounts"
             referencedColumns: ["id"]
           },
@@ -11736,6 +11743,13 @@ export type Database = {
             foreignKeyName: "erp_journal_entry_lines_account_id_fkey"
             columns: ["account_id"]
             isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journal_entry_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
             referencedRelation: "erp_chart_accounts"
             referencedColumns: ["id"]
           },
@@ -11806,7 +11820,21 @@ export type Database = {
             foreignKeyName: "erp_journals_default_credit_account_id_fkey"
             columns: ["default_credit_account_id"]
             isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journals_default_credit_account_id_fkey"
+            columns: ["default_credit_account_id"]
+            isOneToOne: false
             referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_journals_default_debit_account_id_fkey"
+            columns: ["default_debit_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
             referencedColumns: ["id"]
           },
           {
@@ -12181,7 +12209,21 @@ export type Database = {
             foreignKeyName: "erp_products_purchase_account_id_fkey"
             columns: ["purchase_account_id"]
             isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_products_purchase_account_id_fkey"
+            columns: ["purchase_account_id"]
+            isOneToOne: false
             referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_products_sales_account_id_fkey"
+            columns: ["sales_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
             referencedColumns: ["id"]
           },
           {
@@ -35383,7 +35425,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      erp_account_balances_view: {
+        Row: {
+          account_type: string | null
+          balance: number | null
+          code: string | null
+          company_id: string | null
+          id: string | null
+          is_header: boolean | null
+          level: number | null
+          name: string | null
+          total_credit: number | null
+          total_debit: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_chart_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_service_quote: {
@@ -35516,6 +35580,60 @@ export type Database = {
           movement_count: number
         }[]
       }
+      erp_account_balance_at_date: {
+        Args: {
+          p_account_id: string
+          p_as_of_date: string
+          p_company_id: string
+        }
+        Returns: number
+      }
+      erp_account_ledger: {
+        Args: {
+          p_account_id: string
+          p_company_id: string
+          p_date_from: string
+          p_date_to: string
+        }
+        Returns: {
+          credit: number
+          debit: number
+          description: string
+          entry_date: string
+          entry_number: string
+          journal_name: string
+          running_balance: number
+        }[]
+      }
+      erp_aging_report: {
+        Args: {
+          p_as_of_date?: string
+          p_company_id: string
+          p_report_type: string
+        }
+        Returns: {
+          current_amount: number
+          days_1_30: number
+          days_31_60: number
+          days_61_90: number
+          days_over_90: number
+          entity_id: string
+          entity_name: string
+          entity_tax_id: string
+          total_amount: number
+        }[]
+      }
+      erp_balance_sheet: {
+        Args: { p_as_of_date: string; p_company_id: string }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_name: string
+          amount: number
+          section: string
+          section_order: number
+        }[]
+      }
       erp_check_period_closed: {
         Args: { p_period_id: string }
         Returns: boolean
@@ -35599,6 +35717,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      erp_income_statement: {
+        Args: { p_company_id: string; p_date_from: string; p_date_to: string }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_name: string
+          amount: number
+          section: string
+          section_order: number
+        }[]
+      }
       erp_is_company_admin: {
         Args: { p_company_id: string; p_user_id: string }
         Returns: boolean
@@ -35620,6 +35749,35 @@ export type Database = {
         Returns: boolean
       }
       erp_role_company_id: { Args: { p_role_id: string }; Returns: string }
+      erp_trial_balance: {
+        Args: {
+          p_company_id: string
+          p_date_from: string
+          p_date_to: string
+          p_level?: number
+        }
+        Returns: {
+          account_code: string
+          account_id: string
+          account_level: number
+          account_name: string
+          account_type: string
+          credit_balance: number
+          credit_sum: number
+          debit_balance: number
+          debit_sum: number
+        }[]
+      }
+      erp_trial_balance_totals: {
+        Args: { p_company_id: string; p_date_from: string; p_date_to: string }
+        Returns: {
+          is_balanced: boolean
+          total_credit_balance: number
+          total_credit_sum: number
+          total_debit_balance: number
+          total_debit_sum: number
+        }[]
+      }
       erp_validate_period_open: {
         Args: { p_entry_date?: string; p_period_id: string }
         Returns: boolean
