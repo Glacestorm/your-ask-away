@@ -323,12 +323,12 @@ export function PDFStatementImporter({ className, onImportComplete }: PDFStateme
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Tipo de Estado (opcional)</Label>
-                    <Select value={selectedStatementType} onValueChange={setSelectedStatementType}>
+                    <Select value={selectedStatementType || 'auto'} onValueChange={(v) => setSelectedStatementType(v === 'auto' ? '' : v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Auto-detectar" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Auto-detectar</SelectItem>
+                        <SelectItem value="auto">Auto-detectar</SelectItem>
                         {STATEMENT_TYPES.map(type => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.icon} {type.label}
@@ -340,15 +340,15 @@ export function PDFStatementImporter({ className, onImportComplete }: PDFStateme
 
                   <div className="space-y-2">
                     <Label>País (opcional)</Label>
-                    <Select value={selectedCountry} onValueChange={(v) => {
-                      setSelectedCountry(v);
+                    <Select value={selectedCountry || 'auto'} onValueChange={(v) => {
+                      setSelectedCountry(v === 'auto' ? '' : v);
                       setSelectedPlan(''); // Reset plan when country changes
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Auto-detectar" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Auto-detectar</SelectItem>
+                        <SelectItem value="auto">Auto-detectar</SelectItem>
                         {[...new Set(plans.map(p => p.country_code))].map(code => {
                           const plan = plans.find(p => p.country_code === code);
                           return (
@@ -363,12 +363,12 @@ export function PDFStatementImporter({ className, onImportComplete }: PDFStateme
 
                   <div className="space-y-2">
                     <Label>Plan Contable (opcional)</Label>
-                    <Select value={selectedPlan} onValueChange={setSelectedPlan}>
+                    <Select value={selectedPlan || 'auto'} onValueChange={(v) => setSelectedPlan(v === 'auto' ? '' : v)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Auto-detectar" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Auto-detectar</SelectItem>
+                        <SelectItem value="auto">Auto-detectar</SelectItem>
                         {filteredPlans.map(plan => (
                           <SelectItem key={plan.plan_code} value={plan.plan_code}>
                             {plan.plan_name} {plan.is_default && '★'}
