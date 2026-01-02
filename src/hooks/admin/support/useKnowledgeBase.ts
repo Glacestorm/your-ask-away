@@ -83,11 +83,11 @@ const castToDocument = (data: unknown): KnowledgeDocument => {
   };
 };
 
-// Generic query helper for tables not yet in types
-const queryTable = (tableName: string) => {
-  return (supabase as unknown as {
-    from: (table: string) => ReturnType<typeof supabase.from>;
-  }).from(tableName);
+// Generic query helper for tables not yet in types - using any to avoid infinite type recursion
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const queryTable = (tableName: string): any => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (supabase as any).from(tableName);
 };
 
 // === HOOK ===
