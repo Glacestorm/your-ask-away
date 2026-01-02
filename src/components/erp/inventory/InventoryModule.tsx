@@ -18,6 +18,9 @@ import { useERPInventory } from '@/hooks/erp/useERPInventory';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { WarehouseDialog } from './WarehouseDialog';
+import { StockMovementDialog } from './StockMovementDialog';
+import { StockTransferDialog } from './StockTransferDialog';
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-500',
@@ -75,6 +78,11 @@ export function InventoryModule() {
   const [inventories, setInventories] = useState<any[]>([]);
   const [transfers, setTransfers] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  
+  // Dialog states
+  const [warehouseDialogOpen, setWarehouseDialogOpen] = useState(false);
+  const [movementDialogOpen, setMovementDialogOpen] = useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
 
   useEffect(() => {
     if (currentCompany) {
@@ -184,7 +192,14 @@ export function InventoryModule() {
                 className="pl-10"
               />
             </div>
-            <Button className="gap-2">
+            <Button 
+              className="gap-2"
+              onClick={() => {
+                if (activeTab === 'warehouses') setWarehouseDialogOpen(true);
+                else if (activeTab === 'movements' || activeTab === 'stock') setMovementDialogOpen(true);
+                else if (activeTab === 'transfers') setTransferDialogOpen(true);
+              }}
+            >
               <Plus className="h-4 w-4" />
               Nuevo
             </Button>
@@ -330,6 +345,23 @@ export function InventoryModule() {
             </>
           )}
         </Tabs>
+        
+        {/* Dialogs */}
+        <WarehouseDialog 
+          open={warehouseDialogOpen} 
+          onOpenChange={setWarehouseDialogOpen}
+          onSuccess={loadData}
+        />
+        <StockMovementDialog 
+          open={movementDialogOpen} 
+          onOpenChange={setMovementDialogOpen}
+          onSuccess={loadData}
+        />
+        <StockTransferDialog 
+          open={transferDialogOpen} 
+          onOpenChange={setTransferDialogOpen}
+          onSuccess={loadData}
+        />
       </CardContent>
     </Card>
   );

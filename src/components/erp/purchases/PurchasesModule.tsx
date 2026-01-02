@@ -18,6 +18,10 @@ import { useERPPurchases } from '@/hooks/erp/useERPPurchases';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PurchaseOrderDialog } from './PurchaseOrderDialog';
+import { SupplierDialog } from './SupplierDialog';
+import { GoodsReceiptDialog } from './GoodsReceiptDialog';
+import { SupplierInvoiceDialog } from './SupplierInvoiceDialog';
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-500',
@@ -55,6 +59,12 @@ export function PurchasesModule() {
   const [receipts, setReceipts] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  
+  // Dialog states
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
+  const [orderDialogOpen, setOrderDialogOpen] = useState(false);
+  const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
   useEffect(() => {
     if (currentCompany) {
@@ -148,7 +158,15 @@ export function PurchasesModule() {
                 className="pl-10"
               />
             </div>
-            <Button className="gap-2">
+            <Button 
+              className="gap-2"
+              onClick={() => {
+                if (activeTab === 'suppliers') setSupplierDialogOpen(true);
+                else if (activeTab === 'orders') setOrderDialogOpen(true);
+                else if (activeTab === 'receipts') setReceiptDialogOpen(true);
+                else if (activeTab === 'invoices') setInvoiceDialogOpen(true);
+              }}
+            >
               <Plus className="h-4 w-4" />
               Nuevo
             </Button>
@@ -252,6 +270,28 @@ export function PurchasesModule() {
             </>
           )}
         </Tabs>
+        
+        {/* Dialogs */}
+        <SupplierDialog 
+          open={supplierDialogOpen} 
+          onOpenChange={setSupplierDialogOpen}
+          onSuccess={loadData}
+        />
+        <PurchaseOrderDialog 
+          open={orderDialogOpen} 
+          onOpenChange={setOrderDialogOpen}
+          onSuccess={loadData}
+        />
+        <GoodsReceiptDialog 
+          open={receiptDialogOpen} 
+          onOpenChange={setReceiptDialogOpen}
+          onSuccess={loadData}
+        />
+        <SupplierInvoiceDialog 
+          open={invoiceDialogOpen} 
+          onOpenChange={setInvoiceDialogOpen}
+          onSuccess={loadData}
+        />
       </CardContent>
     </Card>
   );

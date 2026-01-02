@@ -118,7 +118,7 @@ export function GoodsReceiptDialog({ open, onOpenChange, fromOrder, onSuccess }:
   };
 
   const selectItem = (index: number, itemId: string) => {
-    const item = itemsQuery.data?.find(i => i.id === itemId);
+    const item = items?.find(i => i.id === itemId);
     if (item) {
       const newLines = [...lines];
       newLines[index] = {
@@ -278,7 +278,7 @@ export function GoodsReceiptDialog({ open, onOpenChange, fromOrder, onSuccess }:
                               <SelectValue placeholder="Artículo" />
                             </SelectTrigger>
                             <SelectContent>
-                              {itemsQuery.data?.filter(i => i.is_stocked).map(item => (
+                              {items?.filter(i => i.is_stocked).map(item => (
                                 <SelectItem key={item.id} value={item.id}>
                                   {item.sku} - {item.name}
                                 </SelectItem>

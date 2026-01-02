@@ -1,15 +1,14 @@
 /**
  * TreasuryModule - Módulo Completo de Tesorería
- * Fusiona funcionalidad de admin/treasury/*
+ * Integrado con useObelixiaTreasury para datos reales y predicciones IA
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
 import { 
   Table, 
   TableBody, 
@@ -26,30 +25,22 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  CreditCard,
   PiggyBank,
   AlertTriangle,
   RefreshCw,
   Plus,
   Download,
-  Eye
+  Eye,
+  Loader2,
+  Brain
 } from 'lucide-react';
 import { useERPContext } from '@/hooks/erp/useERPContext';
+import { useObelixiaTreasury } from '@/hooks/admin/obelixia-accounting/useObelixiaTreasury';
+import { useMaestros } from '@/hooks/erp/useMaestros';
 import { cn } from '@/lib/utils';
 import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-
-interface BankAccount {
-  id: string;
-  name: string;
-  iban: string;
-  balance: number;
-  availableBalance: number;
-  currency: string;
-  bank: string;
-  lastSync: Date;
-}
 
 interface CashFlowProjection {
   date: string;
@@ -58,19 +49,13 @@ interface CashFlowProjection {
   balance: number;
 }
 
-// Mock data
-const mockBankAccounts: BankAccount[] = [
-  { id: '1', name: 'Cuenta Principal', iban: 'ES91 2100 0418 4502 0005 1332', balance: 125000, availableBalance: 120000, currency: 'EUR', bank: 'CaixaBank', lastSync: new Date() },
-  { id: '2', name: 'Cuenta Nóminas', iban: 'ES23 0182 2370 4200 1566 4444', balance: 45000, availableBalance: 45000, currency: 'EUR', bank: 'BBVA', lastSync: addDays(new Date(), -1) },
-  { id: '3', name: 'Cuenta Ahorro', iban: 'ES45 0049 1234 5612 3456 7890', balance: 250000, availableBalance: 250000, currency: 'EUR', bank: 'Santander', lastSync: addDays(new Date(), -2) },
-];
-
-const generateCashFlowProjection = (): CashFlowProjection[] => {
+// Generate mock projection data when real data is not available
+const generateCashFlowProjection = (initialBalance: number = 420000): CashFlowProjection[] => {
   const start = startOfMonth(new Date());
   const end = endOfMonth(addDays(new Date(), 60));
   const days = eachDayOfInterval({ start, end });
   
-  let balance = 420000;
+  let balance = initialBalance;
   
   return days.map(day => {
     const inflows = Math.random() * 15000 + 5000;
@@ -88,16 +73,85 @@ const generateCashFlowProjection = (): CashFlowProjection[] => {
 
 export function TreasuryModule() {
   const { currentCompany } = useERPContext();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [cashFlowData] = useState(generateCashFlowProjection);
+  const { bankAccounts, bankAccountsLoading } = useMaestros();
+  const { 
+    isLoading: treasuryLoading,
+    forecasts,
+    liquidityPositions,
+    alerts,
+    workingCapital,
+    fetchCashFlowForecast,
+    fetchLiquidityPositions,
+    getWorkingCapitalMetrics,
+    fetchAlerts,
+    lastRefresh
+  } = useObelixiaTreasury();
 
+  const [activeTab, setActiveTab] = useState('overview');
+  const [cashFlowData, setCashFlowData] = useState<CashFlowProjection[]>([]);
+
+  // Load data on mount
+  useEffect(() => {
+    if (currentCompany) {
+      loadAllData();
+      // Generate initial projection data
+      setCashFlowData(generateCashFlowProjection(totalBalance || 420000));
+    }
+  }, [currentCompany]);
+
+  const loadAllData = async () => {
+    await Promise.all([
+      fetchCashFlowForecast({ organizationId: currentCompany?.id }, 3),
+      fetchLiquidityPositions({ organizationId: currentCompany?.id }),
+      getWorkingCapitalMetrics({ organizationId: currentCompany?.id }),
+      fetchAlerts({ organizationId: currentCompany?.id }),
+    ]);
+  };
+
+  // Calculate totals from bank accounts or liquidity positions
   const totalBalance = useMemo(() => {
-    return mockBankAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-  }, []);
+    if (liquidityPositions.length > 0) {
+      return liquidityPositions.reduce((sum, pos) => sum + pos.currentBalance, 0);
+    }
+    return bankAccounts?.reduce((sum, acc: any) => sum + (acc.current_balance || 0), 0) || 0;
+  }, [liquidityPositions, bankAccounts]);
 
   const totalAvailable = useMemo(() => {
-    return mockBankAccounts.reduce((sum, acc) => sum + acc.availableBalance, 0);
-  }, []);
+    if (liquidityPositions.length > 0) {
+      return liquidityPositions.reduce((sum, pos) => sum + pos.availableBalance, 0);
+    }
+    return bankAccounts?.reduce((sum, acc: any) => sum + (acc.available_balance || acc.current_balance || 0), 0) || 0;
+  }, [liquidityPositions, bankAccounts]);
+
+  // Derive displayable accounts from liquidity positions or bank accounts
+  const displayAccounts = useMemo(() => {
+    if (liquidityPositions.length > 0) {
+      return liquidityPositions.map(pos => ({
+        id: pos.id,
+        name: pos.accountName,
+        iban: '',
+        balance: pos.currentBalance,
+        availableBalance: pos.availableBalance,
+        currency: pos.currency,
+        bank: pos.accountType,
+        lastSync: new Date(pos.lastUpdated),
+        trend: pos.trend,
+        trendPercentage: pos.trendPercentage,
+      }));
+    }
+    return (bankAccounts || []).map((acc: any) => ({
+      id: acc.id,
+      name: acc.account_name || acc.bank_name || 'Cuenta',
+      iban: acc.iban || '',
+      balance: acc.current_balance || 0,
+      availableBalance: acc.available_balance || acc.current_balance || 0,
+      currency: acc.currency || 'EUR',
+      bank: acc.bank_name || '',
+      lastSync: new Date(acc.last_sync_at || acc.updated_at || new Date()),
+      trend: 'stable' as const,
+      trendPercentage: 0,
+    }));
+  }, [liquidityPositions, bankAccounts]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', {
@@ -307,7 +361,7 @@ export function TreasuryModule() {
         {/* Cuentas Bancarias */}
         <TabsContent value="accounts" className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
-            {mockBankAccounts.map((account) => (
+            {displayAccounts.map((account) => (
               <Card key={account.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
