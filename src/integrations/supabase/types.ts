@@ -35503,9 +35503,35 @@ export type Database = {
         }
         Returns: string
       }
+      erp_account_balance: {
+        Args: {
+          p_account_id: string
+          p_end_date?: string
+          p_start_date?: string
+        }
+        Returns: {
+          balance: number
+          credit_total: number
+          debit_total: number
+          movement_count: number
+        }[]
+      }
       erp_check_period_closed: {
         Args: { p_period_id: string }
         Returns: boolean
+      }
+      erp_close_fiscal_year: {
+        Args: {
+          p_fiscal_year_id: string
+          p_generate_closing?: boolean
+          p_generate_regularization?: boolean
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      erp_close_period: {
+        Args: { p_period_id: string; p_user_id: string }
+        Returns: Json
       }
       erp_company_has_role_permissions: {
         Args: { p_company_id: string }
@@ -35526,6 +35552,22 @@ export type Database = {
       erp_create_journal_entry_from_supplier_invoice: {
         Args: { p_invoice_id: string; p_purchase_journal_id?: string }
         Returns: string
+      }
+      erp_generate_closing_entry: {
+        Args: { p_fiscal_year_id: string; p_user_id: string }
+        Returns: Json
+      }
+      erp_generate_opening_entry: {
+        Args: {
+          p_new_fiscal_year_id: string
+          p_previous_fiscal_year_id: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      erp_generate_regularization_entry: {
+        Args: { p_fiscal_year_id: string; p_user_id: string }
+        Returns: Json
       }
       erp_generate_sepa_xml: {
         Args: { p_remittance_id: string }
@@ -35568,6 +35610,10 @@ export type Database = {
           p_period_id: string
         }
         Returns: number
+      }
+      erp_reopen_period: {
+        Args: { p_period_id: string; p_reason?: string; p_user_id: string }
+        Returns: Json
       }
       erp_role_belongs_to_company: {
         Args: { p_company_id: string; p_role_id: string }
