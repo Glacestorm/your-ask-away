@@ -1236,6 +1236,117 @@ export type Database = {
         }
         Relationships: []
       }
+      account_mappings: {
+        Row: {
+          conversion_formula: string | null
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          mapping_rules: Json | null
+          mapping_type: string | null
+          notes: string | null
+          source_account_code: string
+          source_account_name: string | null
+          source_framework_id: string | null
+          target_account_code: string
+          target_account_name: string | null
+          target_framework_id: string | null
+          updated_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          conversion_formula?: string | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          mapping_rules?: Json | null
+          mapping_type?: string | null
+          notes?: string | null
+          source_account_code: string
+          source_account_name?: string | null
+          source_framework_id?: string | null
+          target_account_code: string
+          target_account_name?: string | null
+          target_framework_id?: string | null
+          updated_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          conversion_formula?: string | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          mapping_rules?: Json | null
+          mapping_type?: string | null
+          notes?: string | null
+          source_account_code?: string
+          source_account_name?: string | null
+          source_framework_id?: string | null
+          target_account_code?: string
+          target_account_name?: string | null
+          target_framework_id?: string | null
+          updated_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_mappings_source_framework_id_fkey"
+            columns: ["source_framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_mappings_target_framework_id_fkey"
+            columns: ["target_framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounting_frameworks: {
+        Row: {
+          country_codes: string[] | null
+          created_at: string | null
+          description: string | null
+          effective_date: string | null
+          framework_code: string
+          framework_name: string
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          country_codes?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          framework_code: string
+          framework_name: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          country_codes?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          framework_code?: string
+          framework_name?: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       action_plan_steps: {
         Row: {
           completed: boolean
@@ -6422,6 +6533,66 @@ export type Database = {
           },
         ]
       }
+      compliance_audit_log: {
+        Row: {
+          action: string
+          compliance_result: string | null
+          entity_id: string
+          entity_type: string
+          framework_id: string | null
+          id: string
+          issues_found: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          performed_at: string | null
+          performed_by: string | null
+          rule_id: string | null
+        }
+        Insert: {
+          action: string
+          compliance_result?: string | null
+          entity_id: string
+          entity_type: string
+          framework_id?: string | null
+          id?: string
+          issues_found?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_at?: string | null
+          performed_by?: string | null
+          rule_id?: string | null
+        }
+        Update: {
+          action?: string
+          compliance_result?: string | null
+          entity_id?: string
+          entity_type?: string
+          framework_id?: string | null
+          id?: string
+          issues_found?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          performed_at?: string | null
+          performed_by?: string | null
+          rule_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_audit_log_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_audit_log_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       compliance_requirements: {
         Row: {
           category: string | null
@@ -6566,6 +6737,74 @@ export type Database = {
             columns: ["requirement_id"]
             isOneToOne: false
             referencedRelation: "compliance_requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_rules: {
+        Row: {
+          applies_to: string[] | null
+          created_at: string | null
+          description: string | null
+          effective_from: string | null
+          effective_until: string | null
+          error_message: string | null
+          framework_id: string | null
+          id: string
+          is_active: boolean | null
+          remediation_guidance: string | null
+          rule_code: string
+          rule_name: string
+          rule_type: string | null
+          severity: string | null
+          standard_reference: string | null
+          updated_at: string | null
+          validation_logic: Json | null
+        }
+        Insert: {
+          applies_to?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          error_message?: string | null
+          framework_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          remediation_guidance?: string | null
+          rule_code: string
+          rule_name: string
+          rule_type?: string | null
+          severity?: string | null
+          standard_reference?: string | null
+          updated_at?: string | null
+          validation_logic?: Json | null
+        }
+        Update: {
+          applies_to?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          error_message?: string | null
+          framework_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          remediation_guidance?: string | null
+          rule_code?: string
+          rule_name?: string
+          rule_type?: string | null
+          severity?: string | null
+          standard_reference?: string | null
+          updated_at?: string | null
+          validation_logic?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_rules_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
             referencedColumns: ["id"]
           },
         ]
@@ -14770,6 +15009,113 @@ export type Database = {
           },
         ]
       }
+      erp_voice_sessions: {
+        Row: {
+          actions_taken: Json | null
+          context_data: Json | null
+          created_at: string | null
+          ended_at: string | null
+          id: string
+          language: string | null
+          messages_count: number | null
+          session_type: string | null
+          started_at: string | null
+          status: string | null
+          total_duration_seconds: number | null
+          updated_at: string | null
+          user_id: string
+          voice_id: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          context_data?: Json | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          language?: string | null
+          messages_count?: number | null
+          session_type?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_duration_seconds?: number | null
+          updated_at?: string | null
+          user_id: string
+          voice_id?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          context_data?: Json | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          language?: string | null
+          messages_count?: number | null
+          session_type?: string | null
+          started_at?: string | null
+          status?: string | null
+          total_duration_seconds?: number | null
+          updated_at?: string | null
+          user_id?: string
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
+      erp_voice_transcripts: {
+        Row: {
+          action_result: Json | null
+          action_triggered: string | null
+          audio_duration_ms: number | null
+          confidence_score: number | null
+          content: string
+          created_at: string | null
+          entities_extracted: Json | null
+          id: string
+          intent_detected: string | null
+          language: string | null
+          role: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_result?: Json | null
+          action_triggered?: string | null
+          audio_duration_ms?: number | null
+          confidence_score?: number | null
+          content: string
+          created_at?: string | null
+          entities_extracted?: Json | null
+          id?: string
+          intent_detected?: string | null
+          language?: string | null
+          role: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_result?: Json | null
+          action_triggered?: string | null
+          audio_duration_ms?: number | null
+          confidence_score?: number | null
+          content?: string
+          created_at?: string | null
+          entities_extracted?: Json | null
+          id?: string
+          intent_detected?: string | null
+          language?: string | null
+          role?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_voice_transcripts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "erp_voice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_warehouse_locations: {
         Row: {
           aisle: string | null
@@ -16026,6 +16372,78 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      framework_reports: {
+        Row: {
+          adjustments: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          compliance_issues: Json | null
+          compliance_status: string | null
+          created_at: string | null
+          generated_by: string | null
+          id: string
+          period_end: string
+          period_start: string
+          reconciliation_notes: string | null
+          report_data: Json
+          report_type: string
+          source_framework_id: string | null
+          target_framework_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          adjustments?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          compliance_issues?: Json | null
+          compliance_status?: string | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end: string
+          period_start: string
+          reconciliation_notes?: string | null
+          report_data?: Json
+          report_type: string
+          source_framework_id?: string | null
+          target_framework_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          adjustments?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          compliance_issues?: Json | null
+          compliance_status?: string | null
+          created_at?: string | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string
+          period_start?: string
+          reconciliation_notes?: string | null
+          report_data?: Json
+          report_type?: string
+          source_framework_id?: string | null
+          target_framework_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "framework_reports_source_framework_id_fkey"
+            columns: ["source_framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "framework_reports_target_framework_id_fkey"
+            columns: ["target_framework_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_frameworks"
             referencedColumns: ["id"]
           },
         ]
@@ -34797,6 +35215,60 @@ export type Database = {
         }
         Relationships: []
       }
+      user_voice_preferences: {
+        Row: {
+          auto_detect_language: boolean | null
+          created_at: string | null
+          enable_voice_commands: boolean | null
+          enable_voice_feedback: boolean | null
+          id: string
+          preferred_language: string | null
+          speech_rate: number | null
+          transcription_display: string | null
+          updated_at: string | null
+          user_id: string
+          voice_id_ca: string | null
+          voice_id_en: string | null
+          voice_id_es: string | null
+          voice_id_fr: string | null
+          wake_word_enabled: boolean | null
+        }
+        Insert: {
+          auto_detect_language?: boolean | null
+          created_at?: string | null
+          enable_voice_commands?: boolean | null
+          enable_voice_feedback?: boolean | null
+          id?: string
+          preferred_language?: string | null
+          speech_rate?: number | null
+          transcription_display?: string | null
+          updated_at?: string | null
+          user_id: string
+          voice_id_ca?: string | null
+          voice_id_en?: string | null
+          voice_id_es?: string | null
+          voice_id_fr?: string | null
+          wake_word_enabled?: boolean | null
+        }
+        Update: {
+          auto_detect_language?: boolean | null
+          created_at?: string | null
+          enable_voice_commands?: boolean | null
+          enable_voice_feedback?: boolean | null
+          id?: string
+          preferred_language?: string | null
+          speech_rate?: number | null
+          transcription_display?: string | null
+          updated_at?: string | null
+          user_id?: string
+          voice_id_ca?: string | null
+          voice_id_en?: string | null
+          voice_id_es?: string | null
+          voice_id_fr?: string | null
+          wake_word_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       vertical_bpmn_templates: {
         Row: {
           created_at: string | null
@@ -35641,6 +36113,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      voice_command_templates: {
+        Row: {
+          action_config: Json | null
+          action_type: string
+          command_key: string
+          command_patterns: Json
+          confirmation_required: boolean | null
+          created_at: string | null
+          examples: Json | null
+          id: string
+          intent: string
+          is_active: boolean | null
+          optional_entities: string[] | null
+          required_entities: string[] | null
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type: string
+          command_key: string
+          command_patterns: Json
+          confirmation_required?: boolean | null
+          created_at?: string | null
+          examples?: Json | null
+          id?: string
+          intent: string
+          is_active?: boolean | null
+          optional_entities?: string[] | null
+          required_entities?: string[] | null
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: string
+          command_key?: string
+          command_patterns?: Json
+          confirmation_required?: boolean | null
+          created_at?: string | null
+          examples?: Json | null
+          id?: string
+          intent?: string
+          is_active?: boolean | null
+          optional_entities?: string[] | null
+          required_entities?: string[] | null
+        }
+        Relationships: []
       }
       voice_commands: {
         Row: {

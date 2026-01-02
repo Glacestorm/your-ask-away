@@ -31,3 +31,7 @@ export { useERPPayables } from './useERPPayables';
 export { useERPReceivables } from './useERPReceivables';
 export { useERPBankReconciliation } from './useERPBankReconciliation';
 export { useERPSEPARemittances } from './useERPSEPARemittances';
+
+// Phase 1-2: NIIF Compliance & Voice Intelligence
+export { useNIIFCompliance } from './useNIIFCompliance';
+export { useAccountingVoiceAgent } from './useAccountingVoiceAgent';

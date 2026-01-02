@@ -31,6 +31,12 @@ export { CashFlowPanel } from './CashFlowPanel';
 export { BudgetManagementPanel } from './BudgetManagementPanel';
 export { ERPAdvancedRatiosPanel } from './ERPAdvancedRatiosPanel';
 
+// Phase 1: NIIF/NIIC Compliance Engine
+export { NIIFCompliancePanel } from './NIIFCompliancePanel';
+
+// Phase 2: Voice Intelligence Hub
+export { AccountingVoiceAgent } from './AccountingVoiceAgent';
+
 // Subcomponentes modulares - Ratios Financieros
 export * from './financial-ratios';
 
