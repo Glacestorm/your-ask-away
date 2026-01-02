@@ -13821,6 +13821,145 @@ export type Database = {
           },
         ]
       }
+      erp_tax_model_filings: {
+        Row: {
+          attachments: Json | null
+          calculated_data: Json | null
+          company_id: string
+          created_at: string
+          fiscal_year_id: string | null
+          id: string
+          notes: string | null
+          period_id: string | null
+          period_number: number
+          period_type: string
+          reference_number: string | null
+          result_amount: number | null
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          tax_model_id: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          attachments?: Json | null
+          calculated_data?: Json | null
+          company_id: string
+          created_at?: string
+          fiscal_year_id?: string | null
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          period_number: number
+          period_type: string
+          reference_number?: string | null
+          result_amount?: number | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          tax_model_id: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          attachments?: Json | null
+          calculated_data?: Json | null
+          company_id?: string
+          created_at?: string
+          fiscal_year_id?: string | null
+          id?: string
+          notes?: string | null
+          period_id?: string | null
+          period_number?: number
+          period_type?: string
+          reference_number?: string | null
+          result_amount?: number | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          tax_model_id?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_tax_model_filings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_tax_model_filings_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_tax_model_filings_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_tax_model_filings_tax_model_id_fkey"
+            columns: ["tax_model_id"]
+            isOneToOne: false
+            referencedRelation: "erp_tax_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_tax_models: {
+        Row: {
+          company_id: string
+          configuration: Json | null
+          created_at: string
+          description: string | null
+          frequency: string
+          id: string
+          is_active: boolean
+          model_code: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          configuration?: Json | null
+          created_at?: string
+          description?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          model_code: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          configuration?: Json | null
+          created_at?: string
+          description?: string | null
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          model_code?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_tax_models_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_taxes: {
         Row: {
           code: string
@@ -13909,6 +14048,47 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_vat_operation_keys: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          register_type: string
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          register_type?: string
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          register_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_vat_operation_keys_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
             referencedColumns: ["id"]
           },
         ]
@@ -14019,6 +14199,90 @@ export type Database = {
             columns: ["period_id"]
             isOneToOne: false
             referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_vat_types: {
+        Row: {
+          applies_to: string | null
+          code: string
+          company_id: string
+          created_at: string
+          deductible_account_id: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          payable_account_id: string | null
+          rate: number
+          updated_at: string
+          vat_type: string
+        }
+        Insert: {
+          applies_to?: string | null
+          code: string
+          company_id: string
+          created_at?: string
+          deductible_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          payable_account_id?: string | null
+          rate?: number
+          updated_at?: string
+          vat_type?: string
+        }
+        Update: {
+          applies_to?: string | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          deductible_account_id?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          payable_account_id?: string | null
+          rate?: number
+          updated_at?: string
+          vat_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_vat_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_types_deductible_account_id_fkey"
+            columns: ["deductible_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_types_deductible_account_id_fkey"
+            columns: ["deductible_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_types_payable_account_id_fkey"
+            columns: ["payable_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_types_payable_account_id_fkey"
+            columns: ["payable_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -14193,6 +14457,70 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "erp_warehouses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_withholding_types: {
+        Row: {
+          account_id: string | null
+          applies_to: string | null
+          code: string
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          rate: number
+          updated_at: string
+          withholding_type: string
+        }
+        Insert: {
+          account_id?: string | null
+          applies_to?: string | null
+          code: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          rate?: number
+          updated_at?: string
+          withholding_type?: string
+        }
+        Update: {
+          account_id?: string | null
+          applies_to?: string | null
+          code?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          rate?: number
+          updated_at?: string
+          withholding_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_withholding_types_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_account_balances_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_withholding_types_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_withholding_types_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
