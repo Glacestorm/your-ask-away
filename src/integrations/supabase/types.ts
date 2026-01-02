@@ -12574,6 +12574,155 @@ export type Database = {
           },
         ]
       }
+      erp_sales_invoice_lines: {
+        Row: {
+          created_at: string | null
+          description: string
+          discount_percent: number | null
+          id: string
+          invoice_id: string
+          line_total: number
+          product_id: string | null
+          quantity: number | null
+          tax_id: string | null
+          tax_percent: number | null
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          discount_percent?: number | null
+          id?: string
+          invoice_id: string
+          line_total: number
+          product_id?: string | null
+          quantity?: number | null
+          tax_id?: string | null
+          tax_percent?: number | null
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          discount_percent?: number | null
+          id?: string
+          invoice_id?: string
+          line_total?: number
+          product_id?: string | null
+          quantity?: number | null
+          tax_id?: string | null
+          tax_percent?: number | null
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sales_invoice_lines_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sales_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sales_invoice_lines_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "erp_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sales_invoice_lines_tax_id_fkey"
+            columns: ["tax_id"]
+            isOneToOne: false
+            referencedRelation: "erp_taxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sales_invoices: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          customer_id: string | null
+          due_date: string | null
+          exchange_rate: number | null
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          notes: string | null
+          payment_terms: string | null
+          series_id: string | null
+          status: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          due_date?: string | null
+          exchange_rate?: number | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          customer_id?: string | null
+          due_date?: string | null
+          exchange_rate?: number | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          notes?: string | null
+          payment_terms?: string | null
+          series_id?: string | null
+          status?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sales_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sales_invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sales_invoices_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_sepa_generation_issues: {
         Row: {
           created_at: string | null
