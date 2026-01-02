@@ -8721,22 +8721,37 @@ export type Database = {
         Row: {
           created_at: string | null
           customer_id: string
+          default_warehouse_id: string | null
+          delivery_notes: string | null
           free_shipping_threshold: number | null
+          partial_delivery_allowed: boolean | null
           portes_mode: string | null
+          preferred_carrier: string | null
+          requires_appointment: boolean | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           customer_id: string
+          default_warehouse_id?: string | null
+          delivery_notes?: string | null
           free_shipping_threshold?: number | null
+          partial_delivery_allowed?: boolean | null
           portes_mode?: string | null
+          preferred_carrier?: string | null
+          requires_appointment?: boolean | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           customer_id?: string
+          default_warehouse_id?: string | null
+          delivery_notes?: string | null
           free_shipping_threshold?: number | null
+          partial_delivery_allowed?: boolean | null
           portes_mode?: string | null
+          preferred_carrier?: string | null
+          requires_appointment?: boolean | null
           updated_at?: string | null
         }
         Relationships: [
@@ -8745,6 +8760,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: true
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_shipping_default_warehouse_id_fkey"
+            columns: ["default_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
@@ -29999,35 +30021,56 @@ export type Database = {
       }
       sepa_mandates: {
         Row: {
+          bic: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
           company_id: string
           created_at: string | null
+          creditor_id: string | null
           customer_id: string
+          debtor_name: string | null
+          iban: string | null
           id: string
           is_active: boolean | null
           mandate_ref: string
           scheme: string | null
+          sequence_type: string | null
           signed_date: string
           updated_at: string | null
         }
         Insert: {
+          bic?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           company_id: string
           created_at?: string | null
+          creditor_id?: string | null
           customer_id: string
+          debtor_name?: string | null
+          iban?: string | null
           id?: string
           is_active?: boolean | null
           mandate_ref: string
           scheme?: string | null
+          sequence_type?: string | null
           signed_date: string
           updated_at?: string | null
         }
         Update: {
+          bic?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
           company_id?: string
           created_at?: string | null
+          creditor_id?: string | null
           customer_id?: string
+          debtor_name?: string | null
+          iban?: string | null
           id?: string
           is_active?: boolean | null
           mandate_ref?: string
           scheme?: string | null
+          sequence_type?: string | null
           signed_date?: string
           updated_at?: string | null
         }
@@ -35877,31 +35920,43 @@ export type Database = {
       }
       warehouse_locations: {
         Row: {
+          aisle: string | null
           code: string
           created_at: string | null
           id: string
           is_active: boolean | null
+          level: string | null
           name: string
+          rack: string | null
           updated_at: string | null
           warehouse_id: string
+          zone: string | null
         }
         Insert: {
+          aisle?: string | null
           code: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          level?: string | null
           name: string
+          rack?: string | null
           updated_at?: string | null
           warehouse_id: string
+          zone?: string | null
         }
         Update: {
+          aisle?: string | null
           code?: string
           created_at?: string | null
           id?: string
           is_active?: boolean | null
+          level?: string | null
           name?: string
+          rack?: string | null
           updated_at?: string | null
           warehouse_id?: string
+          zone?: string | null
         }
         Relationships: [
           {
