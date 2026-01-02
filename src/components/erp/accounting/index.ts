@@ -15,7 +15,7 @@ export { JournalEntryEditor } from './JournalEntryEditor';
 export { JournalsList } from './JournalsList';
 export { CreateAccountDialog } from './CreateAccountDialog';
 
-// Nuevos componentes implementados
+// Componentes de estados financieros
 export { AccountLedgerPanel } from './AccountLedgerPanel';
 export { TrialBalancePanel } from './TrialBalancePanel';
 export { IncomeStatementPanel } from './IncomeStatementPanel';
@@ -30,3 +30,15 @@ export { FinancialRatiosPanel } from './FinancialRatiosPanel';
 export { CashFlowPanel } from './CashFlowPanel';
 export { BudgetManagementPanel } from './BudgetManagementPanel';
 export { ERPAdvancedRatiosPanel } from './ERPAdvancedRatiosPanel';
+
+// Subcomponentes modulares - Ratios Financieros
+export * from './financial-ratios';
+
+// Subcomponentes modulares - Cash Flow
+export * from './cash-flow';
+
+// Subcomponentes modulares - Budget
+export * from './budget';
+
+// Subcomponentes modulares - Advanced Ratios
+export * from './advanced-ratios';
