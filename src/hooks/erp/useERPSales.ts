@@ -145,7 +145,7 @@ export interface SalesInvoice {
   customer_address?: string;
   invoice_date: string;
   due_date?: string;
-  due_dates_json?: unknown;
+  due_dates_json?: Record<string, unknown> | null;
   status: 'draft' | 'confirmed' | 'sent' | 'paid' | 'partial' | 'overdue' | 'cancelled';
   currency: string;
   payment_method?: string;
@@ -933,17 +933,38 @@ export function useERPSales() {
   }, [currentCompany, user]);
 
   const confirmInvoice = useCallback(async (invoiceId: string): Promise<boolean> => {
+    if (!currentCompany) return false;
+    
     setIsLoading(true);
     try {
+      // Obtener factura
+      const invoice = await fetchInvoiceWithLines(invoiceId);
+      if (!invoice) throw new Error('Factura no encontrada');
+
+      // Actualizar estado
       const { error } = await supabase
         .from('sales_invoices')
         .update({ status: 'confirmed' })
         .eq('id', invoiceId);
 
       if (error) throw error;
+
+      // Generar vencimientos (receivables)
+      const dueDate = invoice.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       
-      await logSalesAudit('INVOICE_CONFIRMED', 'invoice', invoiceId, null, null);
-      toast.success('Factura confirmada y vencimientos generados');
+      await supabase.from('receivables').insert([{
+        company_id: currentCompany.id,
+        invoice_id: invoiceId,
+        customer_id: invoice.customer_id,
+        customer_name: invoice.customer_name,
+        due_date: dueDate,
+        amount: invoice.total,
+        paid_amount: 0,
+        status: 'unpaid',
+      }]);
+      
+      await logSalesAudit('INVOICE_CONFIRMED', 'invoice', invoiceId, null, { receivable_generated: true });
+      toast.success('Factura confirmada y vencimiento generado');
       return true;
     } catch (err) {
       console.error('[useERPSales] confirmInvoice error:', err);
@@ -952,7 +973,149 @@ export function useERPSales() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentCompany, fetchInvoiceWithLines]);
+
+  // Crear factura directa (sin albarán)
+  const createInvoice = useCallback(async (
+    invoice: Omit<SalesInvoice, 'id' | 'created_at' | 'company_id' | 'lines'>,
+    lines: Omit<SalesInvoiceLine, 'id' | 'invoice_id'>[]
+  ): Promise<SalesInvoice | null> => {
+    if (!currentCompany || !user) return null;
+
+    setIsLoading(true);
+    try {
+      const { due_dates_json, ...invoiceData } = invoice;
+      const { data: newInvoice, error: invoiceError } = await supabase
+        .from('sales_invoices')
+        .insert([{
+          ...invoiceData,
+          due_dates_json: due_dates_json ? JSON.parse(JSON.stringify(due_dates_json)) : null,
+          company_id: currentCompany.id,
+          paid_amount: 0,
+          created_by: user.id,
+        } as never])
+        .select()
+        .single();
+
+      if (invoiceError) throw invoiceError;
+
+      if (lines.length > 0) {
+        const linesToInsert = lines.map((line, idx) => ({
+          ...line,
+          invoice_id: newInvoice.id,
+          line_number: idx + 1,
+        }));
+
+        await supabase.from('sales_invoice_lines').insert(linesToInsert as never[]);
+      }
+
+      await logSalesAudit('INVOICE_CREATED', 'invoice', newInvoice.id, null, newInvoice);
+      toast.success('Factura creada');
+      return newInvoice as SalesInvoice;
+    } catch (err) {
+      console.error('[useERPSales] createInvoice error:', err);
+      toast.error('Error al crear factura');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentCompany, user]);
+
+  // Crear albarán directo (sin pedido)
+  const createDeliveryNote = useCallback(async (
+    delivery: Omit<DeliveryNote, 'id' | 'created_at' | 'company_id' | 'lines'>,
+    lines: Omit<DeliveryNoteLine, 'id' | 'delivery_note_id'>[]
+  ): Promise<DeliveryNote | null> => {
+    if (!currentCompany || !user) return null;
+
+    setIsLoading(true);
+    try {
+      const { data: newDN, error: dnError } = await supabase
+        .from('delivery_notes')
+        .insert([{
+          ...delivery,
+          company_id: currentCompany.id,
+          created_by: user.id,
+        }])
+        .select()
+        .single();
+
+      if (dnError) throw dnError;
+
+      if (lines.length > 0) {
+        const linesToInsert = lines.map((line, idx) => ({
+          ...line,
+          delivery_note_id: newDN.id,
+          line_number: idx + 1,
+          qty_invoiced: 0,
+        }));
+
+        await supabase.from('delivery_note_lines').insert(linesToInsert as never[]);
+      }
+
+      // Recalcular totales
+      const subtotal = lines.reduce((sum, l) => sum + l.line_total, 0);
+      const taxTotal = lines.reduce((sum, l) => sum + l.tax_total, 0);
+
+      await supabase
+        .from('delivery_notes')
+        .update({ subtotal, tax_total: taxTotal, total: subtotal + taxTotal })
+        .eq('id', newDN.id);
+
+      await logSalesAudit('DELIVERY_NOTE_CREATED', 'delivery_note', newDN.id, null, newDN);
+      toast.success('Albarán creado');
+      return { ...newDN, subtotal, tax_total: taxTotal, total: subtotal + taxTotal } as DeliveryNote;
+    } catch (err) {
+      console.error('[useERPSales] createDeliveryNote error:', err);
+      toast.error('Error al crear albarán');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentCompany, user]);
+
+  // Crear abono directo
+  const createCreditNoteDirect = useCallback(async (
+    creditNote: Omit<SalesCreditNote, 'id' | 'created_at' | 'company_id' | 'lines'>,
+    lines: Omit<SalesCreditNoteLine, 'id' | 'credit_note_id'>[]
+  ): Promise<SalesCreditNote | null> => {
+    if (!currentCompany || !user) return null;
+
+    setIsLoading(true);
+    try {
+      const { data: newCN, error: cnError } = await supabase
+        .from('sales_credit_notes')
+        .insert([{
+          ...creditNote,
+          company_id: currentCompany.id,
+          created_by: user.id,
+        }])
+        .select()
+        .single();
+
+      if (cnError) throw cnError;
+
+      if (lines.length > 0) {
+        const linesToInsert = lines.map((line, idx) => ({
+          ...line,
+          credit_note_id: newCN.id,
+          line_number: idx + 1,
+        }));
+
+        await supabase.from('sales_credit_note_lines').insert(linesToInsert as never[]);
+      }
+
+      await logSalesAudit('CREDIT_NOTE_CREATED', 'credit_note', newCN.id, null, newCN);
+      toast.success('Abono creado');
+      return newCN as SalesCreditNote;
+    } catch (err) {
+      console.error('[useERPSales] createCreditNoteDirect error:', err);
+      toast.error('Error al crear abono');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentCompany, user]);
 
   // ===================== ABONOS =====================
 
@@ -1198,14 +1361,17 @@ export function useERPSales() {
     // Albaranes
     fetchDeliveryNotes,
     convertOrderToDeliveryNote,
+    createDeliveryNote,
     // Facturas
     fetchInvoices,
     fetchInvoiceWithLines,
     invoiceDeliveryNotes,
     confirmInvoice,
+    createInvoice,
     // Abonos
     fetchCreditNotes,
     createCreditNote,
+    createCreditNoteDirect,
     // Vencimientos
     fetchReceivables,
     // Control de crédito

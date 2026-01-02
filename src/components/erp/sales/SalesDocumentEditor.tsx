@@ -40,7 +40,14 @@ import {
   Save, FileText, AlertTriangle, CheckCircle,
   Plus, Trash2, X, Loader2
 } from 'lucide-react';
-import { useERPSales, SalesQuoteLine } from '@/hooks/erp/useERPSales';
+import { 
+  useERPSales, 
+  SalesQuoteLine, 
+  SalesOrderLine, 
+  DeliveryNoteLine, 
+  SalesInvoiceLine, 
+  SalesCreditNoteLine 
+} from '@/hooks/erp/useERPSales';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -107,7 +114,14 @@ export function SalesDocumentEditor({
   onSave 
 }: SalesDocumentEditorProps) {
   const { currentCompany, hasPermission } = useERPContext();
-  const { createQuote, createOrder, checkCustomerCredit } = useERPSales();
+  const { 
+    createQuote, 
+    createOrder, 
+    createDeliveryNote, 
+    createInvoice, 
+    createCreditNoteDirect,
+    checkCustomerCredit 
+  } = useERPSales();
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -128,6 +142,8 @@ export function SalesDocumentEditor({
   const [validUntil, setValidUntil] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [reason, setReason] = useState(''); // For credit notes
+  const [dueDate, setDueDate] = useState(''); // For invoices
   const [lines, setLines] = useState<LineItem[]>([]);
   
   // Credit check
@@ -383,7 +399,6 @@ export function SalesDocumentEditor({
     try {
       const customer = customers.find(c => c.id === customerId);
       
-      // Only quote creation is implemented for now via hook
       if (documentType === 'quote') {
         const quoteData = {
           series_id: seriesId,
@@ -440,7 +455,7 @@ export function SalesDocumentEditor({
           credit_check_passed: !creditCheck || creditCheck.allowed,
         };
 
-        const linesData = lines.map((line, idx) => ({
+        const linesData: Omit<SalesOrderLine, 'id' | 'order_id'>[] = lines.map((line, idx) => ({
           line_number: idx + 1,
           item_id: line.item_id,
           item_code: line.item_code,
@@ -463,8 +478,120 @@ export function SalesDocumentEditor({
           onSave?.();
           onClose();
         }
-      } else {
-        toast.info(`Creación de ${documentTypeLabels[documentType]} próximamente`);
+      } else if (documentType === 'delivery') {
+        const deliveryData = {
+          series_id: seriesId,
+          customer_id: customerId,
+          customer_name: customer?.name,
+          customer_tax_id: customer?.tax_id,
+          delivery_address: '',
+          date,
+          shipped_at: undefined,
+          status: status as 'draft' | 'ready' | 'shipped' | 'delivered' | 'invoiced' | 'cancelled',
+          carrier: '',
+          tracking_number: '',
+          notes,
+          subtotal,
+          tax_total: taxTotal,
+          total,
+        };
+
+        const linesData: Omit<DeliveryNoteLine, 'id' | 'delivery_note_id'>[] = lines.map((line, idx) => ({
+          line_number: idx + 1,
+          item_id: line.item_id,
+          item_code: line.item_code,
+          description: line.description,
+          qty: line.qty,
+          qty_invoiced: 0,
+          unit: 'UND',
+          unit_price: line.unit_price,
+          tax_rate: line.tax_rate,
+          tax_total: line.tax_total,
+          line_total: line.line_total,
+        }));
+
+        const result = await createDeliveryNote(deliveryData, linesData);
+        if (result) {
+          toast.success(`${documentTypeLabels[documentType]} guardado correctamente`);
+          onSave?.();
+          onClose();
+        }
+      } else if (documentType === 'invoice') {
+        const invoiceData = {
+          series_id: seriesId,
+          customer_id: customerId,
+          customer_name: customer?.name,
+          customer_tax_id: customer?.tax_id,
+          customer_address: '',
+          invoice_date: date,
+          due_date: dueDate || undefined,
+          status: status as 'draft' | 'confirmed' | 'sent' | 'paid' | 'partial' | 'overdue' | 'cancelled',
+          currency: currentCompany.currency,
+          notes,
+          subtotal,
+          discount_total: 0,
+          tax_total: taxTotal,
+          total,
+          paid_amount: 0,
+        };
+
+        const linesData: Omit<SalesInvoiceLine, 'id' | 'invoice_id'>[] = lines.map((line, idx) => ({
+          line_number: idx + 1,
+          item_id: line.item_id,
+          item_code: line.item_code,
+          description: line.description,
+          qty: line.qty,
+          unit: 'UND',
+          unit_price: line.unit_price,
+          discount_percent: line.discount_percent,
+          discount_total: line.discount_total,
+          tax_rate: line.tax_rate,
+          tax_total: line.tax_total,
+          line_total: line.line_total,
+        }));
+
+        const result = await createInvoice(invoiceData, linesData);
+        if (result) {
+          toast.success(`${documentTypeLabels[documentType]} guardado correctamente`);
+          onSave?.();
+          onClose();
+        }
+      } else if (documentType === 'credit') {
+        const creditData = {
+          series_id: seriesId,
+          customer_id: customerId,
+          customer_name: customer?.name,
+          customer_tax_id: customer?.tax_id,
+          customer_address: '',
+          date,
+          reason: reason || 'Rectificativa',
+          status: status as 'draft' | 'confirmed' | 'applied' | 'cancelled',
+          currency: currentCompany.currency,
+          notes,
+          subtotal,
+          tax_total: taxTotal,
+          total,
+        };
+
+        const linesData: Omit<SalesCreditNoteLine, 'id' | 'credit_note_id'>[] = lines.map((line, idx) => ({
+          line_number: idx + 1,
+          item_id: line.item_id,
+          item_code: line.item_code,
+          description: line.description,
+          qty: line.qty,
+          unit: 'UND',
+          unit_price: line.unit_price,
+          tax_rate: line.tax_rate,
+          tax_total: line.tax_total,
+          line_total: line.line_total,
+        }));
+
+        const result = await createCreditNoteDirect(creditData, linesData);
+        if (result) {
+          toast.success(`${documentTypeLabels[documentType]} guardado correctamente`);
+          onSave?.();
+          onClose();
+        }
       }
     } catch (error) {
       console.error('[SalesDocumentEditor] Save error:', error);
@@ -595,6 +722,24 @@ export function SalesDocumentEditor({
               <div className="space-y-2">
                 <Label>Fecha entrega</Label>
                 <Input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
+              </div>
+            )}
+
+            {documentType === 'invoice' && (
+              <div className="space-y-2">
+                <Label>Fecha vencimiento</Label>
+                <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              </div>
+            )}
+
+            {documentType === 'credit' && (
+              <div className="space-y-2">
+                <Label>Motivo del abono</Label>
+                <Input 
+                  value={reason} 
+                  onChange={(e) => setReason(e.target.value)} 
+                  placeholder="Ej: Devolución, Error facturación..."
+                />
               </div>
             )}
 

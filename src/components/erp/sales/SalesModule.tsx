@@ -18,6 +18,7 @@ import {
 import { useERPSales } from '@/hooks/erp/useERPSales';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { SalesDocumentEditor, DocumentType } from './SalesDocumentEditor';
+import { SalesDocumentActions } from './SalesDocumentActions';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -219,7 +220,7 @@ export function SalesModule() {
               <TabsContent value="quotes">
                 <DocumentTable
                   data={quotes}
-                  columns={['Número', 'Cliente', 'Fecha', 'Válido hasta', 'Total', 'Estado']}
+                  columns={['Número', 'Cliente', 'Fecha', 'Válido hasta', 'Total', 'Estado', '']}
                   renderRow={(q) => (
                     <TableRow key={q.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono">{q.number || '-'}</TableCell>
@@ -229,6 +230,14 @@ export function SalesModule() {
                       <TableCell className="font-medium">{formatCurrency(q.total)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[q.status]}>{statusLabels[q.status]}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SalesDocumentActions 
+                          documentType="quote" 
+                          documentId={q.id} 
+                          documentStatus={q.status} 
+                          onAction={loadData}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -240,7 +249,7 @@ export function SalesModule() {
               <TabsContent value="orders">
                 <DocumentTable
                   data={orders}
-                  columns={['Número', 'Cliente', 'Fecha', 'Entrega', 'Total', 'Estado']}
+                  columns={['Número', 'Cliente', 'Fecha', 'Entrega', 'Total', 'Estado', '']}
                   renderRow={(o) => (
                     <TableRow key={o.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono">{o.number || '-'}</TableCell>
@@ -250,6 +259,14 @@ export function SalesModule() {
                       <TableCell className="font-medium">{formatCurrency(o.total)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[o.status]}>{statusLabels[o.status]}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SalesDocumentActions 
+                          documentType="order" 
+                          documentId={o.id} 
+                          documentStatus={o.status} 
+                          onAction={loadData}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -261,7 +278,7 @@ export function SalesModule() {
               <TabsContent value="delivery">
                 <DocumentTable
                   data={deliveryNotes}
-                  columns={['Número', 'Cliente', 'Fecha', 'Transportista', 'Total', 'Estado']}
+                  columns={['Número', 'Cliente', 'Fecha', 'Transportista', 'Total', 'Estado', '']}
                   renderRow={(d) => (
                     <TableRow key={d.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono">{d.number || '-'}</TableCell>
@@ -271,6 +288,14 @@ export function SalesModule() {
                       <TableCell className="font-medium">{formatCurrency(d.total)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[d.status]}>{statusLabels[d.status]}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SalesDocumentActions 
+                          documentType="delivery" 
+                          documentId={d.id} 
+                          documentStatus={d.status} 
+                          onAction={loadData}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -282,7 +307,7 @@ export function SalesModule() {
               <TabsContent value="invoices">
                 <DocumentTable
                   data={invoices}
-                  columns={['Número', 'Cliente', 'Fecha', 'Vencimiento', 'Total', 'Estado']}
+                  columns={['Número', 'Cliente', 'Fecha', 'Vencimiento', 'Total', 'Estado', '']}
                   renderRow={(i) => (
                     <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono">{i.number || '-'}</TableCell>
@@ -292,6 +317,14 @@ export function SalesModule() {
                       <TableCell className="font-medium">{formatCurrency(i.total)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[i.status]}>{statusLabels[i.status]}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SalesDocumentActions 
+                          documentType="invoice" 
+                          documentId={i.id} 
+                          documentStatus={i.status} 
+                          onAction={loadData}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -303,7 +336,7 @@ export function SalesModule() {
               <TabsContent value="credits">
                 <DocumentTable
                   data={creditNotes}
-                  columns={['Número', 'Cliente', 'Fecha', 'Motivo', 'Total', 'Estado']}
+                  columns={['Número', 'Cliente', 'Fecha', 'Motivo', 'Total', 'Estado', '']}
                   renderRow={(c) => (
                     <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50">
                       <TableCell className="font-mono">{c.number || '-'}</TableCell>
@@ -313,6 +346,14 @@ export function SalesModule() {
                       <TableCell className="font-medium">{formatCurrency(c.total)}</TableCell>
                       <TableCell>
                         <Badge className={statusColors[c.status]}>{statusLabels[c.status]}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <SalesDocumentActions 
+                          documentType="credit" 
+                          documentId={c.id} 
+                          documentStatus={c.status} 
+                          onAction={loadData}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
