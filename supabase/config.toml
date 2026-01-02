@@ -842,3 +842,12 @@ verify_jwt = true
 
 [functions.erp-regulations-ai]
 verify_jwt = true
+
+[functions.erp-financial-ratios]
+verify_jwt = true
+
+[functions.erp-cash-flow-analysis]
+verify_jwt = true
+
+[functions.erp-budget-analysis]
+verify_jwt = true

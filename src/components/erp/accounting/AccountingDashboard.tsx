@@ -58,6 +58,7 @@ import { TreasuryModule } from './TreasuryModule';
 import { PDFStatementImporter } from './PDFStatementImporter';
 import { FinancialRatiosPanel } from './FinancialRatiosPanel';
 import { CashFlowPanel } from './CashFlowPanel';
+import { BudgetManagementPanel } from './BudgetManagementPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -413,6 +414,10 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
               <DollarSign className="h-4 w-4" />
               Cash Flow
             </TabsTrigger>
+            <TabsTrigger value="budget" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              Presupuestos
+            </TabsTrigger>
             <TabsTrigger value="help" className="gap-2">
               <HelpCircle className="h-4 w-4" />
               Ayuda
@@ -675,6 +680,21 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Importar Estados Financieros */}
         <TabsContent value="import-statements">
           <PDFStatementImporter />
+        </TabsContent>
+
+        {/* Tab: Ratios Financieros */}
+        <TabsContent value="ratios">
+          <FinancialRatiosPanel />
+        </TabsContent>
+
+        {/* Tab: Cash Flow */}
+        <TabsContent value="cash-flow">
+          <CashFlowPanel />
+        </TabsContent>
+
+        {/* Tab: Presupuestos */}
+        <TabsContent value="budget">
+          <BudgetManagementPanel />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
