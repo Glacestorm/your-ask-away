@@ -12,4 +12,6 @@ export { ERPAuditViewer } from './audit/ERPAuditViewer';
 export * from './maestros';
 export * from './purchases';
 export * from './inventory';
+export * from './treasury';
+export * from './advisor';
 export type { Transaction, Invoice, Employee, ERPMetrics } from './ERPDashboard';

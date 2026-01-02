@@ -854,3 +854,15 @@ verify_jwt = true
 
 [functions.erp-budget-analysis]
 verify_jwt = true
+
+[functions.erp-fiscal-closing-wizard]
+verify_jwt = true
+
+[functions.erp-advisor-agent]
+verify_jwt = true
+
+[functions.erp-advisor-compliance]
+verify_jwt = true
+
+[functions.erp-sepa-generator]
+verify_jwt = true
