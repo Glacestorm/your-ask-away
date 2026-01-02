@@ -11067,6 +11067,139 @@ export type Database = {
           },
         ]
       }
+      erp_electronic_invoices: {
+        Row: {
+          base_amount: number
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          fiscal_year_id: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string
+          metadata: Json | null
+          notes: string | null
+          operation_date: string | null
+          operation_key: string | null
+          partner_country: string | null
+          partner_name: string
+          partner_tax_id: string
+          period_id: string | null
+          sii_attempts: number | null
+          sii_csv: string | null
+          sii_error_code: string | null
+          sii_error_message: string | null
+          sii_response: Json | null
+          sii_sent_at: string | null
+          sii_status: string | null
+          source_invoice_id: string | null
+          source_type: string
+          special_regime: string | null
+          tbai_qr_url: string | null
+          tbai_signature: string | null
+          total_amount: number
+          updated_at: string | null
+          vat_amount: number
+          vat_breakdown: Json | null
+          withholding_amount: number | null
+        }
+        Insert: {
+          base_amount?: number
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          fiscal_year_id?: string | null
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string
+          metadata?: Json | null
+          notes?: string | null
+          operation_date?: string | null
+          operation_key?: string | null
+          partner_country?: string | null
+          partner_name: string
+          partner_tax_id: string
+          period_id?: string | null
+          sii_attempts?: number | null
+          sii_csv?: string | null
+          sii_error_code?: string | null
+          sii_error_message?: string | null
+          sii_response?: Json | null
+          sii_sent_at?: string | null
+          sii_status?: string | null
+          source_invoice_id?: string | null
+          source_type: string
+          special_regime?: string | null
+          tbai_qr_url?: string | null
+          tbai_signature?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_breakdown?: Json | null
+          withholding_amount?: number | null
+        }
+        Update: {
+          base_amount?: number
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          fiscal_year_id?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          invoice_type?: string
+          metadata?: Json | null
+          notes?: string | null
+          operation_date?: string | null
+          operation_key?: string | null
+          partner_country?: string | null
+          partner_name?: string
+          partner_tax_id?: string
+          period_id?: string | null
+          sii_attempts?: number | null
+          sii_csv?: string | null
+          sii_error_code?: string | null
+          sii_error_message?: string | null
+          sii_response?: Json | null
+          sii_sent_at?: string | null
+          sii_status?: string | null
+          source_invoice_id?: string | null
+          source_type?: string
+          special_regime?: string | null
+          tbai_qr_url?: string | null
+          tbai_signature?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number
+          vat_breakdown?: Json | null
+          withholding_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_electronic_invoices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_electronic_invoices_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_electronic_invoices_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_fiscal_closings: {
         Row: {
           closing_entry_id: string | null
@@ -13238,6 +13371,187 @@ export type Database = {
           },
         ]
       }
+      erp_sii_config: {
+        Row: {
+          auto_send: boolean | null
+          certificate_expiry: string | null
+          certificate_name: string | null
+          certificate_nif: string | null
+          company_id: string
+          created_at: string | null
+          environment: string
+          id: string
+          is_active: boolean | null
+          last_error: string | null
+          last_sync_at: string | null
+          retry_attempts: number | null
+          send_delay_hours: number | null
+          updated_at: string | null
+          wsdl_url: string | null
+        }
+        Insert: {
+          auto_send?: boolean | null
+          certificate_expiry?: string | null
+          certificate_name?: string | null
+          certificate_nif?: string | null
+          company_id: string
+          created_at?: string | null
+          environment?: string
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          retry_attempts?: number | null
+          send_delay_hours?: number | null
+          updated_at?: string | null
+          wsdl_url?: string | null
+        }
+        Update: {
+          auto_send?: boolean | null
+          certificate_expiry?: string | null
+          certificate_name?: string | null
+          certificate_nif?: string | null
+          company_id?: string
+          created_at?: string | null
+          environment?: string
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_sync_at?: string | null
+          retry_attempts?: number | null
+          send_delay_hours?: number | null
+          updated_at?: string | null
+          wsdl_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sii_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sii_submission_items: {
+        Row: {
+          created_at: string | null
+          csv: string | null
+          electronic_invoice_id: string
+          error_code: string | null
+          error_message: string | null
+          id: string
+          response_data: Json | null
+          status: string | null
+          submission_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          csv?: string | null
+          electronic_invoice_id: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          response_data?: Json | null
+          status?: string | null
+          submission_id: string
+        }
+        Update: {
+          created_at?: string | null
+          csv?: string | null
+          electronic_invoice_id?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          response_data?: Json | null
+          status?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sii_submission_items_electronic_invoice_id_fkey"
+            columns: ["electronic_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "erp_electronic_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_sii_submission_items_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "erp_sii_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_sii_submissions: {
+        Row: {
+          accepted_count: number | null
+          batch_id: string | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          csv: string | null
+          error_count: number | null
+          error_message: string | null
+          id: string
+          invoices_count: number | null
+          rejected_count: number | null
+          response_at: string | null
+          response_json: Json | null
+          response_xml: string | null
+          sent_at: string | null
+          status: string | null
+          submission_type: string
+        }
+        Insert: {
+          accepted_count?: number | null
+          batch_id?: string | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          csv?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          invoices_count?: number | null
+          rejected_count?: number | null
+          response_at?: string | null
+          response_json?: Json | null
+          response_xml?: string | null
+          sent_at?: string | null
+          status?: string | null
+          submission_type: string
+        }
+        Update: {
+          accepted_count?: number | null
+          batch_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          csv?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          invoices_count?: number | null
+          rejected_count?: number | null
+          response_at?: string | null
+          response_json?: Json | null
+          response_xml?: string | null
+          sent_at?: string | null
+          status?: string | null
+          submission_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_sii_submissions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_statement_imports: {
         Row: {
           accounting_plan_id: string | null
@@ -14048,6 +14362,153 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "erp_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_vat_ledger: {
+        Row: {
+          accounting_date: string
+          base_amount: number
+          company_id: string
+          created_at: string | null
+          declaration_period: string | null
+          declared_in_model: string | null
+          deductible_amount: number | null
+          deductible_percentage: number | null
+          electronic_invoice_id: string | null
+          entry_number: number
+          equivalence_amount: number | null
+          equivalence_rate: number | null
+          fiscal_year_id: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string | null
+          is_rectification: boolean | null
+          ledger_type: string
+          operation_date: string | null
+          operation_key: string | null
+          partner_country: string | null
+          partner_name: string
+          partner_tax_id: string
+          period_id: string
+          rectification_type: string | null
+          rectified_invoice_id: string | null
+          status: string | null
+          total_amount: number
+          updated_at: string | null
+          vat_amount: number | null
+          vat_rate: number | null
+          withholding_amount: number | null
+          withholding_rate: number | null
+        }
+        Insert: {
+          accounting_date: string
+          base_amount?: number
+          company_id: string
+          created_at?: string | null
+          declaration_period?: string | null
+          declared_in_model?: string | null
+          deductible_amount?: number | null
+          deductible_percentage?: number | null
+          electronic_invoice_id?: string | null
+          entry_number: number
+          equivalence_amount?: number | null
+          equivalence_rate?: number | null
+          fiscal_year_id: string
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type?: string | null
+          is_rectification?: boolean | null
+          ledger_type: string
+          operation_date?: string | null
+          operation_key?: string | null
+          partner_country?: string | null
+          partner_name: string
+          partner_tax_id: string
+          period_id: string
+          rectification_type?: string | null
+          rectified_invoice_id?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number | null
+          vat_rate?: number | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
+        }
+        Update: {
+          accounting_date?: string
+          base_amount?: number
+          company_id?: string
+          created_at?: string | null
+          declaration_period?: string | null
+          declared_in_model?: string | null
+          deductible_amount?: number | null
+          deductible_percentage?: number | null
+          electronic_invoice_id?: string | null
+          entry_number?: number
+          equivalence_amount?: number | null
+          equivalence_rate?: number | null
+          fiscal_year_id?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          invoice_type?: string | null
+          is_rectification?: boolean | null
+          ledger_type?: string
+          operation_date?: string | null
+          operation_key?: string | null
+          partner_country?: string | null
+          partner_name?: string
+          partner_tax_id?: string
+          period_id?: string
+          rectification_type?: string | null
+          rectified_invoice_id?: string | null
+          status?: string | null
+          total_amount?: number
+          updated_at?: string | null
+          vat_amount?: number | null
+          vat_rate?: number | null
+          withholding_amount?: number | null
+          withholding_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_vat_ledger_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_ledger_electronic_invoice_id_fkey"
+            columns: ["electronic_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "erp_electronic_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_ledger_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_ledger_period_id_fkey"
+            columns: ["period_id"]
+            isOneToOne: false
+            referencedRelation: "erp_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_vat_ledger_rectified_invoice_id_fkey"
+            columns: ["rectified_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "erp_electronic_invoices"
             referencedColumns: ["id"]
           },
         ]
