@@ -12117,6 +12117,89 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_products: {
+        Row: {
+          code: string | null
+          company_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          purchase_account_id: string | null
+          purchase_price: number | null
+          sale_price: number | null
+          sales_account_id: string | null
+          tax_id: string | null
+          type: string | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          company_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          purchase_account_id?: string | null
+          purchase_price?: number | null
+          sale_price?: number | null
+          sales_account_id?: string | null
+          tax_id?: string | null
+          type?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          company_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          purchase_account_id?: string | null
+          purchase_price?: number | null
+          sale_price?: number | null
+          sales_account_id?: string | null
+          tax_id?: string | null
+          type?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_products_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_products_purchase_account_id_fkey"
+            columns: ["purchase_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_products_sales_account_id_fkey"
+            columns: ["sales_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_chart_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_products_tax_id_fkey"
+            columns: ["tax_id"]
+            isOneToOne: false
+            referencedRelation: "erp_taxes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_purchase_order_lines: {
         Row: {
           created_at: string | null
@@ -13540,6 +13623,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "erp_suppliers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_taxes: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          rate: number
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          rate: number
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          rate?: number
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_taxes_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
