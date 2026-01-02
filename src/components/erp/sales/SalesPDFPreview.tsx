@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,11 +70,11 @@ export function SalesPDFPreview({
   }, [documentType, documentId, companyId]);
 
   // Generate on open
-  useState(() => {
+  useEffect(() => {
     if (open && documentId) {
       generatePDF();
     }
-  });
+  }, [open, documentId, generatePDF]);
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
