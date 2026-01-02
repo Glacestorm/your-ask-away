@@ -866,3 +866,9 @@ verify_jwt = true
 
 [functions.erp-sepa-generator]
 verify_jwt = true
+
+[functions.erp-sales-pdf]
+verify_jwt = true
+
+[functions.erp-sales-email]
+verify_jwt = true
