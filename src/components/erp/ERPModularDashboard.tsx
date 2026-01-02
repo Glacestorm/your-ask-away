@@ -44,6 +44,8 @@ import { SalesModule } from './sales';
 import { PurchasesModule } from './purchases';
 import { InventoryModule } from './inventory';
 import { AccountingDashboard } from './accounting';
+import { TreasuryDashboard } from './treasury';
+import { AdvisorAgentPanel } from './advisor';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -55,7 +57,7 @@ function ERPModularDashboardContent() {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   // Módulos instalados (tienen tab funcional)
-  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory', 'accounting'];
+  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory', 'accounting', 'treasury'];
 
   // Verificar si necesita configuración inicial
   useEffect(() => {
@@ -170,6 +172,12 @@ function ERPModularDashboardContent() {
             <TabsTrigger value="accounting" className="gap-2">
               <Calculator className="h-4 w-4" />
               Contabilidad
+            </TabsTrigger>
+          )}
+          {hasPermission('treasury.read') && (
+            <TabsTrigger value="treasury" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              Tesorería
             </TabsTrigger>
           )}
           {hasPermission('admin.all') && (
@@ -358,6 +366,11 @@ function ERPModularDashboardContent() {
         {/* Accounting Tab */}
         <TabsContent value="accounting">
           <AccountingDashboard />
+        </TabsContent>
+
+        {/* Treasury Tab */}
+        <TabsContent value="treasury">
+          <TreasuryDashboard />
         </TabsContent>
 
         {/* Companies Tab */}
