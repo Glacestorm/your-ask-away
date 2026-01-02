@@ -1,28 +1,20 @@
 /**
  * ERPAdvancedRatiosPanel - Panel consolidado de análisis financieros avanzados
  * Fase 5: Z-Score, DuPont, Capital Circulante, EBIT/EBITDA, Rating Bancario, Valor Añadido
+ * REFACTORIZADO: Usa subcomponentes modulares para mejor mantenibilidad
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   RefreshCw,
   Brain,
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
-  XCircle,
-  Activity,
-  Percent,
   Building2,
   Loader2,
   Target,
@@ -31,21 +23,24 @@ import {
   PieChart,
   BarChart3,
   Lightbulb,
-  Info,
   ArrowUpRight,
   ArrowDownRight,
-  Minus
+  Wallet,
+  Sparkles
 } from 'lucide-react';
 import { useERPAdvancedRatios, type AdvancedRatiosData, type AIAdvancedInsights } from '@/hooks/erp/useERPAdvancedRatios';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import {
-  BarChart, Bar, LineChart, Line, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend,
-  Tooltip as RechartsTooltip, Cell
-} from 'recharts';
+
+// Subcomponentes refactorizados
+import { ERPZScoreCard } from './advanced-ratios/ERPZScoreCard';
+import { ERPDuPontPyramid } from './advanced-ratios/ERPDuPontPyramid';
+import { ERPBankRatingCard } from './advanced-ratios/ERPBankRatingCard';
+import { ERPWorkingCapitalCard } from './advanced-ratios/ERPWorkingCapitalCard';
+import { ERPEBITDACard } from './advanced-ratios/ERPEBITDACard';
+import { ERPAddedValueCard } from './advanced-ratios/ERPAddedValueCard';
 
 interface ERPAdvancedRatiosPanelProps {
   className?: string;
@@ -385,191 +380,19 @@ export function ERPAdvancedRatiosPanel({ className }: ERPAdvancedRatiosPanelProp
               <TabsTrigger value="added" className="text-xs">Valor Añadido</TabsTrigger>
             </TabsList>
 
-            {/* Tab Z-Score */}
-            <TabsContent value="zscore" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Gráfico evolución */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Evolución Z-Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[250px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={[...data.zScore].reverse()}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis domain={[0, 5]} />
-                          <RechartsTooltip />
-                          <Area 
-                            type="monotone" 
-                            dataKey="zScore" 
-                            stroke="#8b5cf6" 
-                            fill="#8b5cf6" 
-                            fillOpacity={0.3}
-                            name="Z-Score"
-                          />
-                          {/* Líneas de referencia */}
-                          <Line 
-                            type="monotone" 
-                            dataKey={() => 2.99} 
-                            stroke="#22c55e" 
-                            strokeDasharray="5 5" 
-                            name="Zona Segura"
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey={() => 1.81} 
-                            stroke="#ef4444" 
-                            strokeDasharray="5 5" 
-                            name="Zona Riesgo"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Tabla componentes */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Componentes Z-Score</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Componente</TableHead>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableHead key={z.year} className="text-right">{z.year}</TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">X1 (FM/Activo)</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell key={z.year} className="text-right">{z.x1.toFixed(3)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">X2 (Benef.Ret/Activo)</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell key={z.year} className="text-right">{z.x2.toFixed(3)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">X3 (EBIT/Activo)</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell key={z.year} className="text-right">{z.x3.toFixed(3)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">X4 (PN/Pasivo)</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell key={z.year} className="text-right">{z.x4.toFixed(3)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">X5 (Ventas/Activo)</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell key={z.year} className="text-right">{z.x5.toFixed(3)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow className="font-bold border-t-2">
-                          <TableCell>Z-Score</TableCell>
-                          {data.zScore.slice(0, 3).map(z => (
-                            <TableCell 
-                              key={z.year} 
-                              className="text-right"
-                              style={{ color: zScoreColors[z.zone] }}
-                            >
-                              {z.zScore.toFixed(2)}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab Z-Score - Componente Refactorizado */}
+            <TabsContent value="zscore">
+              <ERPZScoreCard data={data.zScore} sector={selectedSector} />
             </TabsContent>
 
-            {/* Tab DuPont */}
-            <TabsContent value="dupont" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Pirámide DuPont visual */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Pirámide DuPont</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* ROE */}
-                      <div className="text-center p-4 rounded-lg bg-primary/10 border border-primary/20">
-                        <div className="text-xs text-muted-foreground">ROE</div>
-                        <div className="text-2xl font-bold text-primary">
-                          {formatPercent((data.duPont[0]?.roe || 0) * 100)}
-                        </div>
-                      </div>
-                      
-                      {/* ROA x Apalancamiento */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                          <div className="text-xs text-muted-foreground">ROA</div>
-                          <div className="text-xl font-bold text-blue-600">
-                            {formatPercent((data.duPont[0]?.roa || 0) * 100)}
-                          </div>
-                        </div>
-                        <div className="text-center p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                          <div className="text-xs text-muted-foreground">Apalancamiento</div>
-                          <div className="text-xl font-bold text-purple-600">
-                            {formatNumber(data.duPont[0]?.apalancamiento || 0)}x
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Margen x Rotación */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                          <div className="text-xs text-muted-foreground">Margen s/Ventas</div>
-                          <div className="text-lg font-bold text-emerald-600">
-                            {formatPercent((data.duPont[0]?.baitSobreVentas || 0) * 100)}
-                          </div>
-                        </div>
-                        <div className="text-center p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                          <div className="text-xs text-muted-foreground">Rotación Activo</div>
-                          <div className="text-lg font-bold text-amber-600">
-                            {formatNumber(data.duPont[0]?.rotacionActivo || 0)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Gráfico evolución */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Evolución ROE/ROA</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[280px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={[...data.duPont].reverse()}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <RechartsTooltip formatter={(v: number) => `${(v * 100).toFixed(2)}%`} />
-                          <Legend />
-                          <Bar dataKey="roe" name="ROE" fill="#8b5cf6" />
-                          <Bar dataKey="roa" name="ROA" fill="#3b82f6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab DuPont - Componente Refactorizado */}
+            <TabsContent value="dupont">
+              <ERPDuPontPyramid 
+                data={data.duPont} 
+                formatCurrency={formatCurrency}
+                formatPercent={formatPercent}
+                formatNumber={formatNumber}
+              />
             </TabsContent>
 
             {/* Tab Capital Circulante */}
