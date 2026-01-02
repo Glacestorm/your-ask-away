@@ -31,7 +31,9 @@ import {
   LineChart,
   Leaf,
   GitMerge,
-  DollarSign
+  DollarSign,
+  Scale,
+  Mic
 } from 'lucide-react';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
 import { DynamicHelpPanel } from './DynamicHelpPanel';
@@ -60,6 +62,9 @@ import { FinancialRatiosPanel } from './FinancialRatiosPanel';
 import { CashFlowPanel } from './CashFlowPanel';
 import { BudgetManagementPanel } from './BudgetManagementPanel';
 import { ERPAdvancedRatiosPanel } from './ERPAdvancedRatiosPanel';
+// Phase 1 & 2: NIIF Engine + Voice Hub
+import { NIIFCompliancePanel } from './NIIFCompliancePanel';
+import { AccountingVoiceAgent } from './AccountingVoiceAgent';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -417,6 +422,20 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
             
             <div className="w-px h-6 bg-border mx-1" />
             
+            {/* NIIF/NIIC Compliance */}
+            <TabsTrigger value="niif" className="gap-1.5 text-xs">
+              <Scale className="h-3.5 w-3.5" />
+              NIIF
+            </TabsTrigger>
+            
+            {/* Voice Intelligence */}
+            <TabsTrigger value="voice" className="gap-1.5 text-xs">
+              <Mic className="h-3.5 w-3.5" />
+              Voz IA
+            </TabsTrigger>
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
             {/* Utilidades */}
             <TabsTrigger value="import-statements" className="gap-1.5 text-xs">
               Importar
@@ -697,6 +716,16 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Análisis Avanzados */}
         <TabsContent value="advanced-ratios">
           <ERPAdvancedRatiosPanel />
+        </TabsContent>
+
+        {/* Tab: NIIF/NIIC Compliance Engine */}
+        <TabsContent value="niif">
+          <NIIFCompliancePanel />
+        </TabsContent>
+
+        {/* Tab: Voice Intelligence Hub */}
+        <TabsContent value="voice">
+          <AccountingVoiceAgent />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
