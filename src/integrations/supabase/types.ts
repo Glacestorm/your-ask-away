@@ -35503,6 +35503,10 @@ export type Database = {
         }
         Returns: string
       }
+      erp_check_period_closed: {
+        Args: { p_period_id: string }
+        Returns: boolean
+      }
       erp_company_has_role_permissions: {
         Args: { p_company_id: string }
         Returns: boolean
@@ -35556,6 +35560,14 @@ export type Database = {
       erp_is_company_admin: {
         Args: { p_company_id: string; p_user_id: string }
         Returns: boolean
+      }
+      erp_next_entry_number: {
+        Args: {
+          p_company_id: string
+          p_journal_id: string
+          p_period_id: string
+        }
+        Returns: number
       }
       erp_role_belongs_to_company: {
         Args: { p_company_id: string; p_role_id: string }
