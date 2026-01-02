@@ -322,125 +322,109 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         </Card>
       </div>
 
-      {/* Tabs principales - reorganizados en grupos */}
+      {/* Tabs principales - menú compacto */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Grupo Principal */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="overview" className="gap-2">
-              <FileText className="h-4 w-4" />
+        <ScrollArea className="w-full">
+          <TabsList className="inline-flex h-auto gap-1 p-1 flex-wrap">
+            {/* Principal */}
+            <TabsTrigger value="overview" className="gap-1.5 text-xs">
+              <FileText className="h-3.5 w-3.5" />
               Resumen
             </TabsTrigger>
-            <TabsTrigger value="entries" className="gap-2">
-              <Receipt className="h-4 w-4" />
+            <TabsTrigger value="entries" className="gap-1.5 text-xs">
+              <Receipt className="h-3.5 w-3.5" />
               Asientos
             </TabsTrigger>
-            <TabsTrigger value="accounts" className="gap-2">
-              <BookOpen className="h-4 w-4" />
+            <TabsTrigger value="accounts" className="gap-1.5 text-xs">
+              <BookOpen className="h-3.5 w-3.5" />
               Plan Contable
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo Libros Contables */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="ledger" className="gap-2">
-              <BookOpen className="h-4 w-4" />
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* Libros */}
+            <TabsTrigger value="ledger" className="gap-1.5 text-xs">
               Libro Mayor
             </TabsTrigger>
-            <TabsTrigger value="trial-balance" className="gap-2">
-              <Calculator className="h-4 w-4" />
-              Sumas y Saldos
+            <TabsTrigger value="trial-balance" className="gap-1.5 text-xs">
+              Sumas/Saldos
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo Estados Financieros */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="balance-sheet" className="gap-2">
-              <Wallet className="h-4 w-4" />
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* Estados Financieros */}
+            <TabsTrigger value="balance-sheet" className="gap-1.5 text-xs">
               Balance
             </TabsTrigger>
-            <TabsTrigger value="income-statement" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="income-statement" className="gap-1.5 text-xs">
               PyG
             </TabsTrigger>
-            <TabsTrigger value="cash-flow" className="gap-2">
-              <DollarSign className="h-4 w-4" />
+            <TabsTrigger value="cash-flow" className="gap-1.5 text-xs">
               Flujo Caja
             </TabsTrigger>
-            <TabsTrigger value="ratios" className="gap-2">
-              <LineChart className="h-4 w-4" />
+            <TabsTrigger value="ratios" className="gap-1.5 text-xs">
               Ratios
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo Tesorería y Bancos */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="treasury" className="gap-2">
-              <PiggyBank className="h-4 w-4" />
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* Tesorería */}
+            <TabsTrigger value="treasury" className="gap-1.5 text-xs">
+              <PiggyBank className="h-3.5 w-3.5" />
               Tesorería
             </TabsTrigger>
-            <TabsTrigger value="reconciliation" className="gap-2">
-              <GitMerge className="h-4 w-4" />
+            <TabsTrigger value="reconciliation" className="gap-1.5 text-xs">
               Conciliación
             </TabsTrigger>
-            <TabsTrigger value="sepa" className="gap-2">
-              <CreditCard className="h-4 w-4" />
+            <TabsTrigger value="sepa" className="gap-1.5 text-xs">
               SEPA
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo Cierres y Fiscal */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="closing" className="gap-2">
-              <Calendar className="h-4 w-4" />
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* Gestión */}
+            <TabsTrigger value="closing" className="gap-1.5 text-xs">
               Cierres
             </TabsTrigger>
-            <TabsTrigger value="budget" className="gap-2">
-              <Wallet className="h-4 w-4" />
+            <TabsTrigger value="budget" className="gap-1.5 text-xs">
               Presupuestos
             </TabsTrigger>
-            <TabsTrigger value="aging" className="gap-2">
-              <Calendar className="h-4 w-4" />
+            <TabsTrigger value="aging" className="gap-1.5 text-xs">
               Vencimientos
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo IA y Análisis */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="ai-entries" className="gap-2">
-              <Bot className="h-4 w-4" />
-              IA Asientos
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* IA */}
+            <TabsTrigger value="ai-entries" className="gap-1.5 text-xs">
+              <Bot className="h-3.5 w-3.5" />
+              IA
             </TabsTrigger>
-            <TabsTrigger value="anomalies" className="gap-2">
-              <Search className="h-4 w-4" />
+            <TabsTrigger value="anomalies" className="gap-1.5 text-xs">
               Anomalías
             </TabsTrigger>
-            <TabsTrigger value="predictive" className="gap-2">
-              <LineChart className="h-4 w-4" />
+            <TabsTrigger value="predictive" className="gap-1.5 text-xs">
               Predicciones
             </TabsTrigger>
-            <TabsTrigger value="esg" className="gap-2">
-              <Leaf className="h-4 w-4" />
+            <TabsTrigger value="esg" className="gap-1.5 text-xs">
               ESG
             </TabsTrigger>
-          </TabsList>
-
-          {/* Grupo Utilidades */}
-          <TabsList className="h-auto gap-1 p-1">
-            <TabsTrigger value="import-statements" className="gap-2">
-              <FileText className="h-4 w-4" />
+            
+            <div className="w-px h-6 bg-border mx-1" />
+            
+            {/* Utilidades */}
+            <TabsTrigger value="import-statements" className="gap-1.5 text-xs">
               Importar
             </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger value="reports" className="gap-1.5 text-xs">
               Informes
             </TabsTrigger>
-            <TabsTrigger value="help" className="gap-2">
-              <HelpCircle className="h-4 w-4" />
+            <TabsTrigger value="help" className="gap-1.5 text-xs">
+              <HelpCircle className="h-3.5 w-3.5" />
               Ayuda
             </TabsTrigger>
           </TabsList>
-        </div>
+        </ScrollArea>
 
         {/* Tab: Resumen */}
         <TabsContent value="overview" className="space-y-4">
