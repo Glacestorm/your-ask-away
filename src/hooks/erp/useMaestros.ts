@@ -298,6 +298,18 @@ export function useMaestros() {
     onError: (e: Error) => toast.error(e.message)
   });
 
+  const deleteSupplier = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('suppliers').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers', companyId] });
+      toast.success('Proveedor eliminado');
+    },
+    onError: (e: Error) => toast.error(e.message)
+  });
+
   // ===== ITEMS =====
   const itemsQuery = useQuery({
     queryKey: ['items', companyId],
@@ -586,6 +598,7 @@ export function useMaestros() {
     suppliersLoading: suppliersQuery.isLoading,
     createSupplier,
     updateSupplier,
+    deleteSupplier,
     
     // Items
     items: itemsQuery.data ?? [],
