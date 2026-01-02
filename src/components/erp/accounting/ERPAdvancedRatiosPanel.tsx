@@ -10,20 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  Legend
-} from 'recharts';
 import {
   RefreshCw,
   Brain,
@@ -409,293 +395,36 @@ export function ERPAdvancedRatiosPanel({ className }: ERPAdvancedRatiosPanelProp
               />
             </TabsContent>
 
-            {/* Tab Capital Circulante */}
-            <TabsContent value="working" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Métricas principales */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Capital Circulante</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg bg-muted">
-                          <div className="text-xs text-muted-foreground">Fondo Maniobra</div>
-                          <div className={cn(
-                            "text-lg font-bold",
-                            (data.workingCapital[0]?.workingCapital || 0) >= 0 ? "text-emerald-600" : "text-red-600"
-                          )}>
-                            {formatCurrency(data.workingCapital[0]?.workingCapital || 0)}
-                          </div>
-                        </div>
-                        <div className="p-3 rounded-lg bg-muted">
-                          <div className="text-xs text-muted-foreground">NOF</div>
-                          <div className="text-lg font-bold">
-                            {formatCurrency(data.workingCapital[0]?.nof || 0)}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Ratio Solvencia</span>
-                          <span className="font-medium">{formatNumber(data.workingCapital[0]?.solvencyRatio || 0)}</span>
-                        </div>
-                        <Progress value={Math.min(100, (data.workingCapital[0]?.solvencyRatio || 0) * 50)} />
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Test Ácido</span>
-                          <span className="font-medium">{formatNumber(data.workingCapital[0]?.acidTestRatio || 0)}</span>
-                        </div>
-                        <Progress value={Math.min(100, (data.workingCapital[0]?.acidTestRatio || 0) * 100)} />
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Ratio Liquidez</span>
-                          <span className="font-medium">{formatNumber(data.workingCapital[0]?.liquidityRatio || 0)}</span>
-                        </div>
-                        <Progress value={Math.min(100, (data.workingCapital[0]?.liquidityRatio || 0) * 200)} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Tabla evolución */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Evolución Ratios Liquidez</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Ratio</TableHead>
-                          {data.workingCapital.slice(0, 3).map(w => (
-                            <TableHead key={w.year} className="text-right">{w.year}</TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">Solvencia</TableCell>
-                          {data.workingCapital.slice(0, 3).map(w => (
-                            <TableCell key={w.year} className="text-right">{w.solvencyRatio.toFixed(2)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Test Ácido</TableCell>
-                          {data.workingCapital.slice(0, 3).map(w => (
-                            <TableCell key={w.year} className="text-right">{w.acidTestRatio.toFixed(2)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Liquidez</TableCell>
-                          {data.workingCapital.slice(0, 3).map(w => (
-                            <TableCell key={w.year} className="text-right">{w.liquidityRatio.toFixed(2)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">Coef. Financ.</TableCell>
-                          {data.workingCapital.slice(0, 3).map(w => (
-                            <TableCell key={w.year} className="text-right">{w.basicFinancingCoefficient.toFixed(2)}</TableCell>
-                          ))}
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab Capital Circulante - Componente Refactorizado */}
+            <TabsContent value="working">
+              <ERPWorkingCapitalCard 
+                data={data.workingCapital}
+                formatCurrency={formatCurrency}
+                formatNumber={formatNumber}
+              />
             </TabsContent>
 
-            {/* Tab EBIT/EBITDA */}
-            <TabsContent value="ebitda" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Gráfico EBIT/EBITDA */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">EBIT vs EBITDA</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[250px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={[...data.ebitEbitda].reverse()}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
-                          <Legend />
-                          <Bar dataKey="ebit" name="EBIT" fill="#3b82f6" />
-                          <Bar dataKey="ebitda" name="EBITDA" fill="#8b5cf6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Márgenes */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Márgenes Operativos</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[250px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={[...data.ebitEbitda].reverse()}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <RechartsTooltip formatter={(v: number) => `${v.toFixed(2)}%`} />
-                          <Legend />
-                          <Line type="monotone" dataKey="margenBrutoPercent" name="Margen Bruto" stroke="#22c55e" />
-                          <Line type="monotone" dataKey="margenEbit" name="Margen EBIT" stroke="#3b82f6" />
-                          <Line type="monotone" dataKey="margenEbitda" name="Margen EBITDA" stroke="#8b5cf6" />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab EBIT/EBITDA - Componente Refactorizado */}
+            <TabsContent value="ebitda">
+              <ERPEBITDACard 
+                data={data.ebitEbitda}
+                formatCurrency={formatCurrency}
+                formatPercent={formatPercent}
+              />
             </TabsContent>
 
-            {/* Tab Rating Bancario */}
-            <TabsContent value="rating" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Rating visual */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Calificación Bancaria</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-center py-6">
-                    <div 
-                      className="text-6xl font-bold mb-4"
-                      style={{ color: ratingColors[data.bankRating.rating] || '#94a3b8' }}
-                    >
-                      {data.bankRating.rating}
-                    </div>
-                    <Progress value={data.bankRating.score} className="h-3 mb-4" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Score: {data.bankRating.score.toFixed(0)} / 100
-                    </p>
-                    <Badge 
-                      variant={
-                        data.bankRating.riskLevel === 'bajo' ? 'default' :
-                        data.bankRating.riskLevel === 'medio' ? 'secondary' :
-                        'destructive'
-                      }
-                    >
-                      Riesgo {data.bankRating.riskLevel.replace('_', ' ')}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                {/* Factores */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Factores de Calificación</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {data.bankRating.factors.map((factor, idx) => (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span>{factor.name}</span>
-                            <span className="font-medium">{factor.contribution.toFixed(1)} pts</span>
-                          </div>
-                          <Progress value={factor.contribution / factor.weight} className="h-2" />
-                          <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Valor: {factor.value.toFixed(2)}</span>
-                            <span>Peso: {(factor.weight * 100).toFixed(0)}%</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab Rating Bancario - Componente Refactorizado */}
+            <TabsContent value="rating">
+              <ERPBankRatingCard data={data.bankRating} />
             </TabsContent>
 
-            {/* Tab Valor Añadido */}
-            <TabsContent value="added" className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Generación de valor */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Generación del Valor Añadido</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[250px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={[...data.addedValue].reverse()}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="year" />
-                          <YAxis />
-                          <RechartsTooltip formatter={(v: number) => formatCurrency(v)} />
-                          <Legend />
-                          <Bar dataKey="valorAfegitBrut" name="V.A. Bruto" fill="#22c55e" />
-                          <Bar dataKey="valorAfegitNet" name="V.A. Neto" fill="#3b82f6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Distribución del valor */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Distribución del Valor Añadido</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Concepto</TableHead>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableHead key={a.year} className="text-right">{a.year}</TableHead>
-                          ))}
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">Valor Producción</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right">{formatCurrency(a.valorProduccio)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">V.A. Bruto</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right text-emerald-600">{formatCurrency(a.valorAfegitBrut)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">- Amortizaciones</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right text-red-600">{formatCurrency(-a.amortitzacions)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">V.A. Neto</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right text-blue-600">{formatCurrency(a.valorAfegitNet)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow>
-                          <TableCell className="font-medium">- Personal</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right">{formatCurrency(-a.gastosPersonal)}</TableCell>
-                          ))}
-                        </TableRow>
-                        <TableRow className="font-bold border-t-2">
-                          <TableCell>Resultado Neto</TableCell>
-                          {data.addedValue.slice(0, 3).map(a => (
-                            <TableCell key={a.year} className="text-right">{formatCurrency(a.resultadoNeto)}</TableCell>
-                          ))}
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Tab Valor Añadido - Componente Refactorizado */}
+            <TabsContent value="added">
+              <ERPAddedValueCard 
+                data={data.addedValue}
+                formatCurrency={formatCurrency}
+                formatPercent={formatPercent}
+              />
             </TabsContent>
           </Tabs>
         </>
