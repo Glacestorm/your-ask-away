@@ -21,12 +21,14 @@ import {
   ArrowRightLeft,
   BookOpen,
   Sparkles,
-  Info
+  Info,
+  Trash2
 } from 'lucide-react';
 import { useNIIFCompliance, type AccountingFramework, type ComplianceValidation } from '@/hooks/erp/useNIIFCompliance';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ConfirmationDialog } from '@/components/erp/maestros/shared/ConfirmationDialog';
 
 interface NIIFCompliancePanelProps {
   context?: {
@@ -69,6 +71,15 @@ export function NIIFCompliancePanel({
   const [mappingResult, setMappingResult] = useState<any>(null);
   const [standardsInfo, setStandardsInfo] = useState<any>(null);
   const [useDemo, setUseDemo] = useState(!context?.entries?.length);
+  const [showClearDemoDialog, setShowClearDemoDialog] = useState(false);
+
+  // Función para limpiar datos demo
+  const handleClearDemoData = useCallback(() => {
+    setComplianceResult(null);
+    setMappingResult(null);
+    setStandardsInfo(null);
+    setShowClearDemoDialog(false);
+  }, []);
 
   const {
     isLoading,
@@ -224,11 +235,24 @@ export function NIIFCompliancePanel({
             <div className="space-y-4">
               {/* Indicador de modo demo */}
               {!context?.entries?.length && (
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                  <Info className="h-4 w-4 text-amber-500" />
-                  <span className="text-xs text-amber-600 dark:text-amber-400">
-                    Modo demostración: usando {DEMO_ENTRIES.length} asientos de ejemplo
-                  </span>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-4 w-4 text-amber-500" />
+                    <span className="text-xs text-amber-600 dark:text-amber-400">
+                      Modo demostración: usando {DEMO_ENTRIES.length} asientos de ejemplo
+                    </span>
+                  </div>
+                  {(complianceResult || mappingResult || standardsInfo) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowClearDemoDialog(true)}
+                      className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Limpiar datos
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -510,6 +534,18 @@ export function NIIFCompliancePanel({
           </div>
         )}
       </CardContent>
+
+      {/* Diálogo de confirmación para limpiar datos demo */}
+      <ConfirmationDialog
+        open={showClearDemoDialog}
+        onOpenChange={setShowClearDemoDialog}
+        onConfirm={handleClearDemoData}
+        title="Limpiar datos de demostración"
+        description="¿Estás seguro de que deseas eliminar todos los resultados generados? Los datos de ejemplo permanecerán disponibles para futuras pruebas."
+        variant="warning"
+        confirmLabel="Limpiar"
+        cancelLabel="Cancelar"
+      />
     </Card>
   );
 }
