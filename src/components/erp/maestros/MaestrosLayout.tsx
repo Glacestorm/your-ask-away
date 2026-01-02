@@ -19,7 +19,9 @@ import {
   Building2,
   Settings,
   Plus,
-  RefreshCw
+  RefreshCw,
+  MapPin,
+  FileCheck
 } from 'lucide-react';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { useMaestros } from '@/hooks/erp/useMaestros';
@@ -29,7 +31,9 @@ import { ItemsPanel } from './ItemsPanel';
 import { TaxesPanel } from './TaxesPanel';
 import { PaymentTermsPanel } from './PaymentTermsPanel';
 import { WarehousesPanel } from './WarehousesPanel';
+import { WarehouseLocationsPanel } from './WarehouseLocationsPanel';
 import { BankAccountsPanel } from './BankAccountsPanel';
+import { SEPAMandatesPanel } from './SEPAMandatesPanel';
 import { PriceSimulator } from './PriceSimulator';
 
 interface MaestrosLayoutProps {
@@ -173,7 +177,7 @@ export const MaestrosLayout: React.FC<MaestrosLayoutProps> = ({ companyId }) => 
 
       {/* Main Tabs */}
       <Tabs defaultValue="customers" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
           <TabsTrigger value="customers" className="gap-1">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Clientes</span>
@@ -198,9 +202,17 @@ export const MaestrosLayout: React.FC<MaestrosLayoutProps> = ({ companyId }) => 
             <Warehouse className="h-4 w-4" />
             <span className="hidden sm:inline">Almacenes</span>
           </TabsTrigger>
+          <TabsTrigger value="locations" className="gap-1">
+            <MapPin className="h-4 w-4" />
+            <span className="hidden sm:inline">Ubicaciones</span>
+          </TabsTrigger>
           <TabsTrigger value="banks" className="gap-1">
             <CreditCard className="h-4 w-4" />
             <span className="hidden sm:inline">Bancos</span>
+          </TabsTrigger>
+          <TabsTrigger value="sepa" className="gap-1">
+            <FileCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">SEPA</span>
           </TabsTrigger>
           <TabsTrigger value="pricing" className="gap-1">
             <Calculator className="h-4 w-4" />
@@ -232,8 +244,16 @@ export const MaestrosLayout: React.FC<MaestrosLayoutProps> = ({ companyId }) => 
           <WarehousesPanel />
         </TabsContent>
 
+        <TabsContent value="locations">
+          <WarehouseLocationsPanel />
+        </TabsContent>
+
         <TabsContent value="banks">
           <BankAccountsPanel />
+        </TabsContent>
+
+        <TabsContent value="sepa">
+          <SEPAMandatesPanel />
         </TabsContent>
 
         <TabsContent value="pricing">
