@@ -205,12 +205,19 @@ export function GoodsReceiptDialog({ open, onOpenChange, fromOrder, onSuccess }:
 
             <div className="space-y-2">
               <Label>Pedido de Compra</Label>
-              <Select value={orderId} onValueChange={v => { setOrderId(v); loadOrderLines(v); }}>
+              <Select 
+                value={orderId || "_none_"} 
+                onValueChange={v => { 
+                  const val = v === "_none_" ? "" : v;
+                  setOrderId(val); 
+                  if (val) loadOrderLines(val); 
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Opcional - vincular pedido" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin pedido</SelectItem>
+                  <SelectItem value="_none_">Sin pedido</SelectItem>
                   {orders.filter(o => !supplierId || o.supplier_id === supplierId).map(o => (
                     <SelectItem key={o.id} value={o.id}>
                       {o.document_number} - {o.supplier_name}
