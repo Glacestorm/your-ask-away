@@ -99,7 +99,7 @@ export function SupplierInvoiceDialog({ open, onOpenChange, onSuccess }: Supplie
   };
 
   const selectItem = (index: number, itemId: string) => {
-    const item = itemsQuery.data?.find(i => i.id === itemId);
+    const item = items?.find(i => i.id === itemId);
     if (item) {
       const newLines = [...lines];
       newLines[index] = {
@@ -266,7 +266,7 @@ export function SupplierInvoiceDialog({ open, onOpenChange, onSuccess }: Supplie
                               <SelectValue placeholder="Artículo" />
                             </SelectTrigger>
                             <SelectContent>
-                              {itemsQuery.data?.map(item => (
+                              {items?.map(item => (
                                 <SelectItem key={item.id} value={item.id}>
                                   {item.sku} - {item.name}
                                 </SelectItem>

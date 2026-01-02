@@ -69,7 +69,7 @@ export function StockMovementDialog({ open, onOpenChange, onSuccess }: StockMove
 
   const handleItemChange = (id: string) => {
     setItemId(id);
-    const item = itemsQuery.data?.find(i => i.id === id);
+    const item = items?.find(i => i.id === id);
     if (item) {
       setUnitCost(item.standard_cost || 0);
     }
@@ -159,7 +159,7 @@ export function StockMovementDialog({ open, onOpenChange, onSuccess }: StockMove
                 <SelectValue placeholder="Selecciona artículo" />
               </SelectTrigger>
               <SelectContent>
-                {itemsQuery.data?.filter(i => i.is_stocked).map(item => (
+                {items?.filter(i => i.is_stocked).map(item => (
                   <SelectItem key={item.id} value={item.id}>
                     {item.sku} - {item.name}
                   </SelectItem>

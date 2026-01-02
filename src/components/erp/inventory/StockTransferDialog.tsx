@@ -76,7 +76,7 @@ export function StockTransferDialog({ open, onOpenChange, onSuccess }: StockTran
   };
 
   const selectItem = (index: number, itemId: string) => {
-    const item = itemsQuery.data?.find(i => i.id === itemId);
+    const item = items?.find(i => i.id === itemId);
     if (item) {
       const newLines = [...lines];
       newLines[index] = {
@@ -218,7 +218,7 @@ export function StockTransferDialog({ open, onOpenChange, onSuccess }: StockTran
                               <SelectValue placeholder="Selecciona artículo" />
                             </SelectTrigger>
                             <SelectContent>
-                              {itemsQuery.data?.filter(i => i.is_stocked).map(item => (
+                              {items?.filter(i => i.is_stocked).map(item => (
                                 <SelectItem key={item.id} value={item.id}>
                                   {item.sku} - {item.name}
                                 </SelectItem>
