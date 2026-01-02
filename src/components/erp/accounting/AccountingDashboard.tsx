@@ -59,6 +59,7 @@ import { PDFStatementImporter } from './PDFStatementImporter';
 import { FinancialRatiosPanel } from './FinancialRatiosPanel';
 import { CashFlowPanel } from './CashFlowPanel';
 import { BudgetManagementPanel } from './BudgetManagementPanel';
+import { ERPAdvancedRatiosPanel } from './ERPAdvancedRatiosPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -364,6 +365,10 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
             </TabsTrigger>
             <TabsTrigger value="ratios" className="gap-1.5 text-xs">
               Ratios
+            </TabsTrigger>
+            <TabsTrigger value="advanced-ratios" className="gap-1.5 text-xs">
+              <LineChart className="h-3.5 w-3.5" />
+              Avanzados
             </TabsTrigger>
             
             <div className="w-px h-6 bg-border mx-1" />
@@ -687,6 +692,11 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
         {/* Tab: Presupuestos */}
         <TabsContent value="budget">
           <BudgetManagementPanel />
+        </TabsContent>
+
+        {/* Tab: Análisis Avanzados */}
+        <TabsContent value="advanced-ratios">
+          <ERPAdvancedRatiosPanel />
         </TabsContent>
 
         {/* Tab: Ayuda y Normativas */}
