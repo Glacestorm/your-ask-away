@@ -50,13 +50,16 @@ import {
   History,
   X,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Truck
 } from 'lucide-react';
 import { useMaestros, Customer, CustomerAddress, CustomerContact } from '@/hooks/erp/useMaestros';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { CustomerAuditFeed } from './CustomerAuditFeed';
+import { CustomerShippingTab } from './CustomerShippingTab';
 
 interface CustomerCreditPolicy {
   customer_id: string;
@@ -593,22 +596,30 @@ export const CustomersPanel: React.FC = () => {
           </DialogHeader>
 
           <Tabs value={activeDetailTab} onValueChange={setActiveDetailTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="general" className="gap-1">
                 <Building2 className="h-4 w-4" />
-                General
+                <span className="hidden sm:inline">General</span>
               </TabsTrigger>
               <TabsTrigger value="addresses" className="gap-1" disabled={!selectedCustomer}>
                 <MapPin className="h-4 w-4" />
-                Direcciones
+                <span className="hidden sm:inline">Direcciones</span>
               </TabsTrigger>
               <TabsTrigger value="contacts" className="gap-1" disabled={!selectedCustomer}>
                 <Phone className="h-4 w-4" />
-                Contactos
+                <span className="hidden sm:inline">Contactos</span>
               </TabsTrigger>
               <TabsTrigger value="credit" className="gap-1" disabled={!selectedCustomer}>
                 <CreditCard className="h-4 w-4" />
-                Crédito
+                <span className="hidden sm:inline">Crédito</span>
+              </TabsTrigger>
+              <TabsTrigger value="shipping" className="gap-1" disabled={!selectedCustomer}>
+                <Truck className="h-4 w-4" />
+                <span className="hidden sm:inline">Logística</span>
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="gap-1" disabled={!selectedCustomer}>
+                <History className="h-4 w-4" />
+                <span className="hidden sm:inline">Auditoría</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1037,6 +1048,20 @@ export const CustomersPanel: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              )}
+            </TabsContent>
+
+            {/* Shipping/Logistics Tab */}
+            <TabsContent value="shipping" className="mt-4">
+              {selectedCustomer && (
+                <CustomerShippingTab customerId={selectedCustomer.id} />
+              )}
+            </TabsContent>
+
+            {/* Audit Tab */}
+            <TabsContent value="audit" className="mt-4">
+              {selectedCustomer && (
+                <CustomerAuditFeed entityId={selectedCustomer.id} entityType="customer" />
               )}
             </TabsContent>
           </Tabs>
