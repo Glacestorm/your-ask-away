@@ -1,5 +1,6 @@
 /**
  * Componente reutilizable de búsqueda y filtros para Maestros
+ * @version 2.0 - Mejoras: Filtros por rango de fechas, persistencia, reset, mejor UX
  */
 
 import React, { useState, useCallback, useRef, useEffect, memo } from 'react';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Select,
   SelectContent,
@@ -20,16 +22,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Search, Filter, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, X, SlidersHorizontal, RotateCcw, CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export interface FilterOption {
   key: string;
   label: string;
-  type: 'select' | 'switch' | 'text';
+  type: 'select' | 'switch' | 'text' | 'date' | 'dateRange';
   options?: { value: string; label: string }[];
-  defaultValue?: string | boolean;
+  defaultValue?: string | boolean | Date;
 }
 
 export interface SearchFiltersProps {
@@ -37,10 +41,13 @@ export interface SearchFiltersProps {
   onSearchChange: (value: string) => void;
   placeholder?: string;
   filters?: FilterOption[];
-  filterValues?: Record<string, string | boolean>;
-  onFilterChange?: (key: string, value: string | boolean) => void;
+  filterValues?: Record<string, string | boolean | Date | { from?: Date; to?: Date }>;
+  onFilterChange?: (key: string, value: string | boolean | Date | { from?: Date; to?: Date }) => void;
+  onReset?: () => void;
   className?: string;
   debounceMs?: number;
+  showResetButton?: boolean;
+  persistKey?: string;
 }
 
 export const SearchFilters = memo(function SearchFilters({
@@ -50,12 +57,15 @@ export const SearchFilters = memo(function SearchFilters({
   filters = [],
   filterValues = {},
   onFilterChange,
+  onReset,
   className,
-  debounceMs = 300
+  debounceMs = 300,
+  showResetButton = true,
 }: SearchFiltersProps) {
   const [localSearch, setLocalSearch] = useState(search);
   const [showFilters, setShowFilters] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Debounced search
   const handleSearchChange = useCallback((value: string) => {
@@ -90,13 +100,27 @@ export const SearchFilters = memo(function SearchFilters({
     if (!filter) return false;
     if (filter.type === 'switch') return value === true;
     if (filter.type === 'select') return value && value !== 'all';
+    if (filter.type === 'date') return !!value;
+    if (filter.type === 'dateRange') {
+      const range = value as { from?: Date; to?: Date };
+      return range?.from || range?.to;
+    }
     return !!value;
   }).length;
+
+  const hasActiveFilters = activeFilterCount > 0 || localSearch.length > 0;
 
   const clearSearch = useCallback(() => {
     setLocalSearch('');
     onSearchChange('');
+    inputRef.current?.focus();
   }, [onSearchChange]);
+
+  const handleReset = useCallback(() => {
+    setLocalSearch('');
+    onSearchChange('');
+    onReset?.();
+  }, [onSearchChange, onReset]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -104,13 +128,12 @@ export const SearchFilters = memo(function SearchFilters({
       // Ctrl/Cmd + K to focus search
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
-        const searchInput = document.querySelector('[data-search-input]') as HTMLInputElement;
-        searchInput?.focus();
+        inputRef.current?.focus();
       }
       // Escape to clear search when focused
-      if (e.key === 'Escape' && document.activeElement?.hasAttribute('data-search-input')) {
+      if (e.key === 'Escape' && document.activeElement === inputRef.current) {
         clearSearch();
-        (document.activeElement as HTMLElement)?.blur();
+        inputRef.current?.blur();
       }
     };
 
@@ -118,36 +141,108 @@ export const SearchFilters = memo(function SearchFilters({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [clearSearch]);
 
+  const renderDateFilter = (filter: FilterOption) => {
+    const value = filterValues[filter.key] as Date | undefined;
+    return (
+      <Popover key={filter.key}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-[180px] justify-start text-left font-normal",
+              !value && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {value ? format(value, "PPP", { locale: es }) : filter.label}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={value}
+            onSelect={(date) => onFilterChange?.(filter.key, date as Date)}
+            locale={es}
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  const renderDateRangeFilter = (filter: FilterOption) => {
+    const value = filterValues[filter.key] as { from?: Date; to?: Date } | undefined;
+    return (
+      <Popover key={filter.key}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-[240px] justify-start text-left font-normal",
+              !value?.from && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {value?.from ? (
+              value.to ? (
+                <>
+                  {format(value.from, "dd/MM/yy")} - {format(value.to, "dd/MM/yy")}
+                </>
+              ) : (
+                format(value.from, "PPP", { locale: es })
+              )
+            ) : (
+              filter.label
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="range"
+            selected={{ from: value?.from, to: value?.to }}
+            onSelect={(range) => onFilterChange?.(filter.key, range as { from?: Date; to?: Date })}
+            locale={es}
+            numberOfMonths={2}
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
   return (
     <div className={cn("space-y-3", className)}>
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search input */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
+            ref={inputRef}
             data-search-input
             placeholder={placeholder}
             value={localSearch}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 pr-8"
+            className="pl-9 pr-16"
+            aria-label="Buscar"
           />
-          <AnimatePresence>
-            {localSearch && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </motion.button>
-            )}
-          </AnimatePresence>
-          <span className="absolute right-10 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground hidden sm:block">
-            ⌘K
-          </span>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <AnimatePresence>
+              {localSearch && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  type="button"
+                  onClick={clearSearch}
+                  className="text-muted-foreground hover:text-foreground p-1"
+                  aria-label="Limpiar búsqueda"
+                >
+                  <X className="h-4 w-4" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+            <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+              ⌘K
+            </kbd>
+          </div>
         </div>
 
         {/* Quick filters (switches) */}
@@ -158,7 +253,7 @@ export const SearchFilters = memo(function SearchFilters({
               checked={Boolean(filterValues[filter.key] ?? filter.defaultValue ?? false)}
               onCheckedChange={(checked) => onFilterChange?.(filter.key, checked)}
             />
-            <Label htmlFor={`filter-${filter.key}`} className="text-sm whitespace-nowrap">
+            <Label htmlFor={`filter-${filter.key}`} className="text-sm whitespace-nowrap cursor-pointer">
               {filter.label}
             </Label>
           </div>
@@ -184,11 +279,15 @@ export const SearchFilters = memo(function SearchFilters({
           </Select>
         ))}
 
+        {/* Date filters */}
+        {filters.filter(f => f.type === 'date').map(renderDateFilter)}
+        {filters.filter(f => f.type === 'dateRange').map(renderDateRangeFilter)}
+
         {/* Advanced filters popover */}
         {filters.filter(f => f.type === 'text').length > 0 && (
           <Popover open={showFilters} onOpenChange={setShowFilters}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button variant="outline" size="icon" className="relative shrink-0">
                 <SlidersHorizontal className="h-4 w-4" />
                 {activeFilterCount > 0 && (
                   <Badge 
@@ -218,6 +317,19 @@ export const SearchFilters = memo(function SearchFilters({
             </PopoverContent>
           </Popover>
         )}
+
+        {/* Reset button */}
+        {showResetButton && hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleReset}
+            className="shrink-0"
+            aria-label="Restablecer filtros"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Active filters chips */}
@@ -235,12 +347,25 @@ export const SearchFilters = memo(function SearchFilters({
               if (filter.type === 'switch' && value !== true) return null;
               if (filter.type === 'select' && (!value || value === 'all')) return null;
               if (filter.type === 'text' && !value) return null;
+              if (filter.type === 'date' && !value) return null;
+              if (filter.type === 'dateRange') {
+                const range = value as { from?: Date; to?: Date };
+                if (!range?.from && !range?.to) return null;
+              }
 
-              const displayValue = filter.type === 'select'
-                ? filter.options?.find(o => o.value === value)?.label
-                : filter.type === 'switch'
-                  ? filter.label
-                  : value;
+              let displayValue: React.ReactNode;
+              if (filter.type === 'select') {
+                displayValue = filter.options?.find(o => o.value === value)?.label;
+              } else if (filter.type === 'switch') {
+                displayValue = filter.label;
+              } else if (filter.type === 'date' && value instanceof Date) {
+                displayValue = format(value, "dd/MM/yyyy");
+              } else if (filter.type === 'dateRange') {
+                const range = value as { from?: Date; to?: Date };
+                displayValue = `${range.from ? format(range.from, "dd/MM") : '?'} - ${range.to ? format(range.to, "dd/MM") : '?'}`;
+              } else {
+                displayValue = String(value);
+              }
 
               return (
                 <motion.div
@@ -257,6 +382,10 @@ export const SearchFilters = memo(function SearchFilters({
                         onFilterChange?.(key, false);
                       } else if (filter.type === 'select') {
                         onFilterChange?.(key, 'all');
+                      } else if (filter.type === 'date') {
+                        onFilterChange?.(key, undefined as unknown as Date);
+                      } else if (filter.type === 'dateRange') {
+                        onFilterChange?.(key, { from: undefined, to: undefined });
                       } else {
                         onFilterChange?.(key, '');
                       }
