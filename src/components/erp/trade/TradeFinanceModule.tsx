@@ -35,6 +35,7 @@ import { useERPTradeFinance, type TradeOperation, type FinancialEntity } from '@
 import { FinancialEntitiesManager } from './FinancialEntitiesManager';
 import { APIConnectionWizard } from './APIConnectionWizard';
 import { CommercialDiscountPanel } from './discount';
+import { DocumentaryCreditPanel } from './documentary-credits';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -396,7 +397,7 @@ export function TradeFinanceModule() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Resumen
@@ -404,6 +405,10 @@ export function TradeFinanceModule() {
           <TabsTrigger value="discount" className="gap-2">
             <Banknote className="h-4 w-4" />
             Descuento
+          </TabsTrigger>
+          <TabsTrigger value="credits" className="gap-2">
+            <FileCheck className="h-4 w-4" />
+            Créditos L/C
           </TabsTrigger>
           <TabsTrigger value="operations" className="gap-2">
             <ArrowRightLeft className="h-4 w-4" />
@@ -419,7 +424,7 @@ export function TradeFinanceModule() {
           </TabsTrigger>
           <TabsTrigger value="connections" className="gap-2">
             <Link2 className="h-4 w-4" />
-            Conexiones API
+            Conexiones
           </TabsTrigger>
         </TabsList>
 
@@ -447,6 +452,11 @@ export function TradeFinanceModule() {
         {/* Discount Tab */}
         <TabsContent value="discount">
           <CommercialDiscountPanel />
+        </TabsContent>
+
+        {/* Documentary Credits Tab */}
+        <TabsContent value="credits">
+          <DocumentaryCreditPanel />
         </TabsContent>
 
         {/* Operations Tab */}

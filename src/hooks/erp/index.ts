@@ -39,3 +39,4 @@ export { useAccountingVoiceAgent } from './useAccountingVoiceAgent';
 // Trade Finance
 export { useERPTradeFinance } from './useERPTradeFinance';
 export { useERPDiscountOperations } from './useERPDiscountOperations';
+export { useERPDocumentaryCredits } from './useERPDocumentaryCredits';
