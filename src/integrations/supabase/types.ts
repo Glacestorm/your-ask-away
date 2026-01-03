@@ -10714,6 +10714,125 @@ export type Database = {
           },
         ]
       }
+      erp_bank_guarantees: {
+        Row: {
+          amount: number
+          applicant_id: string | null
+          auto_renewal: boolean | null
+          beneficiary_id: string | null
+          commission_amount: number | null
+          commission_rate: number | null
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          documents: Json | null
+          effective_date: string | null
+          expiry_date: string
+          guarantee_number: string
+          guarantee_type: string
+          id: string
+          issuance_fee: number | null
+          issue_date: string
+          issuing_bank_id: string | null
+          metadata: Json | null
+          notes: string | null
+          purpose: string | null
+          renewal_period_months: number | null
+          status: string
+          terms_conditions: string | null
+          underlying_contract: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          applicant_id?: string | null
+          auto_renewal?: boolean | null
+          beneficiary_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          documents?: Json | null
+          effective_date?: string | null
+          expiry_date: string
+          guarantee_number: string
+          guarantee_type: string
+          id?: string
+          issuance_fee?: number | null
+          issue_date: string
+          issuing_bank_id?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          purpose?: string | null
+          renewal_period_months?: number | null
+          status?: string
+          terms_conditions?: string | null
+          underlying_contract?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          applicant_id?: string | null
+          auto_renewal?: boolean | null
+          beneficiary_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          documents?: Json | null
+          effective_date?: string | null
+          expiry_date?: string
+          guarantee_number?: string
+          guarantee_type?: string
+          id?: string
+          issuance_fee?: number | null
+          issue_date?: string
+          issuing_bank_id?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          purpose?: string | null
+          renewal_period_months?: number | null
+          status?: string
+          terms_conditions?: string | null
+          underlying_contract?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_guarantees_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_guarantees_beneficiary_id_fkey"
+            columns: ["beneficiary_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_guarantees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_guarantees_issuing_bank_id_fkey"
+            columns: ["issuing_bank_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_bank_statement_lines: {
         Row: {
           amount: number
@@ -12397,6 +12516,71 @@ export type Database = {
             columns: ["warehouse_id"]
             isOneToOne: false
             referencedRelation: "erp_warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_guarantee_claims: {
+        Row: {
+          accepted_amount: number | null
+          claim_amount: number
+          claim_date: string
+          claim_number: string
+          claimant_documents: Json | null
+          created_at: string
+          guarantee_id: string
+          id: string
+          metadata: Json | null
+          notes: string | null
+          payment_date: string | null
+          processed_by: string | null
+          reason: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_amount?: number | null
+          claim_amount: number
+          claim_date: string
+          claim_number: string
+          claimant_documents?: Json | null
+          created_at?: string
+          guarantee_id: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_date?: string | null
+          processed_by?: string | null
+          reason: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_amount?: number | null
+          claim_amount?: number
+          claim_date?: string
+          claim_number?: string
+          claimant_documents?: Json | null
+          created_at?: string
+          guarantee_id?: string
+          id?: string
+          metadata?: Json | null
+          notes?: string | null
+          payment_date?: string | null
+          processed_by?: string | null
+          reason?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_guarantee_claims_guarantee_id_fkey"
+            columns: ["guarantee_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_guarantees"
             referencedColumns: ["id"]
           },
         ]

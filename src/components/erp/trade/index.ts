@@ -7,3 +7,4 @@ export { FinancialEntitiesManager } from './FinancialEntitiesManager';
 export { APIConnectionWizard } from './APIConnectionWizard';
 export * from './discount';
 export * from './documentary-credits';
+export * from './guarantees';
