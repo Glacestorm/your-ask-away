@@ -588,9 +588,9 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                         <div className="mt-2">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Activity className="h-3 w-3" />
-                            Confianza: {(f.confidenceLevel * 100).toFixed(0)}%
+                            Confianza: {((f.confidenceLevel ?? 0) * 100).toFixed(0)}%
                           </div>
-                          <Progress value={f.confidenceLevel * 100} className="h-1 mt-1" />
+                          <Progress value={(f.confidenceLevel ?? 0) * 100} className="h-1 mt-1" />
                         </div>
                       </Card>
                     ))}
