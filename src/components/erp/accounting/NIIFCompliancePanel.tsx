@@ -72,6 +72,8 @@ export function NIIFCompliancePanel({
   const [standardsInfo, setStandardsInfo] = useState<any>(null);
   const [useDemo, setUseDemo] = useState(!context?.entries?.length);
   const [showClearDemoDialog, setShowClearDemoDialog] = useState(false);
+  const [demoReports, setDemoReports] = useState<any[]>([]);
+  const [showClearReportsDialog, setShowClearReportsDialog] = useState(false);
 
   // Función para limpiar datos demo
   const handleClearDemoData = useCallback(() => {
@@ -79,6 +81,58 @@ export function NIIFCompliancePanel({
     setMappingResult(null);
     setStandardsInfo(null);
     setShowClearDemoDialog(false);
+  }, []);
+
+  // Función para generar reportes demo
+  const handleGenerateDemoReports = useCallback(() => {
+    setDemoReports([
+      {
+        id: 'balance',
+        name: 'Balance de Situación NIIF',
+        type: 'balance',
+        date: new Date().toISOString(),
+        status: 'completed',
+        summary: {
+          totalActivo: 285000,
+          totalPasivo: 47000,
+          patrimonioNeto: 238000,
+          ratioLiquidez: 1.85,
+          ratioEndeudamiento: 0.16
+        }
+      },
+      {
+        id: 'pyg',
+        name: 'Estado de Resultados NIIF',
+        type: 'income_statement',
+        date: new Date().toISOString(),
+        status: 'completed',
+        summary: {
+          ingresos: 150000,
+          gastos: 109200,
+          resultadoNeto: 40800,
+          margenNeto: 27.2,
+          ebitda: 42000
+        }
+      },
+      {
+        id: 'notas',
+        name: 'Notas a los Estados Financieros',
+        type: 'notes',
+        date: new Date().toISOString(),
+        status: 'completed',
+        summary: {
+          totalNotas: 12,
+          politicasContables: 5,
+          revelaciones: 7
+        }
+      }
+    ]);
+  }, []);
+
+  // Función para limpiar reportes demo
+  const handleClearDemoReports = useCallback(() => {
+    setDemoReports([]);
+    setShowClearReportsDialog(false);
   }, []);
 
   const {
@@ -519,10 +573,142 @@ export function NIIFCompliancePanel({
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="mt-0">
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm">Generador de informes NIIF</p>
-              <p className="text-xs mt-1">Próximamente: Balance, PyG, Notas según NIIF</p>
+            <div className="space-y-4">
+              {/* Indicador de modo demo */}
+              <div className="flex items-center justify-between p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center gap-2">
+                  <Info className="h-4 w-4 text-amber-500" />
+                  <span className="text-xs text-amber-600 dark:text-amber-400">
+                    Modo demostración: informes de ejemplo basados en datos demo
+                  </span>
+                </div>
+                {demoReports.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowClearReportsDialog(true)}
+                    className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Limpiar informes
+                  </Button>
+                )}
+              </div>
+
+              {/* Botón generar reportes */}
+              <Button 
+                onClick={handleGenerateDemoReports} 
+                disabled={isLoading || demoReports.length > 0}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Generar Informes NIIF (Demo)
+              </Button>
+
+              {/* Lista de reportes generados */}
+              {demoReports.length > 0 ? (
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-3">
+                    {demoReports.map((report) => (
+                      <div key={report.id} className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={cn(
+                              "p-2 rounded-lg",
+                              report.type === 'balance' && "bg-blue-500/10",
+                              report.type === 'income_statement' && "bg-green-500/10",
+                              report.type === 'notes' && "bg-purple-500/10"
+                            )}>
+                              <FileText className={cn(
+                                "h-4 w-4",
+                                report.type === 'balance' && "text-blue-500",
+                                report.type === 'income_statement' && "text-green-500",
+                                report.type === 'notes' && "text-purple-500"
+                              )} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{report.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                Generado: {new Date(report.date).toLocaleDateString('es-ES')}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Completado
+                          </Badge>
+                        </div>
+
+                        {/* Resumen del reporte */}
+                        <div className="mt-3 p-3 rounded-lg bg-muted/50">
+                          {report.type === 'balance' && (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Total Activo:</span>
+                                <span className="ml-2 font-medium">€{report.summary.totalActivo.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Total Pasivo:</span>
+                                <span className="ml-2 font-medium">€{report.summary.totalPasivo.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Patrimonio Neto:</span>
+                                <span className="ml-2 font-medium text-green-600">€{report.summary.patrimonioNeto.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Ratio Liquidez:</span>
+                                <span className="ml-2 font-medium">{report.summary.ratioLiquidez}</span>
+                              </div>
+                            </div>
+                          )}
+                          {report.type === 'income_statement' && (
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Ingresos:</span>
+                                <span className="ml-2 font-medium">€{report.summary.ingresos.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Gastos:</span>
+                                <span className="ml-2 font-medium">€{report.summary.gastos.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Resultado Neto:</span>
+                                <span className="ml-2 font-medium text-green-600">€{report.summary.resultadoNeto.toLocaleString()}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Margen Neto:</span>
+                                <span className="ml-2 font-medium">{report.summary.margenNeto}%</span>
+                              </div>
+                            </div>
+                          )}
+                          {report.type === 'notes' && (
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Total Notas:</span>
+                                <span className="ml-2 font-medium">{report.summary.totalNotas}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Políticas:</span>
+                                <span className="ml-2 font-medium">{report.summary.politicasContables}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Revelaciones:</span>
+                                <span className="ml-2 font-medium">{report.summary.revelaciones}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <FileText className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-medium">Sin informes generados</p>
+                  <p className="text-xs mt-1">Pulsa el botón para generar informes de ejemplo</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
@@ -542,6 +728,18 @@ export function NIIFCompliancePanel({
         onConfirm={handleClearDemoData}
         title="Limpiar datos de demostración"
         description="¿Estás seguro de que deseas eliminar todos los resultados generados? Los datos de ejemplo permanecerán disponibles para futuras pruebas."
+        variant="warning"
+        confirmLabel="Limpiar"
+        cancelLabel="Cancelar"
+      />
+
+      {/* Diálogo de confirmación para limpiar informes demo */}
+      <ConfirmationDialog
+        open={showClearReportsDialog}
+        onOpenChange={setShowClearReportsDialog}
+        onConfirm={handleClearDemoReports}
+        title="Limpiar informes de demostración"
+        description="¿Estás seguro de que deseas eliminar todos los informes generados? Podrás volver a generarlos cuando quieras."
         variant="warning"
         confirmLabel="Limpiar"
         cancelLabel="Cancelar"
