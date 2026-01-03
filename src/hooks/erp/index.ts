@@ -40,3 +40,4 @@ export { useAccountingVoiceAgent } from './useAccountingVoiceAgent';
 export { useERPTradeFinance } from './useERPTradeFinance';
 export { useERPDiscountOperations } from './useERPDiscountOperations';
 export { useERPDocumentaryCredits } from './useERPDocumentaryCredits';
+export { useERPBankGuarantees } from './useERPBankGuarantees';

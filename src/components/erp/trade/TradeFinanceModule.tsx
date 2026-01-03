@@ -36,6 +36,7 @@ import { FinancialEntitiesManager } from './FinancialEntitiesManager';
 import { APIConnectionWizard } from './APIConnectionWizard';
 import { CommercialDiscountPanel } from './discount';
 import { DocumentaryCreditPanel } from './documentary-credits';
+import { GuaranteesPanel } from './guarantees';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -397,7 +398,7 @@ export function TradeFinanceModule() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="overview" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Resumen
@@ -409,6 +410,10 @@ export function TradeFinanceModule() {
           <TabsTrigger value="credits" className="gap-2">
             <FileCheck className="h-4 w-4" />
             Créditos L/C
+          </TabsTrigger>
+          <TabsTrigger value="guarantees" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Avales
           </TabsTrigger>
           <TabsTrigger value="operations" className="gap-2">
             <ArrowRightLeft className="h-4 w-4" />
@@ -457,6 +462,11 @@ export function TradeFinanceModule() {
         {/* Documentary Credits Tab */}
         <TabsContent value="credits">
           <DocumentaryCreditPanel />
+        </TabsContent>
+
+        {/* Bank Guarantees Tab */}
+        <TabsContent value="guarantees">
+          <GuaranteesPanel />
         </TabsContent>
 
         {/* Operations Tab */}
