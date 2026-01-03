@@ -195,10 +195,11 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     return months.map((month, idx) => {
       const monthData = budgetLines.reduce((acc, line) => {
-        const mb = line.monthlyBreakdown[idx];
-        if (mb) {
-          acc.presupuestado += mb.budgeted;
-          acc.real += mb.actual;
+        const breakdown = line.monthlyBreakdown;
+        if (breakdown && Array.isArray(breakdown) && breakdown[idx]) {
+          const mb = breakdown[idx];
+          acc.presupuestado += mb.budgeted || 0;
+          acc.real += mb.actual || 0;
         }
         return acc;
       }, { presupuestado: 0, real: 0 });
