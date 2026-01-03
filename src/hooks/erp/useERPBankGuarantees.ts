@@ -113,14 +113,14 @@ export function useERPBankGuarantees() {
           *,
           applicant:erp_trade_partners!erp_bank_guarantees_applicant_id_fkey(id, trade_name),
           beneficiary:erp_trade_partners!erp_bank_guarantees_beneficiary_id_fkey(id, trade_name),
-          issuing_bank:erp_financial_entities!erp_bank_guarantees_issuing_bank_id_fkey(id, name)
+          issuing_bank:erp_financial_entities!erp_bank_guarantees_issuing_bank_id_fkey(id, entity_name)
         `)
         .eq('company_id', currentCompany.id)
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       
-      // Map trade_name to name for consistent interface
+      // Map trade_name/entity_name to name for consistent interface
       const mapped = (data || []).map((g: Record<string, unknown>) => ({
         ...g,
         applicant: g.applicant && typeof g.applicant === 'object' && 'id' in g.applicant 
@@ -128,6 +128,9 @@ export function useERPBankGuarantees() {
           : undefined,
         beneficiary: g.beneficiary && typeof g.beneficiary === 'object' && 'id' in g.beneficiary
           ? { id: (g.beneficiary as { id: string; trade_name: string }).id, name: (g.beneficiary as { id: string; trade_name: string }).trade_name }
+          : undefined,
+        issuing_bank: g.issuing_bank && typeof g.issuing_bank === 'object' && 'id' in g.issuing_bank
+          ? { id: (g.issuing_bank as { id: string; entity_name: string }).id, name: (g.issuing_bank as { id: string; entity_name: string }).entity_name }
           : undefined,
       }));
       setGuarantees(mapped as BankGuarantee[]);
