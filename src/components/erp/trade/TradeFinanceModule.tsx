@@ -37,6 +37,7 @@ import { APIConnectionWizard } from './APIConnectionWizard';
 import { CommercialDiscountPanel } from './discount';
 import { DocumentaryCreditPanel } from './documentary-credits';
 import { GuaranteesPanel } from './guarantees';
+import { FactoringPanel } from './factoring';
 import { ExpirationAlertsWidget } from './ExpirationAlertsWidget';
 import { CurrencyExposurePanel } from './CurrencyExposurePanel';
 import { TradePartnersPanel } from './partners';
@@ -401,7 +402,7 @@ export function TradeFinanceModule() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-10">
+        <TabsList className="grid w-full grid-cols-11">
           <TabsTrigger value="overview" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Resumen
@@ -409,6 +410,10 @@ export function TradeFinanceModule() {
           <TabsTrigger value="discount" className="gap-2">
             <Banknote className="h-4 w-4" />
             Descuento
+          </TabsTrigger>
+          <TabsTrigger value="factoring" className="gap-2">
+            <Receipt className="h-4 w-4" />
+            Factoring
           </TabsTrigger>
           <TabsTrigger value="credits" className="gap-2">
             <FileCheck className="h-4 w-4" />
@@ -469,6 +474,11 @@ export function TradeFinanceModule() {
         {/* Discount Tab */}
         <TabsContent value="discount">
           <CommercialDiscountPanel />
+        </TabsContent>
+
+        {/* Factoring Tab */}
+        <TabsContent value="factoring">
+          <FactoringPanel />
         </TabsContent>
 
         {/* Documentary Credits Tab */}

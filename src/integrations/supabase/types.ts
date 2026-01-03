@@ -12132,6 +12132,205 @@ export type Database = {
           },
         ]
       }
+      erp_factoring_assignments: {
+        Row: {
+          advance_amount: number
+          advance_date: string | null
+          advance_percentage: number
+          assigned_amount: number
+          assignment_date: string
+          collected_amount: number | null
+          collection_date: string | null
+          commission_charged: number | null
+          company_id: string | null
+          contract_id: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          debtor_id: string | null
+          debtor_name: string
+          debtor_tax_id: string | null
+          due_date: string
+          id: string
+          interest_charged: number | null
+          invoice_amount: number
+          invoice_date: string
+          invoice_number: string
+          net_settlement: number | null
+          notes: string | null
+          recourse_date: string | null
+          recourse_exercised: boolean | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          advance_amount?: number
+          advance_date?: string | null
+          advance_percentage?: number
+          assigned_amount: number
+          assignment_date?: string
+          collected_amount?: number | null
+          collection_date?: string | null
+          commission_charged?: number | null
+          company_id?: string | null
+          contract_id: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          debtor_id?: string | null
+          debtor_name: string
+          debtor_tax_id?: string | null
+          due_date: string
+          id?: string
+          interest_charged?: number | null
+          invoice_amount: number
+          invoice_date: string
+          invoice_number: string
+          net_settlement?: number | null
+          notes?: string | null
+          recourse_date?: string | null
+          recourse_exercised?: boolean | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          advance_amount?: number
+          advance_date?: string | null
+          advance_percentage?: number
+          assigned_amount?: number
+          assignment_date?: string
+          collected_amount?: number | null
+          collection_date?: string | null
+          commission_charged?: number | null
+          company_id?: string | null
+          contract_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          debtor_id?: string | null
+          debtor_name?: string
+          debtor_tax_id?: string | null
+          due_date?: string
+          id?: string
+          interest_charged?: number | null
+          invoice_amount?: number
+          invoice_date?: string
+          invoice_number?: string
+          net_settlement?: number | null
+          notes?: string | null
+          recourse_date?: string | null
+          recourse_exercised?: boolean | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_factoring_assignments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_factoring_assignments_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "erp_factoring_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_factoring_assignments_debtor_id_fkey"
+            columns: ["debtor_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_factoring_contracts: {
+        Row: {
+          advance_percentage: number
+          available_limit: number | null
+          commission_rate: number
+          company_id: string | null
+          contract_number: string
+          contract_type: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          debtor_limits: Json | null
+          end_date: string | null
+          financial_entity_id: string | null
+          global_limit: number
+          id: string
+          interest_rate: number
+          notes: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          used_limit: number
+        }
+        Insert: {
+          advance_percentage?: number
+          available_limit?: number | null
+          commission_rate?: number
+          company_id?: string | null
+          contract_number: string
+          contract_type?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          debtor_limits?: Json | null
+          end_date?: string | null
+          financial_entity_id?: string | null
+          global_limit?: number
+          id?: string
+          interest_rate?: number
+          notes?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          used_limit?: number
+        }
+        Update: {
+          advance_percentage?: number
+          available_limit?: number | null
+          commission_rate?: number
+          company_id?: string | null
+          contract_number?: string
+          contract_type?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          debtor_limits?: Json | null
+          end_date?: string | null
+          financial_entity_id?: string | null
+          global_limit?: number
+          id?: string
+          interest_rate?: number
+          notes?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          used_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_factoring_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_factoring_contracts_financial_entity_id_fkey"
+            columns: ["financial_entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_financial_entities: {
         Row: {
           address: string | null
