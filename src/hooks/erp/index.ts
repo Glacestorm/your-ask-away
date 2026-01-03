@@ -59,3 +59,10 @@ export type { ERPModule, ExportFormat, ImportExportOptions, OCRResult, ImportRes
 // Banking Hub
 export { useERPBankingHub } from './useERPBankingHub';
 export type { BankingProvider, BankAccount, BankConnection, BankTransaction, BankPosition, SyncLog } from './useERPBankingHub';
+
+// AI Agent Orchestrator - Multi-agent supervision system
+export { useERPAgentOrchestrator } from './useERPAgentOrchestrator';
+export type { ERPAgentType, ERPAgent, AgentAlert, AgentAction, AgentAnalysisRequest, AgentAnalysisResult } from './useERPAgentOrchestrator';
+
+// Accounting Supervisor Agent (legacy, now part of orchestrator)
+export { useAccountingSupervisorAgent } from './useAccountingSupervisorAgent';
