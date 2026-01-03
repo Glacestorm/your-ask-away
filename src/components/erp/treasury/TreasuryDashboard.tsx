@@ -10,7 +10,9 @@ import {
   FileText,
   TrendingUp,
   Clock,
-  CreditCard
+  CreditCard,
+  Landmark,
+  PiggyBank
 } from 'lucide-react';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { PayablesManager } from './PayablesManager';
@@ -20,6 +22,7 @@ import { SEPARemittanceManager } from './SEPARemittanceManager';
 import { SEPAMandatesManager } from './SEPAMandatesManager';
 import { CashFlowForecast } from './CashFlowForecast';
 import { AgingReport } from './AgingReport';
+import { FinancingOperationsPanel, InvestmentsPanel } from './financing';
 
 export function TreasuryDashboard() {
   const { currentCompany } = useERPContext();
@@ -139,6 +142,14 @@ export function TreasuryDashboard() {
             <CreditCard className="h-4 w-4" />
             Mandatos
           </TabsTrigger>
+          <TabsTrigger value="financing" className="gap-1.5">
+            <Landmark className="h-4 w-4" />
+            Financiación
+          </TabsTrigger>
+          <TabsTrigger value="investments" className="gap-1.5">
+            <PiggyBank className="h-4 w-4" />
+            Inversiones
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -167,6 +178,14 @@ export function TreasuryDashboard() {
 
         <TabsContent value="mandates" className="mt-4">
           <SEPAMandatesManager companyId={currentCompany.id} />
+        </TabsContent>
+
+        <TabsContent value="financing" className="mt-4">
+          <FinancingOperationsPanel companyId={currentCompany.id} />
+        </TabsContent>
+
+        <TabsContent value="investments" className="mt-4">
+          <InvestmentsPanel companyId={currentCompany.id} />
         </TabsContent>
       </Tabs>
     </div>

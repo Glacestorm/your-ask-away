@@ -42,7 +42,11 @@ const statusConfig = {
   cancelled: { label: 'Cancelada', variant: 'destructive' as const },
 };
 
-export function FinancingOperationsPanel() {
+interface FinancingOperationsPanelProps {
+  companyId?: string;
+}
+
+export function FinancingOperationsPanel({ companyId }: FinancingOperationsPanelProps) {
   const { currentCompany } = useERPContext();
   const { 
     operations, 
