@@ -12423,6 +12423,185 @@ export type Database = {
           },
         ]
       }
+      erp_financing_operations: {
+        Row: {
+          accounting_account_code: string | null
+          asset_description: string | null
+          company_id: string
+          contract_number: string
+          created_at: string
+          created_by: string | null
+          credit_limit: number | null
+          currency: string
+          description: string | null
+          end_date: string
+          financial_entity_code: string | null
+          financial_entity_name: string
+          guarantee_details: Json | null
+          guarantee_type: string | null
+          id: string
+          interest_rate: number
+          interest_type: string
+          loan_subtype: string | null
+          next_payment_date: string | null
+          operation_type: string
+          outstanding_balance: number
+          payment_amount: number | null
+          payment_frequency: string
+          principal_amount: number
+          reference_rate: string | null
+          residual_value: number | null
+          spread: number | null
+          start_date: string
+          status: string
+          term_months: number
+          updated_at: string
+        }
+        Insert: {
+          accounting_account_code?: string | null
+          asset_description?: string | null
+          company_id: string
+          contract_number: string
+          created_at?: string
+          created_by?: string | null
+          credit_limit?: number | null
+          currency?: string
+          description?: string | null
+          end_date: string
+          financial_entity_code?: string | null
+          financial_entity_name: string
+          guarantee_details?: Json | null
+          guarantee_type?: string | null
+          id?: string
+          interest_rate: number
+          interest_type?: string
+          loan_subtype?: string | null
+          next_payment_date?: string | null
+          operation_type: string
+          outstanding_balance: number
+          payment_amount?: number | null
+          payment_frequency?: string
+          principal_amount: number
+          reference_rate?: string | null
+          residual_value?: number | null
+          spread?: number | null
+          start_date: string
+          status?: string
+          term_months: number
+          updated_at?: string
+        }
+        Update: {
+          accounting_account_code?: string | null
+          asset_description?: string | null
+          company_id?: string
+          contract_number?: string
+          created_at?: string
+          created_by?: string | null
+          credit_limit?: number | null
+          currency?: string
+          description?: string | null
+          end_date?: string
+          financial_entity_code?: string | null
+          financial_entity_name?: string
+          guarantee_details?: Json | null
+          guarantee_type?: string | null
+          id?: string
+          interest_rate?: number
+          interest_type?: string
+          loan_subtype?: string | null
+          next_payment_date?: string | null
+          operation_type?: string
+          outstanding_balance?: number
+          payment_amount?: number | null
+          payment_frequency?: string
+          principal_amount?: number
+          reference_rate?: string | null
+          residual_value?: number | null
+          spread?: number | null
+          start_date?: string
+          status?: string
+          term_months?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_financing_operations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_financing_payments: {
+        Row: {
+          company_id: string
+          created_at: string
+          due_date: string
+          fees: number | null
+          id: string
+          interest_amount: number
+          journal_entry_id: string | null
+          notes: string | null
+          operation_id: string
+          payment_date: string | null
+          payment_number: number
+          principal_amount: number
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          due_date: string
+          fees?: number | null
+          id?: string
+          interest_amount: number
+          journal_entry_id?: string | null
+          notes?: string | null
+          operation_id: string
+          payment_date?: string | null
+          payment_number: number
+          principal_amount: number
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          due_date?: string
+          fees?: number | null
+          id?: string
+          interest_amount?: number
+          journal_entry_id?: string | null
+          notes?: string | null
+          operation_id?: string
+          payment_date?: string | null
+          payment_number?: number
+          principal_amount?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_financing_payments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_financing_payments_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financing_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_fiscal_closings: {
         Row: {
           closing_entry_id: string | null
@@ -12905,6 +13084,164 @@ export type Database = {
           },
         ]
       }
+      erp_investment_transactions: {
+        Row: {
+          company_id: string
+          created_at: string
+          fees: number | null
+          id: string
+          investment_id: string
+          journal_entry_id: string | null
+          notes: string | null
+          price_per_unit: number | null
+          realized_pnl: number | null
+          total_amount: number
+          transaction_date: string
+          transaction_type: string
+          units: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          fees?: number | null
+          id?: string
+          investment_id: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          price_per_unit?: number | null
+          realized_pnl?: number | null
+          total_amount: number
+          transaction_date: string
+          transaction_type: string
+          units?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          fees?: number | null
+          id?: string
+          investment_id?: string
+          journal_entry_id?: string | null
+          notes?: string | null
+          price_per_unit?: number | null
+          realized_pnl?: number | null
+          total_amount?: number
+          transaction_date?: string
+          transaction_type?: string
+          units?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_investment_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_investment_transactions_investment_id_fkey"
+            columns: ["investment_id"]
+            isOneToOne: false
+            referencedRelation: "erp_investments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_investments: {
+        Row: {
+          accounting_account_code: string | null
+          bond_structure_type: string | null
+          company_id: string
+          coupon_frequency: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          current_value: number
+          description: string | null
+          financial_entity_name: string | null
+          id: string
+          interest_rate: number | null
+          investment_name: string
+          investment_type: string
+          isin_code: string | null
+          maturity_date: string | null
+          next_coupon_date: string | null
+          nominal_amount: number
+          purchase_date: string
+          purchase_price: number | null
+          status: string
+          unit_price: number | null
+          units_quantity: number | null
+          updated_at: string
+          yield_rate: number | null
+        }
+        Insert: {
+          accounting_account_code?: string | null
+          bond_structure_type?: string | null
+          company_id: string
+          coupon_frequency?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_value: number
+          description?: string | null
+          financial_entity_name?: string | null
+          id?: string
+          interest_rate?: number | null
+          investment_name: string
+          investment_type: string
+          isin_code?: string | null
+          maturity_date?: string | null
+          next_coupon_date?: string | null
+          nominal_amount: number
+          purchase_date: string
+          purchase_price?: number | null
+          status?: string
+          unit_price?: number | null
+          units_quantity?: number | null
+          updated_at?: string
+          yield_rate?: number | null
+        }
+        Update: {
+          accounting_account_code?: string | null
+          bond_structure_type?: string | null
+          company_id?: string
+          coupon_frequency?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_value?: number
+          description?: string | null
+          financial_entity_name?: string | null
+          id?: string
+          interest_rate?: number | null
+          investment_name?: string
+          investment_type?: string
+          isin_code?: string | null
+          maturity_date?: string | null
+          next_coupon_date?: string | null
+          nominal_amount?: number
+          purchase_date?: string
+          purchase_price?: number | null
+          status?: string
+          unit_price?: number | null
+          units_quantity?: number | null
+          updated_at?: string
+          yield_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_investments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_items: {
         Row: {
           category: string | null
@@ -13317,6 +13654,119 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "erp_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_market_interest_rates: {
+        Row: {
+          change_bps: number | null
+          currency: string
+          id: string
+          previous_value: number | null
+          rate_code: string
+          rate_date: string
+          rate_name: string
+          rate_value: number
+          source: string
+          tenor: string
+          updated_at: string
+        }
+        Insert: {
+          change_bps?: number | null
+          currency: string
+          id?: string
+          previous_value?: number | null
+          rate_code: string
+          rate_date: string
+          rate_name: string
+          rate_value: number
+          source?: string
+          tenor: string
+          updated_at?: string
+        }
+        Update: {
+          change_bps?: number | null
+          currency?: string
+          id?: string
+          previous_value?: number | null
+          rate_code?: string
+          rate_date?: string
+          rate_name?: string
+          rate_value?: number
+          source?: string
+          tenor?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      erp_market_stock_watchlist: {
+        Row: {
+          company_id: string
+          created_at: string
+          currency: string
+          day_high: number | null
+          day_low: number | null
+          exchange: string | null
+          id: string
+          is_active: boolean
+          isin_code: string | null
+          last_price: number | null
+          market_cap: number | null
+          price_change: number | null
+          price_change_pct: number | null
+          price_updated_at: string | null
+          stock_name: string
+          symbol: string
+          updated_at: string
+          volume: number | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          currency?: string
+          day_high?: number | null
+          day_low?: number | null
+          exchange?: string | null
+          id?: string
+          is_active?: boolean
+          isin_code?: string | null
+          last_price?: number | null
+          market_cap?: number | null
+          price_change?: number | null
+          price_change_pct?: number | null
+          price_updated_at?: string | null
+          stock_name: string
+          symbol: string
+          updated_at?: string
+          volume?: number | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          currency?: string
+          day_high?: number | null
+          day_low?: number | null
+          exchange?: string | null
+          id?: string
+          is_active?: boolean
+          isin_code?: string | null
+          last_price?: number | null
+          market_cap?: number | null
+          price_change?: number | null
+          price_change_pct?: number | null
+          price_updated_at?: string | null
+          stock_name?: string
+          symbol?: string
+          updated_at?: string
+          volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_market_stock_watchlist_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
             referencedColumns: ["id"]
           },
         ]
