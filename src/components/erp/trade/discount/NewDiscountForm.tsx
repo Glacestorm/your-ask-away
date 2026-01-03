@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useERPDiscountOperations } from '@/hooks/erp/useERPDiscountOperations';
 import { useERPTradeFinance } from '@/hooks/erp/useERPTradeFinance';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
+import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
 
 interface NewDiscountFormProps {
   onSuccess: () => void;
@@ -97,22 +98,17 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
             <Building2 className="h-4 w-4" />
             Cliente *
           </Label>
-          <Select value={customerId} onValueChange={setCustomerId}>
-            <SelectTrigger className={!customerId ? 'border-destructive' : ''}>
-              <SelectValue placeholder="Seleccionar cliente (obligatorio)" />
-            </SelectTrigger>
-            <SelectContent>
-              {activePartners.map((partner) => (
-                <SelectItem key={partner.id} value={partner.id}>
-                  {partner.legal_name} {partner.tax_id ? `(${partner.tax_id})` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedCustomer && (
-            <p className="text-xs text-muted-foreground">
-              {selectedCustomer.city && `${selectedCustomer.city}, `}{selectedCustomer.country}
-              {selectedCustomer.email && ` • ${selectedCustomer.email}`}
+          <TradePartnerSearchSelect
+            partners={activePartners}
+            value={customerId}
+            onValueChange={setCustomerId}
+            placeholder="Buscar cliente por nombre, código, NIF o email..."
+            required
+            partnerTypeFilter="customer"
+          />
+          {!customerId && (
+            <p className="text-xs text-destructive">
+              Debe seleccionar un cliente
             </p>
           )}
         </div>
