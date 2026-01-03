@@ -11333,6 +11333,13 @@ export type Database = {
             referencedRelation: "erp_bank_connections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "erp_bank_sync_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "v_erp_trade_api_connections_compat"
+            referencedColumns: ["id"]
+          },
         ]
       }
       erp_bank_transactions: {
@@ -11458,6 +11465,13 @@ export type Database = {
             columns: ["connection_id"]
             isOneToOne: false
             referencedRelation: "erp_bank_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_transactions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "v_erp_trade_api_connections_compat"
             referencedColumns: ["id"]
           },
         ]
@@ -12894,6 +12908,8 @@ export type Database = {
           legal_name: string | null
           logo_url: string | null
           metadata: Json | null
+          migrated_at: string | null
+          migrated_to_banking_hub: boolean | null
           name: string
           postal_code: string | null
           supported_operations: string[] | null
@@ -12921,6 +12937,8 @@ export type Database = {
           legal_name?: string | null
           logo_url?: string | null
           metadata?: Json | null
+          migrated_at?: string | null
+          migrated_to_banking_hub?: boolean | null
           name: string
           postal_code?: string | null
           supported_operations?: string[] | null
@@ -12948,6 +12966,8 @@ export type Database = {
           legal_name?: string | null
           logo_url?: string | null
           metadata?: Json | null
+          migrated_at?: string | null
+          migrated_to_banking_hub?: boolean | null
           name?: string
           postal_code?: string | null
           supported_operations?: string[] | null
@@ -16654,6 +16674,8 @@ export type Database = {
           last_test_at: string | null
           last_test_result: Json | null
           max_retries: number | null
+          migrated_at: string | null
+          migrated_to_banking_hub: boolean | null
           oauth_tokens: Json | null
           retry_count: number | null
           status: string | null
@@ -16680,6 +16702,8 @@ export type Database = {
           last_test_at?: string | null
           last_test_result?: Json | null
           max_retries?: number | null
+          migrated_at?: string | null
+          migrated_to_banking_hub?: boolean | null
           oauth_tokens?: Json | null
           retry_count?: number | null
           status?: string | null
@@ -16706,6 +16730,8 @@ export type Database = {
           last_test_at?: string | null
           last_test_result?: Json | null
           max_retries?: number | null
+          migrated_at?: string | null
+          migrated_to_banking_hub?: boolean | null
           oauth_tokens?: Json | null
           retry_count?: number | null
           status?: string | null
@@ -39363,6 +39389,32 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "erp_chart_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_erp_trade_api_connections_compat: {
+        Row: {
+          api_key_encrypted: Json | null
+          api_secret_encrypted: Json | null
+          certificate_data: string | null
+          company_id: string | null
+          connection_name: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          last_sync_at: string | null
+          provider_type: string | null
+          status: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_connections_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
