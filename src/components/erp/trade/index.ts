@@ -10,4 +10,5 @@ export { CurrencyExposurePanel } from './CurrencyExposurePanel';
 export * from './discount';
 export * from './documentary-credits';
 export * from './guarantees';
+export * from './factoring';
 export * from './partners';

@@ -41,5 +41,6 @@ export { useERPTradeFinance } from './useERPTradeFinance';
 export { useERPDiscountOperations } from './useERPDiscountOperations';
 export { useERPDocumentaryCredits } from './useERPDocumentaryCredits';
 export { useERPBankGuarantees } from './useERPBankGuarantees';
+export { useERPFactoring } from './useERPFactoring';
 export { useERPCurrencyExposure } from './useERPCurrencyExposure';
 export { useERPTradePartners } from './useERPTradePartners';
