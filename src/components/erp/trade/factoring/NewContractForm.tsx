@@ -20,7 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Building2 } from 'lucide-react';
 import { useERPFactoring } from '@/hooks/erp/useERPFactoring';
+import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -36,12 +38,16 @@ interface FinancialEntity {
 
 export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
   const { createContract } = useERPFactoring();
+  const { partners, getActivePartners } = useERPTradePartners();
   const [loading, setLoading] = useState(false);
   const [entities, setEntities] = useState<FinancialEntity[]>([]);
+
+  const activePartners = getActivePartners();
 
   const [formData, setFormData] = useState({
     contract_number: '',
     financial_entity_id: '',
+    customer_id: '',
     contract_type: 'with_recourse',
     global_limit: '',
     advance_percentage: '80',
@@ -69,12 +75,19 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.customer_id) {
+      toast.error('Debe seleccionar un cliente');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       await createContract({
         contract_number: formData.contract_number,
         financial_entity_id: formData.financial_entity_id || null,
+        customer_id: formData.customer_id,
         contract_type: formData.contract_type as 'with_recourse' | 'without_recourse' | 'reverse_factoring',
         global_limit: parseFloat(formData.global_limit) || 0,
         advance_percentage: parseFloat(formData.advance_percentage) || 80,
@@ -90,6 +103,7 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
       setFormData({
         contract_number: '',
         financial_entity_id: '',
+        customer_id: '',
         contract_type: 'with_recourse',
         global_limit: '',
         advance_percentage: '80',
@@ -107,6 +121,8 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
     }
   };
 
+  const selectedCustomer = activePartners.find(p => p.id === formData.customer_id);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -115,6 +131,35 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Cliente - OBLIGATORIO */}
+          <div className="space-y-2">
+            <Label htmlFor="customer_id" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Cliente *
+            </Label>
+            <Select
+              value={formData.customer_id}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, customer_id: value }))}
+            >
+              <SelectTrigger className={!formData.customer_id ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Seleccionar cliente (obligatorio)" />
+              </SelectTrigger>
+              <SelectContent>
+                {activePartners.map((partner) => (
+                  <SelectItem key={partner.id} value={partner.id}>
+                    {partner.legal_name} {partner.tax_id ? `(${partner.tax_id})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedCustomer && (
+              <p className="text-xs text-muted-foreground">
+                {selectedCustomer.city && `${selectedCustomer.city}, `}{selectedCustomer.country}
+                {selectedCustomer.email && ` • ${selectedCustomer.email}`}
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="contract_number">Nº Contrato *</Label>
@@ -272,7 +317,7 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !formData.customer_id}>
               {loading ? 'Guardando...' : 'Crear Contrato'}
             </Button>
           </div>

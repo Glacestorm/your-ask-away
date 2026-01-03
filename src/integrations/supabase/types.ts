@@ -11959,6 +11959,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           currency: string
+          customer_id: string | null
           discount_date: string | null
           discount_number: string
           documents: Json | null
@@ -11986,6 +11987,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           currency?: string
+          customer_id?: string | null
           discount_date?: string | null
           discount_number: string
           documents?: Json | null
@@ -12013,6 +12015,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           currency?: string
+          customer_id?: string | null
           discount_date?: string | null
           discount_number?: string
           documents?: Json | null
@@ -12032,6 +12035,13 @@ export type Database = {
           value_date?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "erp_commercial_discounts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "erp_commercial_discounts_entity_id_fkey"
             columns: ["entity_id"]
@@ -12945,6 +12955,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string
+          customer_id: string | null
           debtor_limits: Json | null
           end_date: string | null
           financial_entity_id: string | null
@@ -12967,6 +12978,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          customer_id?: string | null
           debtor_limits?: Json | null
           end_date?: string | null
           financial_entity_id?: string | null
@@ -12989,6 +13001,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string
+          customer_id?: string | null
           debtor_limits?: Json | null
           end_date?: string | null
           financial_entity_id?: string | null
@@ -13007,6 +13020,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_factoring_contracts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
             referencedColumns: ["id"]
           },
           {

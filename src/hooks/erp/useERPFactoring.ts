@@ -13,8 +13,13 @@ export interface FactoringContract {
   company_id: string | null;
   contract_number: string;
   financial_entity_id: string | null;
+  customer_id: string | null;
   financial_entity?: {
     name: string;
+  };
+  customer?: {
+    legal_name: string;
+    tax_id: string | null;
   };
   contract_type: 'with_recourse' | 'without_recourse' | 'reverse_factoring';
   status: 'active' | 'suspended' | 'terminated' | 'expired';
@@ -106,7 +111,8 @@ export function useERPFactoring() {
         .from('erp_factoring_contracts')
         .select(`
           *,
-          financial_entity:erp_financial_entities(name)
+          financial_entity:erp_financial_entities(name),
+          customer:erp_trade_partners(legal_name, tax_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -205,6 +211,7 @@ export function useERPFactoring() {
   const createContract = useCallback(async (contract: {
     contract_number: string;
     financial_entity_id?: string | null;
+    customer_id?: string | null;
     contract_type: 'with_recourse' | 'without_recourse' | 'reverse_factoring';
     global_limit: number;
     advance_percentage: number;
@@ -221,6 +228,7 @@ export function useERPFactoring() {
         .insert([{
           contract_number: contract.contract_number,
           financial_entity_id: contract.financial_entity_id || null,
+          customer_id: contract.customer_id || null,
           contract_type: contract.contract_type,
           global_limit: contract.global_limit,
           used_limit: 0,
