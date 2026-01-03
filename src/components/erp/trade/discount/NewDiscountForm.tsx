@@ -20,12 +20,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, Building2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useERPDiscountOperations } from '@/hooks/erp/useERPDiscountOperations';
 import { useERPTradeFinance } from '@/hooks/erp/useERPTradeFinance';
+import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 
 interface NewDiscountFormProps {
   onSuccess: () => void;
@@ -35,6 +36,7 @@ interface NewDiscountFormProps {
 export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
   const [loading, setLoading] = useState(false);
   const [entityId, setEntityId] = useState<string>('');
+  const [customerId, setCustomerId] = useState<string>('');
   const [operationType, setOperationType] = useState<'national' | 'international'>('national');
   const [discountDate, setDiscountDate] = useState<Date>(new Date());
   const [valueDate, setValueDate] = useState<Date>(new Date());
@@ -45,6 +47,9 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
 
   const { createDiscount } = useERPDiscountOperations();
   const { entities, fetchEntities } = useERPTradeFinance();
+  const { partners, getActivePartners } = useERPTradePartners();
+
+  const activePartners = getActivePartners();
 
   useEffect(() => {
     fetchEntities();
@@ -53,7 +58,7 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!entityId) {
+    if (!entityId || !customerId) {
       return;
     }
 
@@ -62,6 +67,7 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
       const result = await createDiscount({
         company_id: crypto.randomUUID(), // TODO: Get from context
         entity_id: entityId,
+        customer_id: customerId,
         operation_type: operationType,
         discount_date: format(discountDate, 'yyyy-MM-dd'),
         value_date: format(valueDate, 'yyyy-MM-dd'),
@@ -80,9 +86,37 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
     }
   };
 
+  const selectedCustomer = activePartners.find(p => p.id === customerId);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
+        {/* Customer - OBLIGATORIO */}
+        <div className="col-span-2 space-y-2">
+          <Label htmlFor="customer" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Cliente *
+          </Label>
+          <Select value={customerId} onValueChange={setCustomerId}>
+            <SelectTrigger className={!customerId ? 'border-destructive' : ''}>
+              <SelectValue placeholder="Seleccionar cliente (obligatorio)" />
+            </SelectTrigger>
+            <SelectContent>
+              {activePartners.map((partner) => (
+                <SelectItem key={partner.id} value={partner.id}>
+                  {partner.legal_name} {partner.tax_id ? `(${partner.tax_id})` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {selectedCustomer && (
+            <p className="text-xs text-muted-foreground">
+              {selectedCustomer.city && `${selectedCustomer.city}, `}{selectedCustomer.country}
+              {selectedCustomer.email && ` • ${selectedCustomer.email}`}
+            </p>
+          )}
+        </div>
+
         {/* Entity */}
         <div className="col-span-2 space-y-2">
           <Label htmlFor="entity">Entidad Financiera *</Label>
@@ -233,7 +267,7 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading || !entityId}>
+        <Button type="submit" disabled={loading || !entityId || !customerId}>
           {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Crear Descuento
         </Button>

@@ -11,6 +11,7 @@ export interface CommercialDiscount {
   company_id: string;
   discount_number: string;
   entity_id: string | null;
+  customer_id: string | null;
   operation_type: 'national' | 'international';
   total_nominal: number;
   total_effective: number;
@@ -34,6 +35,11 @@ export interface CommercialDiscount {
     id: string;
     entity_name: string;
     swift_bic: string | null;
+  };
+  customer?: {
+    id: string;
+    legal_name: string;
+    tax_id: string | null;
   };
   effects?: DiscountEffect[];
 }
@@ -118,7 +124,8 @@ export function useERPDiscountOperations() {
         .from('erp_commercial_discounts')
         .select(`
           *,
-          entity:erp_financial_entities(id, entity_name, swift_bic)
+          entity:erp_financial_entities(id, entity_name, swift_bic),
+          customer:erp_trade_partners(id, legal_name, tax_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -205,7 +212,7 @@ export function useERPDiscountOperations() {
   }, []);
 
   // Create new discount
-  const createDiscount = useCallback(async (discount: Omit<Partial<CommercialDiscount>, 'company_id'> & { company_id: string }) => {
+  const createDiscount = useCallback(async (discount: Omit<Partial<CommercialDiscount>, 'company_id'> & { company_id: string; customer_id?: string }) => {
     try {
       // Generate discount number
       const discountNumber = `DESC-${Date.now().toString(36).toUpperCase()}`;
@@ -216,6 +223,7 @@ export function useERPDiscountOperations() {
           company_id: discount.company_id,
           discount_number: discountNumber,
           entity_id: discount.entity_id,
+          customer_id: discount.customer_id,
           operation_type: discount.operation_type || 'national',
           discount_date: discount.discount_date,
           value_date: discount.value_date,
