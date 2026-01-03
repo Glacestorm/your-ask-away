@@ -42,3 +42,4 @@ export { useERPDiscountOperations } from './useERPDiscountOperations';
 export { useERPDocumentaryCredits } from './useERPDocumentaryCredits';
 export { useERPBankGuarantees } from './useERPBankGuarantees';
 export { useERPCurrencyExposure } from './useERPCurrencyExposure';
+export { useERPTradePartners } from './useERPTradePartners';

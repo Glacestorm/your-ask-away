@@ -39,6 +39,7 @@ import { DocumentaryCreditPanel } from './documentary-credits';
 import { GuaranteesPanel } from './guarantees';
 import { ExpirationAlertsWidget } from './ExpirationAlertsWidget';
 import { CurrencyExposurePanel } from './CurrencyExposurePanel';
+import { TradePartnersPanel } from './partners';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -400,7 +401,7 @@ export function TradeFinanceModule() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-9">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="overview" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Resumen
@@ -421,12 +422,16 @@ export function TradeFinanceModule() {
             <Globe className="h-4 w-4" />
             Divisas
           </TabsTrigger>
+          <TabsTrigger value="partners" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            Socios
+          </TabsTrigger>
           <TabsTrigger value="operations" className="gap-2">
             <ArrowRightLeft className="h-4 w-4" />
             Operaciones
           </TabsTrigger>
           <TabsTrigger value="entities" className="gap-2">
-            <Building2 className="h-4 w-4" />
+            <Landmark className="h-4 w-4" />
             Entidades
           </TabsTrigger>
           <TabsTrigger value="templates" className="gap-2">
@@ -479,6 +484,11 @@ export function TradeFinanceModule() {
         {/* Currency Exposure Tab */}
         <TabsContent value="forex">
           <CurrencyExposurePanel />
+        </TabsContent>
+
+        {/* Trade Partners Tab */}
+        <TabsContent value="partners">
+          <TradePartnersPanel />
         </TabsContent>
 
         {/* Operations Tab */}
