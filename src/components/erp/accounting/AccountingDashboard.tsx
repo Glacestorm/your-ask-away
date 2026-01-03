@@ -65,6 +65,8 @@ import { ERPAdvancedRatiosPanel } from './ERPAdvancedRatiosPanel';
 // Phase 1 & 2: NIIF Engine + Voice Hub
 import { NIIFCompliancePanel } from './NIIFCompliancePanel';
 import { AccountingVoiceAgent } from './AccountingVoiceAgent';
+// Import/Export Universal
+import { UniversalImportExportPanel } from '../shared/UniversalImportExportPanel';
 import { useERPAccounting } from '@/hooks/erp/useERPAccounting';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { cn } from '@/lib/utils';
@@ -693,9 +695,17 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
           <TreasuryModule />
         </TabsContent>
 
-        {/* Tab: Importar Estados Financieros */}
+        {/* Tab: Importar/Exportar Estados Financieros */}
         <TabsContent value="import-statements">
-          <PDFStatementImporter />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <UniversalImportExportPanel 
+              module="accounting"
+              title="Importar Documentos Contables"
+              description="OCR inteligente para facturas, extractos y asientos"
+              onImportComplete={() => fetchDashboard()}
+            />
+            <PDFStatementImporter />
+          </div>
         </TabsContent>
 
         {/* Tab: Ratios Financieros */}

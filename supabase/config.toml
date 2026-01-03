@@ -884,3 +884,6 @@ verify_jwt = true
 
 [functions.erp-voice-orchestrator]
 verify_jwt = true
+
+[functions.erp-universal-import-export]
+verify_jwt = true
