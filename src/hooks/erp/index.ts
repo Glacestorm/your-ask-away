@@ -48,3 +48,7 @@ export { useERPTradePartners } from './useERPTradePartners';
 // Financing & Investments
 export { useERPFinancingOperations } from './useERPFinancingOperations';
 export { useERPInvestments } from './useERPInvestments';
+
+// Import/Export Universal
+export { useERPImportExport } from './useERPImportExport';
+export type { ERPModule, ExportFormat, ImportExportOptions, OCRResult, ImportResult, ExportResult } from './useERPImportExport';

@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Building2, 
   Upload, 
   CheckCircle, 
   Link,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  FileUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { UniversalImportExportPanel } from '../shared/UniversalImportExportPanel';
 
 interface StatementLine {
   id: string;
@@ -105,10 +108,27 @@ export function BankReconciliation({ companyId }: BankReconciliationProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-3">
-        <Button variant="outline">
-          <Upload className="h-4 w-4 mr-2" />
-          Importar Extracto
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">
+              <FileUp className="h-4 w-4 mr-2" />
+              Importar Extracto
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Importar Extracto Bancario</DialogTitle>
+            </DialogHeader>
+            <UniversalImportExportPanel 
+              module="treasury"
+              title="Importar Movimientos"
+              description="OCR inteligente para extractos bancarios"
+              onImportComplete={() => {
+                fetchLines();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
         <Button onClick={runAutoReconciliation} disabled={reconciling}>
           {reconciling ? (
             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
