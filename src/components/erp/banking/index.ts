@@ -1,0 +1,1 @@
+export { BankingHubDashboard } from './BankingHubDashboard';
