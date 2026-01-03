@@ -10714,6 +10714,236 @@ export type Database = {
           },
         ]
       }
+      erp_bank_accounts: {
+        Row: {
+          account_name: string
+          account_number: string | null
+          account_type: string | null
+          available_balance: number | null
+          bank_branch: string | null
+          bank_name: string | null
+          chart_account_id: string | null
+          company_id: string
+          created_at: string | null
+          credit_limit: number | null
+          currency: string | null
+          current_balance: number | null
+          iban: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          last_reconciled_at: string | null
+          last_sync_at: string | null
+          metadata: Json | null
+          swift_bic: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_name: string
+          account_number?: string | null
+          account_type?: string | null
+          available_balance?: number | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          chart_account_id?: string | null
+          company_id: string
+          created_at?: string | null
+          credit_limit?: number | null
+          currency?: string | null
+          current_balance?: number | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          last_reconciled_at?: string | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          swift_bic?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_name?: string
+          account_number?: string | null
+          account_type?: string | null
+          available_balance?: number | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          chart_account_id?: string | null
+          company_id?: string
+          created_at?: string | null
+          credit_limit?: number | null
+          currency?: string | null
+          current_balance?: number | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          last_reconciled_at?: string | null
+          last_sync_at?: string | null
+          metadata?: Json | null
+          swift_bic?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_accounts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_categorization_rules: {
+        Row: {
+          actions: Json | null
+          company_id: string
+          conditions: Json | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          last_matched_at: string | null
+          match_count: number | null
+          priority: number | null
+          rule_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json | null
+          company_id: string
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_matched_at?: string | null
+          match_count?: number | null
+          priority?: number | null
+          rule_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json | null
+          company_id?: string
+          conditions?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_matched_at?: string | null
+          match_count?: number | null
+          priority?: number | null
+          rule_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_categorization_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_connections: {
+        Row: {
+          account_mapping: Json | null
+          auth_data: Json | null
+          auto_create_entries: boolean | null
+          auto_reconcile: boolean | null
+          bank_account_id: string | null
+          company_id: string
+          connection_name: string
+          consent_expires_at: string | null
+          consent_id: string | null
+          created_at: string | null
+          created_by: string | null
+          default_journal_id: string | null
+          error_count: number | null
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          metadata: Json | null
+          next_sync_at: string | null
+          provider_id: string
+          status: string | null
+          sync_frequency: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_mapping?: Json | null
+          auth_data?: Json | null
+          auto_create_entries?: boolean | null
+          auto_reconcile?: boolean | null
+          bank_account_id?: string | null
+          company_id: string
+          connection_name: string
+          consent_expires_at?: string | null
+          consent_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_journal_id?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          metadata?: Json | null
+          next_sync_at?: string | null
+          provider_id: string
+          status?: string | null
+          sync_frequency?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_mapping?: Json | null
+          auth_data?: Json | null
+          auto_create_entries?: boolean | null
+          auto_reconcile?: boolean | null
+          bank_account_id?: string | null
+          company_id?: string
+          connection_name?: string
+          consent_expires_at?: string | null
+          consent_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_journal_id?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          metadata?: Json | null
+          next_sync_at?: string | null
+          provider_id?: string
+          status?: string | null
+          sync_frequency?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_connections_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_connections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_connections_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "erp_banking_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_bank_guarantees: {
         Row: {
           amount: number
@@ -10829,6 +11059,62 @@ export type Database = {
             columns: ["issuing_bank_id"]
             isOneToOne: false
             referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_positions: {
+        Row: {
+          alerts: Json | null
+          by_account: Json | null
+          by_bank: Json | null
+          by_currency: Json | null
+          cash_flow_forecast: Json | null
+          company_id: string
+          created_at: string | null
+          id: string
+          position_date: string
+          total_available: number | null
+          total_balance: number | null
+          total_credit_lines: number | null
+          total_used_credit: number | null
+        }
+        Insert: {
+          alerts?: Json | null
+          by_account?: Json | null
+          by_bank?: Json | null
+          by_currency?: Json | null
+          cash_flow_forecast?: Json | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          position_date: string
+          total_available?: number | null
+          total_balance?: number | null
+          total_credit_lines?: number | null
+          total_used_credit?: number | null
+        }
+        Update: {
+          alerts?: Json | null
+          by_account?: Json | null
+          by_bank?: Json | null
+          by_currency?: Json | null
+          cash_flow_forecast?: Json | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          position_date?: string
+          total_available?: number | null
+          total_balance?: number | null
+          total_credit_lines?: number | null
+          total_used_credit?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_positions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
             referencedColumns: ["id"]
           },
         ]
@@ -10979,6 +11265,262 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      erp_bank_sync_logs: {
+        Row: {
+          api_response_time_ms: number | null
+          company_id: string
+          completed_at: string | null
+          connection_id: string
+          created_at: string | null
+          entries_created: number | null
+          errors: Json | null
+          id: string
+          records_fetched: number | null
+          records_matched: number | null
+          records_processed: number | null
+          started_at: string | null
+          status: string | null
+          summary: Json | null
+          sync_type: string | null
+        }
+        Insert: {
+          api_response_time_ms?: number | null
+          company_id: string
+          completed_at?: string | null
+          connection_id: string
+          created_at?: string | null
+          entries_created?: number | null
+          errors?: Json | null
+          id?: string
+          records_fetched?: number | null
+          records_matched?: number | null
+          records_processed?: number | null
+          started_at?: string | null
+          status?: string | null
+          summary?: Json | null
+          sync_type?: string | null
+        }
+        Update: {
+          api_response_time_ms?: number | null
+          company_id?: string
+          completed_at?: string | null
+          connection_id?: string
+          created_at?: string | null
+          entries_created?: number | null
+          errors?: Json | null
+          id?: string
+          records_fetched?: number | null
+          records_matched?: number | null
+          records_processed?: number | null
+          started_at?: string | null
+          status?: string | null
+          summary?: Json | null
+          sync_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_sync_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_sync_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_bank_transactions: {
+        Row: {
+          ai_analysis: Json | null
+          amount: number
+          balance_after: number | null
+          bank_account_id: string | null
+          category_code: string | null
+          category_name: string | null
+          company_id: string
+          connection_id: string
+          counterparty_account: string | null
+          counterparty_bank: string | null
+          counterparty_name: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          duplicate_of_id: string | null
+          external_id: string
+          id: string
+          is_duplicate: boolean | null
+          journal_entry_id: string | null
+          match_confidence: number | null
+          matched_entity_id: string | null
+          matched_entity_type: string | null
+          processed_at: string | null
+          raw_data: Json | null
+          reconciled_at: string | null
+          reference: string | null
+          status: string | null
+          suggested_account_id: string | null
+          suggested_partner_id: string | null
+          transaction_date: string
+          updated_at: string | null
+          value_date: string | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          amount: number
+          balance_after?: number | null
+          bank_account_id?: string | null
+          category_code?: string | null
+          category_name?: string | null
+          company_id: string
+          connection_id: string
+          counterparty_account?: string | null
+          counterparty_bank?: string | null
+          counterparty_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duplicate_of_id?: string | null
+          external_id: string
+          id?: string
+          is_duplicate?: boolean | null
+          journal_entry_id?: string | null
+          match_confidence?: number | null
+          matched_entity_id?: string | null
+          matched_entity_type?: string | null
+          processed_at?: string | null
+          raw_data?: Json | null
+          reconciled_at?: string | null
+          reference?: string | null
+          status?: string | null
+          suggested_account_id?: string | null
+          suggested_partner_id?: string | null
+          transaction_date: string
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          amount?: number
+          balance_after?: number | null
+          bank_account_id?: string | null
+          category_code?: string | null
+          category_name?: string | null
+          company_id?: string
+          connection_id?: string
+          counterparty_account?: string | null
+          counterparty_bank?: string | null
+          counterparty_name?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          duplicate_of_id?: string | null
+          external_id?: string
+          id?: string
+          is_duplicate?: boolean | null
+          journal_entry_id?: string | null
+          match_confidence?: number | null
+          matched_entity_id?: string | null
+          matched_entity_type?: string | null
+          processed_at?: string | null
+          raw_data?: Json | null
+          reconciled_at?: string | null
+          reference?: string | null
+          status?: string | null
+          suggested_account_id?: string | null
+          suggested_partner_id?: string | null
+          transaction_date?: string
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_bank_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_bank_transactions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "erp_bank_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_banking_providers: {
+        Row: {
+          api_base_url: string | null
+          auth_type: string | null
+          country_code: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          metadata: Json | null
+          protocol: string | null
+          provider_code: string
+          provider_name: string
+          rate_limits: Json | null
+          region: string | null
+          requires_certificate: boolean | null
+          sandbox_available: boolean | null
+          supported_features: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_base_url?: string | null
+          auth_type?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          metadata?: Json | null
+          protocol?: string | null
+          provider_code: string
+          provider_name: string
+          rate_limits?: Json | null
+          region?: string | null
+          requires_certificate?: boolean | null
+          sandbox_available?: boolean | null
+          supported_features?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_base_url?: string | null
+          auth_type?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          metadata?: Json | null
+          protocol?: string | null
+          provider_code?: string
+          provider_name?: string
+          rate_limits?: Json | null
+          region?: string | null
+          requires_certificate?: boolean | null
+          sandbox_available?: boolean | null
+          supported_features?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       erp_chart_accounts: {
         Row: {

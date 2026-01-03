@@ -52,3 +52,7 @@ export { useERPInvestments } from './useERPInvestments';
 // Import/Export Universal
 export { useERPImportExport } from './useERPImportExport';
 export type { ERPModule, ExportFormat, ImportExportOptions, OCRResult, ImportResult, ExportResult } from './useERPImportExport';
+
+// Banking Hub
+export { useERPBankingHub } from './useERPBankingHub';
+export type { BankingProvider, BankAccount, BankConnection, BankTransaction, BankPosition, SyncLog } from './useERPBankingHub';

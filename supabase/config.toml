@@ -887,3 +887,6 @@ verify_jwt = true
 
 [functions.erp-universal-import-export]
 verify_jwt = true
+
+[functions.erp-banking-hub]
+verify_jwt = true
