@@ -25,6 +25,7 @@ import { useERPFactoring } from '@/hooks/erp/useERPFactoring';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
 import { AccountingEntriesPreview, AccountingEntry } from '../AccountingEntriesPreview';
+import { AccountingSupervisorPanel } from '../AccountingSupervisorPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -339,6 +340,16 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
             onEntriesChange={setAccountingEntries}
             isExpanded={showAccountingSection}
             onExpandChange={setShowAccountingSection}
+          />
+
+          {/* Panel del Supervisor AI */}
+          <AccountingSupervisorPanel
+            context={{
+              operationType: 'factoring',
+              entries: accountingEntries,
+              operationData
+            }}
+            defaultExpanded={false}
           />
 
           <div className="flex justify-end gap-2 pt-4">

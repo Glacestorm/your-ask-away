@@ -29,6 +29,7 @@ import { useERPTradeFinance } from '@/hooks/erp/useERPTradeFinance';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
 import { AccountingEntriesPreview, AccountingEntry } from '../AccountingEntriesPreview';
+import { AccountingSupervisorPanel } from '../AccountingSupervisorPanel';
 
 interface NewDiscountFormProps {
   onSuccess: () => void;
@@ -300,6 +301,17 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
         isExpanded={showAccountingSection}
         onExpandChange={setShowAccountingSection}
         className="mt-4"
+      />
+
+      {/* Panel del Supervisor AI */}
+      <AccountingSupervisorPanel
+        context={{
+          operationType: 'discount',
+          entries: accountingEntries,
+          operationData
+        }}
+        className="mt-4"
+        defaultExpanded={false}
       />
 
       {/* Actions */}
