@@ -14,6 +14,7 @@ export { ChartOfAccountsTree } from './ChartOfAccountsTree';
 export { JournalEntryEditor } from './JournalEntryEditor';
 export { JournalsList } from './JournalsList';
 export { CreateAccountDialog } from './CreateAccountDialog';
+export { RecentEntriesCard } from './RecentEntriesCard';
 
 // Componentes de estados financieros
 export { AccountLedgerPanel } from './AccountLedgerPanel';

@@ -33,8 +33,10 @@ import {
   GitMerge,
   DollarSign,
   Scale,
-  Mic
+  Mic,
+  Trash2
 } from 'lucide-react';
+import { RecentEntriesCard } from './RecentEntriesCard';
 import { HelpTooltip, HelpLabel } from './HelpTooltip';
 import { DynamicHelpPanel } from './DynamicHelpPanel';
 import { ChartOfAccountsTree } from './ChartOfAccountsTree';
@@ -560,58 +562,11 @@ export function AccountingDashboard({ className }: AccountingDashboardProps) {
           </div>
 
           {/* Últimos asientos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-primary" />
-                Últimos Asientos
-                <HelpTooltip
-                  type="definition"
-                  title="Asientos Contables"
-                  content="Registro de las operaciones económicas según el principio de partida doble: todo cargo tiene un abono de igual importe."
-                  regulationRef="PGC - Principios Contables"
-                />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dashboard?.recentEntries && dashboard.recentEntries.length > 0 ? (
-                <div className="space-y-2">
-                  {dashboard.recentEntries.slice(0, 5).map((entry: any) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-2 h-2 rounded-full",
-                          entry.status === 'posted' ? 'bg-green-500' : 'bg-amber-500'
-                        )} />
-                        <div>
-                          <p className="font-medium text-sm">{entry.description}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {entry.entry_number} • {format(new Date(entry.entry_date), 'dd/MM/yyyy')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium text-sm">
-                          {formatCurrency(entry.total_debit)}
-                        </p>
-                        <Badge variant="outline" className="text-xs">
-                          {entry.status === 'posted' ? 'Contabilizado' : 'Borrador'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Receipt className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                  <p>No hay asientos recientes</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <RecentEntriesCard 
+            entries={dashboard?.recentEntries || []}
+            formatCurrency={formatCurrency}
+            onClean={() => fetchDashboard()}
+          />
         </TabsContent>
 
         {/* Tab: Asientos */}
