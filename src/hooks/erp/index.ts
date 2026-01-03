@@ -35,3 +35,6 @@ export { useERPSEPARemittances } from './useERPSEPARemittances';
 // Phase 1-2: NIIF Compliance & Voice Intelligence
 export { useNIIFCompliance } from './useNIIFCompliance';
 export { useAccountingVoiceAgent } from './useAccountingVoiceAgent';
+
+// Trade Finance
+export { useERPTradeFinance } from './useERPTradeFinance';

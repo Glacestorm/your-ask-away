@@ -28,7 +28,8 @@ import {
   Sparkles,
   BookOpen,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Globe
 } from 'lucide-react';
 import { useERPContext, ERPProvider } from '@/hooks/erp/useERPContext';
 import { ERPCompanySelector } from './config/ERPCompanySelector';
@@ -45,6 +46,7 @@ import { PurchasesModule } from './purchases';
 import { InventoryModule } from './inventory';
 import { AccountingDashboard } from './accounting';
 import { TreasuryDashboard } from './treasury';
+import { TradeFinanceModule } from './trade';
 import { AdvisorAgentPanel } from './advisor';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +59,7 @@ function ERPModularDashboardContent() {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
 
   // Módulos instalados (tienen tab funcional)
-  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory', 'accounting', 'treasury'];
+  const installedModuleIds = ['masters', 'sales', 'purchases', 'inventory', 'accounting', 'treasury', 'trade'];
 
   // Verificar si necesita configuración inicial
   useEffect(() => {
@@ -119,6 +121,7 @@ function ERPModularDashboardContent() {
     { id: 'inventory', name: 'Almacén', icon: Package, permission: 'inventory.read', color: 'bg-purple-500' },
     { id: 'accounting', name: 'Contabilidad', icon: Calculator, permission: 'accounting.read', color: 'bg-cyan-500' },
     { id: 'treasury', name: 'Tesorería', icon: Wallet, permission: 'treasury.read', color: 'bg-yellow-500' },
+    { id: 'trade', name: 'Comercio', icon: Globe, permission: 'trade.read', color: 'bg-teal-500' },
     { id: 'tax', name: 'Fiscal', icon: Receipt, permission: 'tax.read', color: 'bg-red-500' },
   ];
 
@@ -178,6 +181,12 @@ function ERPModularDashboardContent() {
             <TabsTrigger value="treasury" className="gap-2">
               <Wallet className="h-4 w-4" />
               Tesorería
+            </TabsTrigger>
+          )}
+          {hasPermission('trade.read') && (
+            <TabsTrigger value="trade" className="gap-2">
+              <Globe className="h-4 w-4" />
+              Comercio
             </TabsTrigger>
           )}
           {hasPermission('admin.all') && (
@@ -371,6 +380,11 @@ function ERPModularDashboardContent() {
         {/* Treasury Tab */}
         <TabsContent value="treasury">
           <TreasuryDashboard />
+        </TabsContent>
+
+        {/* Trade Finance Tab */}
+        <TabsContent value="trade">
+          <TradeFinanceModule />
         </TabsContent>
 
         {/* Companies Tab */}

@@ -14,4 +14,5 @@ export * from './purchases';
 export * from './inventory';
 export * from './treasury';
 export * from './advisor';
+export * from './trade';
 export type { Transaction, Invoice, Employee, ERPMetrics } from './ERPDashboard';
