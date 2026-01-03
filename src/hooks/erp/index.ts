@@ -48,6 +48,9 @@ export { useERPTradePartners } from './useERPTradePartners';
 // Financing & Investments
 export { useERPFinancingOperations } from './useERPFinancingOperations';
 export { useERPInvestments } from './useERPInvestments';
+export { useERPMarketRates } from './useERPMarketRates';
+export { useERPStockQuotes } from './useERPStockQuotes';
+export { useERPAutoAccounting } from './useERPAutoAccounting';
 
 // Import/Export Universal
 export { useERPImportExport } from './useERPImportExport';

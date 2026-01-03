@@ -890,3 +890,12 @@ verify_jwt = true
 
 [functions.erp-banking-hub]
 verify_jwt = true
+
+[functions.erp-market-rates]
+verify_jwt = true
+
+[functions.erp-stock-quotes]
+verify_jwt = true
+
+[functions.erp-auto-accounting]
+verify_jwt = true
