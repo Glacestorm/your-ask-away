@@ -7,3 +7,4 @@ export { SEPARemittanceManager } from './SEPARemittanceManager';
 export { SEPAMandatesManager } from './SEPAMandatesManager';
 export { CashFlowForecast } from './CashFlowForecast';
 export { AgingReport } from './AgingReport';
+export * from './financing';
