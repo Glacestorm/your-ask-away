@@ -11461,6 +11461,98 @@ export type Database = {
           },
         ]
       }
+      erp_financial_entities: {
+        Row: {
+          address: string | null
+          api_documentation_url: string | null
+          api_endpoint: string | null
+          api_type: string | null
+          city: string | null
+          company_id: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string
+          created_at: string
+          credentials_encrypted: Json | null
+          entity_type: string
+          id: string
+          is_active: boolean | null
+          last_sync_at: string | null
+          legal_name: string | null
+          logo_url: string | null
+          metadata: Json | null
+          name: string
+          postal_code: string | null
+          supported_operations: string[] | null
+          swift_bic: string | null
+          sync_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          api_documentation_url?: string | null
+          api_endpoint?: string | null
+          api_type?: string | null
+          city?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          credentials_encrypted?: Json | null
+          entity_type?: string
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          legal_name?: string | null
+          logo_url?: string | null
+          metadata?: Json | null
+          name: string
+          postal_code?: string | null
+          supported_operations?: string[] | null
+          swift_bic?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          api_documentation_url?: string | null
+          api_endpoint?: string | null
+          api_type?: string | null
+          city?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string
+          created_at?: string
+          credentials_encrypted?: Json | null
+          entity_type?: string
+          id?: string
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          legal_name?: string | null
+          logo_url?: string | null
+          metadata?: Json | null
+          name?: string
+          postal_code?: string | null
+          supported_operations?: string[] | null
+          swift_bic?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_financial_entities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_fiscal_closings: {
         Row: {
           closing_entry_id: string | null
@@ -14575,6 +14667,426 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_trade_api_connections: {
+        Row: {
+          api_key_encrypted: string | null
+          api_type: string
+          certificate_data: Json | null
+          client_id_encrypted: string | null
+          client_secret_encrypted: string | null
+          company_id: string
+          connection_name: string
+          connection_params: Json | null
+          created_at: string
+          created_by: string | null
+          entity_id: string
+          environment: string
+          id: string
+          is_active: boolean | null
+          last_error: string | null
+          last_test_at: string | null
+          last_test_result: Json | null
+          max_retries: number | null
+          oauth_tokens: Json | null
+          retry_count: number | null
+          status: string | null
+          updated_at: string
+          webhook_secret: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_key_encrypted?: string | null
+          api_type: string
+          certificate_data?: Json | null
+          client_id_encrypted?: string | null
+          client_secret_encrypted?: string | null
+          company_id: string
+          connection_name: string
+          connection_params?: Json | null
+          created_at?: string
+          created_by?: string | null
+          entity_id: string
+          environment?: string
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_test_at?: string | null
+          last_test_result?: Json | null
+          max_retries?: number | null
+          oauth_tokens?: Json | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_key_encrypted?: string | null
+          api_type?: string
+          certificate_data?: Json | null
+          client_id_encrypted?: string | null
+          client_secret_encrypted?: string | null
+          company_id?: string
+          connection_name?: string
+          connection_params?: Json | null
+          created_at?: string
+          created_by?: string | null
+          entity_id?: string
+          environment?: string
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_test_at?: string | null
+          last_test_result?: Json | null
+          max_retries?: number | null
+          oauth_tokens?: Json | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_trade_api_connections_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_trade_api_connections_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_trade_document_templates: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_category: string
+          document_name: string
+          document_type: string
+          download_count: number | null
+          effective_date: string | null
+          entity_id: string | null
+          expiry_date: string | null
+          field_mappings: Json | null
+          id: string
+          is_active: boolean | null
+          is_official: boolean | null
+          language: string | null
+          last_used_at: string | null
+          optional_fields: string[] | null
+          required_fields: string[] | null
+          template_file_path: string | null
+          template_format: string | null
+          template_url: string | null
+          updated_at: string
+          validation_rules: Json | null
+          version: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_category?: string
+          document_name: string
+          document_type: string
+          download_count?: number | null
+          effective_date?: string | null
+          entity_id?: string | null
+          expiry_date?: string | null
+          field_mappings?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_official?: boolean | null
+          language?: string | null
+          last_used_at?: string | null
+          optional_fields?: string[] | null
+          required_fields?: string[] | null
+          template_file_path?: string | null
+          template_format?: string | null
+          template_url?: string | null
+          updated_at?: string
+          validation_rules?: Json | null
+          version?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_category?: string
+          document_name?: string
+          document_type?: string
+          download_count?: number | null
+          effective_date?: string | null
+          entity_id?: string | null
+          expiry_date?: string | null
+          field_mappings?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_official?: boolean | null
+          language?: string | null
+          last_used_at?: string | null
+          optional_fields?: string[] | null
+          required_fields?: string[] | null
+          template_file_path?: string | null
+          template_format?: string | null
+          template_url?: string | null
+          updated_at?: string
+          validation_rules?: Json | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_trade_document_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_trade_document_templates_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_trade_operation_history: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_data: Json | null
+          new_status: string | null
+          notes: string | null
+          old_data: Json | null
+          old_status: string | null
+          operation_id: string
+          performed_by: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          old_data?: Json | null
+          old_status?: string | null
+          operation_id: string
+          performed_by?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          new_status?: string | null
+          notes?: string | null
+          old_data?: Json | null
+          old_status?: string | null
+          operation_id?: string
+          performed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_trade_operation_history_operation_id_fkey"
+            columns: ["operation_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_operations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_trade_operations: {
+        Row: {
+          accounting_entry_id: string | null
+          amount: number
+          amount_local: number | null
+          approved_at: string | null
+          approved_by: string | null
+          attachments: Json | null
+          bank_response: Json | null
+          bank_status: string | null
+          commission_amount: number | null
+          company_id: string
+          counterparty_country: string | null
+          counterparty_id: string | null
+          counterparty_name: string | null
+          counterparty_type: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          documents_presented: string[] | null
+          documents_required: string[] | null
+          effective_date: string | null
+          entity_id: string | null
+          exchange_rate: number | null
+          expiry_date: string | null
+          fees_amount: number | null
+          fiscal_year_id: string | null
+          goods_description: string | null
+          id: string
+          incoterm: string | null
+          interest_amount: number | null
+          interest_rate: number | null
+          is_synced_with_bank: boolean | null
+          issue_date: string | null
+          last_bank_sync_at: string | null
+          maturity_date: string | null
+          metadata: Json | null
+          net_amount: number | null
+          notes: string | null
+          operation_number: string
+          operation_subtype: string | null
+          operation_type: string
+          port_discharge: string | null
+          port_loading: string | null
+          reference_number: string | null
+          scope: string
+          status: string
+          swift_messages: Json | null
+          terms_conditions: string | null
+          total_cost: number | null
+          updated_at: string
+        }
+        Insert: {
+          accounting_entry_id?: string | null
+          amount?: number
+          amount_local?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          bank_response?: Json | null
+          bank_status?: string | null
+          commission_amount?: number | null
+          company_id: string
+          counterparty_country?: string | null
+          counterparty_id?: string | null
+          counterparty_name?: string | null
+          counterparty_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          documents_presented?: string[] | null
+          documents_required?: string[] | null
+          effective_date?: string | null
+          entity_id?: string | null
+          exchange_rate?: number | null
+          expiry_date?: string | null
+          fees_amount?: number | null
+          fiscal_year_id?: string | null
+          goods_description?: string | null
+          id?: string
+          incoterm?: string | null
+          interest_amount?: number | null
+          interest_rate?: number | null
+          is_synced_with_bank?: boolean | null
+          issue_date?: string | null
+          last_bank_sync_at?: string | null
+          maturity_date?: string | null
+          metadata?: Json | null
+          net_amount?: number | null
+          notes?: string | null
+          operation_number: string
+          operation_subtype?: string | null
+          operation_type: string
+          port_discharge?: string | null
+          port_loading?: string | null
+          reference_number?: string | null
+          scope?: string
+          status?: string
+          swift_messages?: Json | null
+          terms_conditions?: string | null
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accounting_entry_id?: string | null
+          amount?: number
+          amount_local?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          bank_response?: Json | null
+          bank_status?: string | null
+          commission_amount?: number | null
+          company_id?: string
+          counterparty_country?: string | null
+          counterparty_id?: string | null
+          counterparty_name?: string | null
+          counterparty_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          documents_presented?: string[] | null
+          documents_required?: string[] | null
+          effective_date?: string | null
+          entity_id?: string | null
+          exchange_rate?: number | null
+          expiry_date?: string | null
+          fees_amount?: number | null
+          fiscal_year_id?: string | null
+          goods_description?: string | null
+          id?: string
+          incoterm?: string | null
+          interest_amount?: number | null
+          interest_rate?: number | null
+          is_synced_with_bank?: boolean | null
+          issue_date?: string | null
+          last_bank_sync_at?: string | null
+          maturity_date?: string | null
+          metadata?: Json | null
+          net_amount?: number | null
+          notes?: string | null
+          operation_number?: string
+          operation_subtype?: string | null
+          operation_type?: string
+          port_discharge?: string | null
+          port_loading?: string | null
+          reference_number?: string | null
+          scope?: string
+          status?: string
+          swift_messages?: Json | null
+          terms_conditions?: string | null
+          total_cost?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_trade_operations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_trade_operations_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_trade_operations_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
             referencedColumns: ["id"]
           },
         ]
