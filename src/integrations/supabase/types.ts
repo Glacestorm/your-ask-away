@@ -14484,6 +14484,279 @@ export type Database = {
           },
         ]
       }
+      erp_migration_connectors: {
+        Row: {
+          auth_fields: Json | null
+          base_url: string | null
+          connection_fields: Json | null
+          created_at: string | null
+          detect_patterns: Json | null
+          documentation_url: string | null
+          entities: Json | null
+          file_import: Json | null
+          id: string
+          is_active: boolean | null
+          kind: string
+          label: string
+          logo_url: string | null
+          notes: string[] | null
+          popularity_rank: number | null
+          region: string | null
+          updated_at: string | null
+          vendor: string | null
+        }
+        Insert: {
+          auth_fields?: Json | null
+          base_url?: string | null
+          connection_fields?: Json | null
+          created_at?: string | null
+          detect_patterns?: Json | null
+          documentation_url?: string | null
+          entities?: Json | null
+          file_import?: Json | null
+          id: string
+          is_active?: boolean | null
+          kind: string
+          label: string
+          logo_url?: string | null
+          notes?: string[] | null
+          popularity_rank?: number | null
+          region?: string | null
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Update: {
+          auth_fields?: Json | null
+          base_url?: string | null
+          connection_fields?: Json | null
+          created_at?: string | null
+          detect_patterns?: Json | null
+          documentation_url?: string | null
+          entities?: Json | null
+          file_import?: Json | null
+          id?: string
+          is_active?: boolean | null
+          kind?: string
+          label?: string
+          logo_url?: string | null
+          notes?: string[] | null
+          popularity_rank?: number | null
+          region?: string | null
+          updated_at?: string | null
+          vendor?: string | null
+        }
+        Relationships: []
+      }
+      erp_migration_records: {
+        Row: {
+          ai_confidence: number | null
+          ai_notes: string | null
+          batch_number: number | null
+          created_at: string | null
+          entity_type: string
+          id: string
+          imported_id: string | null
+          original_code: string | null
+          original_data: Json
+          original_id: string | null
+          original_name: string | null
+          processing_time_ms: number | null
+          row_number: number | null
+          session_id: string
+          status: string | null
+          target_table: string | null
+          transformation_log: Json | null
+          transformed_data: Json | null
+          updated_at: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_notes?: string | null
+          batch_number?: number | null
+          created_at?: string | null
+          entity_type: string
+          id?: string
+          imported_id?: string | null
+          original_code?: string | null
+          original_data: Json
+          original_id?: string | null
+          original_name?: string | null
+          processing_time_ms?: number | null
+          row_number?: number | null
+          session_id: string
+          status?: string | null
+          target_table?: string | null
+          transformation_log?: Json | null
+          transformed_data?: Json | null
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_notes?: string | null
+          batch_number?: number | null
+          created_at?: string | null
+          entity_type?: string
+          id?: string
+          imported_id?: string | null
+          original_code?: string | null
+          original_data?: Json
+          original_id?: string | null
+          original_name?: string | null
+          processing_time_ms?: number | null
+          row_number?: number | null
+          session_id?: string
+          status?: string | null
+          target_table?: string | null
+          transformation_log?: Json | null
+          transformed_data?: Json | null
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_migration_records_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "erp_migration_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_migration_sessions: {
+        Row: {
+          ai_suggestions: Json | null
+          analysis_result: Json | null
+          company_id: string | null
+          completed_at: string | null
+          config: Json | null
+          created_at: string | null
+          current_entity: string | null
+          entities_progress: Json | null
+          error_details: Json | null
+          error_message: string | null
+          field_mappings: Json | null
+          fiscal_year_id: string | null
+          id: string
+          import_summary: Json | null
+          metadata: Json | null
+          migration_log: Json | null
+          paused_at: string | null
+          performed_by: string | null
+          phase: string | null
+          progress_percentage: number | null
+          rollback_at: string | null
+          rollback_by: string | null
+          rollback_data: Json | null
+          source_connector_id: string | null
+          source_file_name: string | null
+          source_file_size: number | null
+          source_file_type: string | null
+          source_software: string
+          source_version: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+          validation_result: Json | null
+          verification_result: Json | null
+        }
+        Insert: {
+          ai_suggestions?: Json | null
+          analysis_result?: Json | null
+          company_id?: string | null
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          current_entity?: string | null
+          entities_progress?: Json | null
+          error_details?: Json | null
+          error_message?: string | null
+          field_mappings?: Json | null
+          fiscal_year_id?: string | null
+          id?: string
+          import_summary?: Json | null
+          metadata?: Json | null
+          migration_log?: Json | null
+          paused_at?: string | null
+          performed_by?: string | null
+          phase?: string | null
+          progress_percentage?: number | null
+          rollback_at?: string | null
+          rollback_by?: string | null
+          rollback_data?: Json | null
+          source_connector_id?: string | null
+          source_file_name?: string | null
+          source_file_size?: number | null
+          source_file_type?: string | null
+          source_software: string
+          source_version?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          validation_result?: Json | null
+          verification_result?: Json | null
+        }
+        Update: {
+          ai_suggestions?: Json | null
+          analysis_result?: Json | null
+          company_id?: string | null
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          current_entity?: string | null
+          entities_progress?: Json | null
+          error_details?: Json | null
+          error_message?: string | null
+          field_mappings?: Json | null
+          fiscal_year_id?: string | null
+          id?: string
+          import_summary?: Json | null
+          metadata?: Json | null
+          migration_log?: Json | null
+          paused_at?: string | null
+          performed_by?: string | null
+          phase?: string | null
+          progress_percentage?: number | null
+          rollback_at?: string | null
+          rollback_by?: string | null
+          rollback_data?: Json | null
+          source_connector_id?: string | null
+          source_file_name?: string | null
+          source_file_size?: number | null
+          source_file_type?: string | null
+          source_software?: string
+          source_version?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          validation_result?: Json | null
+          verification_result?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_migration_sessions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_migration_sessions_fiscal_year_id_fkey"
+            columns: ["fiscal_year_id"]
+            isOneToOne: false
+            referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_migration_sessions_source_connector_id_fkey"
+            columns: ["source_connector_id"]
+            isOneToOne: false
+            referencedRelation: "erp_migration_connectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_payables: {
         Row: {
           amount: number
