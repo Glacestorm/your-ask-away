@@ -37,6 +37,7 @@ import { APIConnectionWizard } from './APIConnectionWizard';
 import { CommercialDiscountPanel } from './discount';
 import { DocumentaryCreditPanel } from './documentary-credits';
 import { GuaranteesPanel } from './guarantees';
+import { ExpirationAlertsWidget } from './ExpirationAlertsWidget';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -448,7 +449,8 @@ export function TradeFinanceModule() {
               </Card>
               <RecentOperations operations={operations} />
             </div>
-            <div>
+            <div className="space-y-6">
+              <ExpirationAlertsWidget />
               <ConnectedBanks entities={entities} connections={connections} />
             </div>
           </div>
