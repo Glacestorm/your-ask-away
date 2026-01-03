@@ -34,6 +34,7 @@ import {
 import { useERPTradeFinance, type TradeOperation, type FinancialEntity } from '@/hooks/erp/useERPTradeFinance';
 import { FinancialEntitiesManager } from './FinancialEntitiesManager';
 import { APIConnectionWizard } from './APIConnectionWizard';
+import { CommercialDiscountPanel } from './discount';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -395,10 +396,14 @@ export function TradeFinanceModule() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="gap-2">
             <TrendingUp className="h-4 w-4" />
             Resumen
+          </TabsTrigger>
+          <TabsTrigger value="discount" className="gap-2">
+            <Banknote className="h-4 w-4" />
+            Descuento
           </TabsTrigger>
           <TabsTrigger value="operations" className="gap-2">
             <ArrowRightLeft className="h-4 w-4" />
@@ -437,6 +442,11 @@ export function TradeFinanceModule() {
               <ConnectedBanks entities={entities} connections={connections} />
             </div>
           </div>
+        </TabsContent>
+
+        {/* Discount Tab */}
+        <TabsContent value="discount">
+          <CommercialDiscountPanel />
         </TabsContent>
 
         {/* Operations Tab */}

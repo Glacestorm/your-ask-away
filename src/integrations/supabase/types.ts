@@ -11143,6 +11143,98 @@ export type Database = {
           },
         ]
       }
+      erp_commercial_discounts: {
+        Row: {
+          accounting_entry_id: string | null
+          bank_reference: string | null
+          commission_amount: number | null
+          commission_rate: number | null
+          company_id: string
+          created_at: string | null
+          created_by: string | null
+          currency: string
+          discount_date: string | null
+          discount_number: string
+          documents: Json | null
+          entity_id: string | null
+          expenses: number | null
+          id: string
+          interest_amount: number | null
+          interest_rate: number | null
+          internal_notes: string | null
+          is_accounted: boolean | null
+          net_amount: number | null
+          operation_type: string
+          status: string
+          total_effective: number | null
+          total_nominal: number
+          updated_at: string | null
+          value_date: string | null
+        }
+        Insert: {
+          accounting_entry_id?: string | null
+          bank_reference?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          discount_date?: string | null
+          discount_number: string
+          documents?: Json | null
+          entity_id?: string | null
+          expenses?: number | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number | null
+          internal_notes?: string | null
+          is_accounted?: boolean | null
+          net_amount?: number | null
+          operation_type?: string
+          status?: string
+          total_effective?: number | null
+          total_nominal?: number
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Update: {
+          accounting_entry_id?: string | null
+          bank_reference?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string
+          discount_date?: string | null
+          discount_number?: string
+          documents?: Json | null
+          entity_id?: string | null
+          expenses?: number | null
+          id?: string
+          interest_amount?: number | null
+          interest_rate?: number | null
+          internal_notes?: string | null
+          is_accounted?: boolean | null
+          net_amount?: number | null
+          operation_type?: string
+          status?: string
+          total_effective?: number | null
+          total_nominal?: number
+          updated_at?: string | null
+          value_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_commercial_discounts_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_companies: {
         Row: {
           address: string | null
@@ -11324,6 +11416,172 @@ export type Database = {
             columns: ["default_series_id"]
             isOneToOne: false
             referencedRelation: "erp_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_discount_effects: {
+        Row: {
+          amount: number
+          bank_domiciliation: string | null
+          bank_iban: string | null
+          bank_swift: string | null
+          company_id: string
+          created_at: string | null
+          currency: string
+          customer_id: string | null
+          discount_id: string | null
+          drawee_address: string | null
+          drawee_name: string
+          drawee_tax_id: string | null
+          drawer_name: string | null
+          drawer_tax_id: string | null
+          effect_number: string | null
+          effect_type: string
+          id: string
+          invoice_id: string | null
+          invoice_number: string | null
+          issue_date: string
+          maturity_date: string
+          payment_date: string | null
+          return_date: string | null
+          return_reason: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_domiciliation?: string | null
+          bank_iban?: string | null
+          bank_swift?: string | null
+          company_id: string
+          created_at?: string | null
+          currency?: string
+          customer_id?: string | null
+          discount_id?: string | null
+          drawee_address?: string | null
+          drawee_name: string
+          drawee_tax_id?: string | null
+          drawer_name?: string | null
+          drawer_tax_id?: string | null
+          effect_number?: string | null
+          effect_type: string
+          id?: string
+          invoice_id?: string | null
+          invoice_number?: string | null
+          issue_date: string
+          maturity_date: string
+          payment_date?: string | null
+          return_date?: string | null
+          return_reason?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_domiciliation?: string | null
+          bank_iban?: string | null
+          bank_swift?: string | null
+          company_id?: string
+          created_at?: string | null
+          currency?: string
+          customer_id?: string | null
+          discount_id?: string | null
+          drawee_address?: string | null
+          drawee_name?: string
+          drawee_tax_id?: string | null
+          drawer_name?: string | null
+          drawer_tax_id?: string | null
+          effect_number?: string | null
+          effect_type?: string
+          id?: string
+          invoice_id?: string | null
+          invoice_number?: string | null
+          issue_date?: string
+          maturity_date?: string
+          payment_date?: string | null
+          return_date?: string | null
+          return_reason?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_discount_effects_discount_id_fkey"
+            columns: ["discount_id"]
+            isOneToOne: false
+            referencedRelation: "erp_commercial_discounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_discount_remittances: {
+        Row: {
+          bank_reference: string | null
+          company_id: string
+          confirmation_date: string | null
+          created_at: string | null
+          created_by: string | null
+          entity_id: string | null
+          file_content: string | null
+          file_format: string | null
+          file_url: string | null
+          generation_date: string | null
+          id: string
+          remittance_number: string
+          response_message: string | null
+          sent_date: string | null
+          status: string
+          total_amount: number | null
+          total_effects: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bank_reference?: string | null
+          company_id: string
+          confirmation_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string | null
+          file_content?: string | null
+          file_format?: string | null
+          file_url?: string | null
+          generation_date?: string | null
+          id?: string
+          remittance_number: string
+          response_message?: string | null
+          sent_date?: string | null
+          status?: string
+          total_amount?: number | null
+          total_effects?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bank_reference?: string | null
+          company_id?: string
+          confirmation_date?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string | null
+          file_content?: string | null
+          file_format?: string | null
+          file_url?: string | null
+          generation_date?: string | null
+          id?: string
+          remittance_number?: string
+          response_message?: string | null
+          sent_date?: string | null
+          status?: string
+          total_amount?: number | null
+          total_effects?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_discount_remittances_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
             referencedColumns: ["id"]
           },
         ]
@@ -13024,6 +13282,42 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "erp_customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_remittance_effects: {
+        Row: {
+          effect_id: string | null
+          id: string
+          included_at: string | null
+          remittance_id: string | null
+        }
+        Insert: {
+          effect_id?: string | null
+          id?: string
+          included_at?: string | null
+          remittance_id?: string | null
+        }
+        Update: {
+          effect_id?: string | null
+          id?: string
+          included_at?: string | null
+          remittance_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_remittance_effects_effect_id_fkey"
+            columns: ["effect_id"]
+            isOneToOne: false
+            referencedRelation: "erp_discount_effects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_remittance_effects_remittance_id_fkey"
+            columns: ["remittance_id"]
+            isOneToOne: false
+            referencedRelation: "erp_discount_remittances"
             referencedColumns: ["id"]
           },
         ]
