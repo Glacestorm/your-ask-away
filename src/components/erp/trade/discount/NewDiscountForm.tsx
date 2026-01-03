@@ -2,7 +2,7 @@
  * Formulario para crear nueva operación de descuento
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +28,7 @@ import { useERPDiscountOperations } from '@/hooks/erp/useERPDiscountOperations';
 import { useERPTradeFinance } from '@/hooks/erp/useERPTradeFinance';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
+import { AccountingEntriesPreview, AccountingEntry } from '../AccountingEntriesPreview';
 
 interface NewDiscountFormProps {
   onSuccess: () => void;
@@ -45,6 +46,9 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
   const [commissionRate, setCommissionRate] = useState<number>(0.25);
   const [expenses, setExpenses] = useState<number>(30);
   const [notes, setNotes] = useState<string>('');
+  const [nominalAmount, setNominalAmount] = useState<number>(0);
+  const [accountingEntries, setAccountingEntries] = useState<AccountingEntry[]>([]);
+  const [showAccountingSection, setShowAccountingSection] = useState(false);
 
   const { createDiscount } = useERPDiscountOperations();
   const { entities, fetchEntities } = useERPTradeFinance();
@@ -55,6 +59,21 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
   useEffect(() => {
     fetchEntities();
   }, [fetchEntities]);
+
+  // Calcular datos de operación para contabilidad
+  const operationData = useMemo(() => {
+    const interestAmount = nominalAmount * (interestRate / 100);
+    const commissionAmount = nominalAmount * (commissionRate / 100);
+    const netAmount = nominalAmount - interestAmount - commissionAmount - expenses;
+    return {
+      amount: nominalAmount,
+      interestAmount,
+      commissionAmount,
+      expenses,
+      netAmount,
+      currency: 'EUR'
+    };
+  }, [nominalAmount, interestRate, commissionRate, expenses]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,8 +251,22 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
           />
         </div>
 
+        {/* Nominal Amount */}
+        <div className="space-y-2">
+          <Label htmlFor="nominalAmount">Importe Nominal (€)</Label>
+          <Input
+            id="nominalAmount"
+            type="number"
+            value={nominalAmount || ''}
+            onChange={(e) => setNominalAmount(Number(e.target.value))}
+            min={0}
+            step={100}
+            placeholder="0,00"
+          />
+        </div>
+
         {/* Expenses */}
-        <div className="col-span-2 space-y-2">
+        <div className="space-y-2">
           <Label htmlFor="expenses">Gastos Fijos (€)</Label>
           <Input
             id="expenses"
@@ -257,6 +290,17 @@ export function NewDiscountForm({ onSuccess, onCancel }: NewDiscountFormProps) {
           />
         </div>
       </div>
+
+      {/* Sección de Partidas Contables */}
+      <AccountingEntriesPreview
+        operationType="discount"
+        operationData={operationData}
+        entries={accountingEntries}
+        onEntriesChange={setAccountingEntries}
+        isExpanded={showAccountingSection}
+        onExpandChange={setShowAccountingSection}
+        className="mt-4"
+      />
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-4">

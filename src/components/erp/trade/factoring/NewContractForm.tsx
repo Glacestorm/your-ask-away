@@ -2,7 +2,7 @@
  * New Factoring Contract Form
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import { Building2 } from 'lucide-react';
 import { useERPFactoring } from '@/hooks/erp/useERPFactoring';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
 import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
+import { AccountingEntriesPreview, AccountingEntry } from '../AccountingEntriesPreview';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -42,6 +43,8 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
   const { partners, getActivePartners } = useERPTradePartners();
   const [loading, setLoading] = useState(false);
   const [entities, setEntities] = useState<FinancialEntity[]>([]);
+  const [accountingEntries, setAccountingEntries] = useState<AccountingEntry[]>([]);
+  const [showAccountingSection, setShowAccountingSection] = useState(false);
 
   const activePartners = getActivePartners();
 
@@ -59,6 +62,28 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
     end_date: '',
     notes: '',
   });
+
+  // Calcular datos de operación para contabilidad
+  const operationData = useMemo(() => {
+    const amount = parseFloat(formData.global_limit) || 0;
+    const advancePercent = parseFloat(formData.advance_percentage) || 80;
+    const interestRate = parseFloat(formData.interest_rate) || 0;
+    const commissionRate = parseFloat(formData.commission_rate) || 0;
+    
+    const advanceAmount = amount * (advancePercent / 100);
+    const interestAmount = advanceAmount * (interestRate / 100);
+    const commissionAmount = advanceAmount * (commissionRate / 100);
+    const netAmount = advanceAmount - interestAmount - commissionAmount;
+    
+    return {
+      amount: advanceAmount,
+      interestAmount,
+      commissionAmount,
+      expenses: 0,
+      netAmount,
+      currency: formData.currency
+    };
+  }, [formData.global_limit, formData.advance_percentage, formData.interest_rate, formData.commission_rate, formData.currency]);
 
   useEffect(() => {
     const fetchEntities = async () => {
@@ -305,6 +330,16 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
               rows={2}
             />
           </div>
+
+          {/* Sección de Partidas Contables */}
+          <AccountingEntriesPreview
+            operationType="factoring"
+            operationData={operationData}
+            entries={accountingEntries}
+            onEntriesChange={setAccountingEntries}
+            isExpanded={showAccountingSection}
+            onExpandChange={setShowAccountingSection}
+          />
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
