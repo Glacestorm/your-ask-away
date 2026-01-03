@@ -23,7 +23,7 @@ import { SEPARemittanceManager } from './SEPARemittanceManager';
 import { SEPAMandatesManager } from './SEPAMandatesManager';
 import { CashFlowForecast } from './CashFlowForecast';
 import { AgingReport } from './AgingReport';
-import { FinancingOperationsPanel, InvestmentsPanel } from './financing';
+import { InvestmentsPanel, FinancingInvestmentsModule } from './financing';
 import { BankingHubDashboard } from '../banking';
 
 export function TreasuryDashboard() {
@@ -187,7 +187,7 @@ export function TreasuryDashboard() {
         </TabsContent>
 
         <TabsContent value="financing" className="mt-4">
-          <FinancingOperationsPanel companyId={currentCompany.id} />
+          <FinancingInvestmentsModule />
         </TabsContent>
 
         <TabsContent value="investments" className="mt-4">
