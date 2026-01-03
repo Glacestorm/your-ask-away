@@ -37,7 +37,11 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
-export function BankingHubDashboard() {
+interface BankingHubDashboardProps {
+  companyId?: string;
+}
+
+export function BankingHubDashboard({ companyId }: BankingHubDashboardProps) {
   const {
     providers,
     accounts,

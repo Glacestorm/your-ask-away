@@ -12,7 +12,8 @@ import {
   Clock,
   CreditCard,
   Landmark,
-  PiggyBank
+  PiggyBank,
+  Link2
 } from 'lucide-react';
 import { useERPContext } from '@/hooks/erp/useERPContext';
 import { PayablesManager } from './PayablesManager';
@@ -23,6 +24,7 @@ import { SEPAMandatesManager } from './SEPAMandatesManager';
 import { CashFlowForecast } from './CashFlowForecast';
 import { AgingReport } from './AgingReport';
 import { FinancingOperationsPanel, InvestmentsPanel } from './financing';
+import { BankingHubDashboard } from '../banking';
 
 export function TreasuryDashboard() {
   const { currentCompany } = useERPContext();
@@ -150,6 +152,10 @@ export function TreasuryDashboard() {
             <PiggyBank className="h-4 w-4" />
             Inversiones
           </TabsTrigger>
+          <TabsTrigger value="banking-hub" className="gap-1.5">
+            <Link2 className="h-4 w-4" />
+            Open Banking
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4">
@@ -186,6 +192,10 @@ export function TreasuryDashboard() {
 
         <TabsContent value="investments" className="mt-4">
           <InvestmentsPanel companyId={currentCompany.id} />
+        </TabsContent>
+
+        <TabsContent value="banking-hub" className="mt-4">
+          <BankingHubDashboard companyId={currentCompany.id} />
         </TabsContent>
       </Tabs>
     </div>
