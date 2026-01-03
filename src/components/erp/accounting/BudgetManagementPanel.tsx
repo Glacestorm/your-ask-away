@@ -322,7 +322,7 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                       <span className="text-muted-foreground">vs</span>
                       <span>{formatCurrency(summary.totalBudgetedRevenue)}</span>
                       <Badge variant={summary.revenueVariance >= 0 ? "default" : "destructive"} className="text-xs">
-                        {summary.revenueVariance >= 0 ? '+' : ''}{summary.revenueVariancePercentage.toFixed(1)}%
+                        {summary.revenueVariance >= 0 ? '+' : ''}{(summary.revenueVariancePercentage ?? 0).toFixed(1)}%
                       </Badge>
                     </div>
                   </Card>
@@ -337,7 +337,7 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                       <span className="text-muted-foreground">vs</span>
                       <span>{formatCurrency(summary.totalBudgetedExpenses)}</span>
                       <Badge variant={summary.expenseVariance <= 0 ? "default" : "destructive"} className="text-xs">
-                        {summary.expenseVariance >= 0 ? '+' : ''}{summary.expenseVariancePercentage.toFixed(1)}%
+                        {summary.expenseVariance >= 0 ? '+' : ''}{(summary.expenseVariancePercentage ?? 0).toFixed(1)}%
                       </Badge>
                     </div>
                   </Card>
@@ -359,8 +359,8 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                       <Activity className="h-4 w-4 text-purple-500" />
                       <span className="text-xs text-muted-foreground">Utilización</span>
                     </div>
-                    <p className="text-lg font-bold">{summary.budgetUtilization.toFixed(1)}%</p>
-                    <Progress value={summary.budgetUtilization} className="h-1.5 mt-1" />
+                    <p className="text-lg font-bold">{(summary.budgetUtilization ?? 0).toFixed(1)}%</p>
+                    <Progress value={summary.budgetUtilization ?? 0} className="h-1.5 mt-1" />
                   </Card>
                 </div>
               )}
@@ -434,7 +434,7 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                               line.varianceAmount >= 0 ? "text-emerald-600" : "text-red-600"
                             )}>
                               {line.varianceAmount >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                              {line.variancePercentage.toFixed(1)}%
+                              {(line.variancePercentage ?? 0).toFixed(1)}%
                             </span>
                           </TableCell>
                           <TableCell className="text-center">{getStatusBadge(line.status)}</TableCell>
@@ -474,7 +474,7 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                               line.varianceAmount <= 0 ? "text-emerald-600" : "text-red-600"
                             )}>
                               {line.varianceAmount <= 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
-                              {Math.abs(line.variancePercentage).toFixed(1)}%
+                              {Math.abs(line.variancePercentage ?? 0).toFixed(1)}%
                             </span>
                           </TableCell>
                           <TableCell className="text-center">{getStatusBadge(line.status)}</TableCell>
@@ -517,10 +517,10 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                           <span className="text-muted-foreground">Variación:</span>
                           <span className="ml-1 font-medium">{formatCurrency(va.varianceAmount)}</span>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">%:</span>
-                          <span className="ml-1 font-medium">{va.variancePercentage.toFixed(1)}%</span>
-                        </div>
+                          <div>
+                            <span className="text-muted-foreground">%:</span>
+                            <span className="ml-1 font-medium">{(va.variancePercentage ?? 0).toFixed(1)}%</span>
+                          </div>
                         <div>
                           <span className="text-muted-foreground">Tendencia:</span>
                           <Badge variant="outline" className="ml-1 text-xs">
@@ -647,7 +647,7 @@ export function BudgetManagementPanel({ className }: BudgetManagementPanelProps)
                                  insight.impact === 'medium' ? 'Medio' : 'Bajo'}
                               </Badge>
                               <span className="text-xs text-muted-foreground">
-                                {(insight.confidence * 100).toFixed(0)}%
+                                {((insight.confidence ?? 0) * 100).toFixed(0)}%
                               </span>
                             </div>
                           </div>
