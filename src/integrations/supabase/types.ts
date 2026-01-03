@@ -10498,6 +10498,69 @@ export type Database = {
           },
         ]
       }
+      erp_accounting_templates: {
+        Row: {
+          auto_post: boolean | null
+          created_at: string
+          credit_account_code: string
+          credit_account_name: string | null
+          debit_account_code: string
+          debit_account_name: string | null
+          description_template: string
+          id: string
+          is_default: boolean | null
+          notes: string | null
+          operation_category: string
+          operation_type: string
+          pgc_reference: string | null
+          requires_approval: boolean | null
+          tax_account_code: string | null
+          tax_rate: number | null
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          auto_post?: boolean | null
+          created_at?: string
+          credit_account_code: string
+          credit_account_name?: string | null
+          debit_account_code: string
+          debit_account_name?: string | null
+          description_template?: string
+          id?: string
+          is_default?: boolean | null
+          notes?: string | null
+          operation_category: string
+          operation_type: string
+          pgc_reference?: string | null
+          requires_approval?: boolean | null
+          tax_account_code?: string | null
+          tax_rate?: number | null
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          auto_post?: boolean | null
+          created_at?: string
+          credit_account_code?: string
+          credit_account_name?: string | null
+          debit_account_code?: string
+          debit_account_name?: string | null
+          description_template?: string
+          id?: string
+          is_default?: boolean | null
+          notes?: string | null
+          operation_category?: string
+          operation_type?: string
+          pgc_reference?: string | null
+          requires_approval?: boolean | null
+          tax_account_code?: string | null
+          tax_rate?: number | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       erp_advisor_agent_config: {
         Row: {
           alert_thresholds: Json | null
@@ -10710,6 +10773,74 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_auto_accounting_config: {
+        Row: {
+          auto_post: boolean | null
+          company_id: string
+          created_at: string
+          credit_account_code: string
+          credit_account_name: string | null
+          debit_account_code: string
+          debit_account_name: string | null
+          description_template: string
+          id: string
+          is_active: boolean | null
+          operation_category: string
+          operation_type: string
+          requires_approval: boolean | null
+          tax_account_code: string | null
+          tax_rate: number | null
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          auto_post?: boolean | null
+          company_id: string
+          created_at?: string
+          credit_account_code: string
+          credit_account_name?: string | null
+          debit_account_code: string
+          debit_account_name?: string | null
+          description_template?: string
+          id?: string
+          is_active?: boolean | null
+          operation_category: string
+          operation_type: string
+          requires_approval?: boolean | null
+          tax_account_code?: string | null
+          tax_rate?: number | null
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          auto_post?: boolean | null
+          company_id?: string
+          created_at?: string
+          credit_account_code?: string
+          credit_account_name?: string | null
+          debit_account_code?: string
+          debit_account_name?: string | null
+          description_template?: string
+          id?: string
+          is_active?: boolean | null
+          operation_category?: string
+          operation_type?: string
+          requires_approval?: boolean | null
+          tax_account_code?: string | null
+          tax_rate?: number | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_auto_accounting_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
