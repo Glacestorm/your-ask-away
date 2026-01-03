@@ -905,3 +905,6 @@ verify_jwt = false
 
 [functions.erp-voice-tts]
 verify_jwt = false
+
+[functions.erp-agent-orchestrator]
+verify_jwt = false
