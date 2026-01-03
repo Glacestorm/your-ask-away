@@ -899,3 +899,9 @@ verify_jwt = true
 
 [functions.erp-auto-accounting]
 verify_jwt = true
+
+[functions.erp-accounting-supervisor]
+verify_jwt = false
+
+[functions.erp-voice-tts]
+verify_jwt = false
