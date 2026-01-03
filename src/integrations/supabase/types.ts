@@ -11336,6 +11336,130 @@ export type Database = {
         }
         Relationships: []
       }
+      erp_credit_amendments: {
+        Row: {
+          amendment_date: string
+          amendment_number: number
+          changes: Json
+          created_at: string
+          created_by: string | null
+          credit_id: string
+          id: string
+          reason: string | null
+          response_date: string | null
+          response_notes: string | null
+          status: string
+        }
+        Insert: {
+          amendment_date?: string
+          amendment_number: number
+          changes: Json
+          created_at?: string
+          created_by?: string | null
+          credit_id: string
+          id?: string
+          reason?: string | null
+          response_date?: string | null
+          response_notes?: string | null
+          status?: string
+        }
+        Update: {
+          amendment_date?: string
+          amendment_number?: number
+          changes?: Json
+          created_at?: string
+          created_by?: string | null
+          credit_id?: string
+          id?: string
+          reason?: string | null
+          response_date?: string | null
+          response_notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_credit_amendments_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "erp_documentary_credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_credit_presentations: {
+        Row: {
+          amount_claimed: number
+          created_at: string
+          credit_id: string
+          discrepancies: Json | null
+          discrepancy_waived: boolean | null
+          documents_presented: Json
+          id: string
+          notes: string | null
+          payment_amount: number | null
+          payment_date: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          presentation_date: string
+          presentation_number: number
+          review_status: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+          waiver_date: string | null
+        }
+        Insert: {
+          amount_claimed: number
+          created_at?: string
+          credit_id: string
+          discrepancies?: Json | null
+          discrepancy_waived?: boolean | null
+          documents_presented?: Json
+          id?: string
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          presentation_date?: string
+          presentation_number: number
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          waiver_date?: string | null
+        }
+        Update: {
+          amount_claimed?: number
+          created_at?: string
+          credit_id?: string
+          discrepancies?: Json | null
+          discrepancy_waived?: boolean | null
+          documents_presented?: Json
+          id?: string
+          notes?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          presentation_date?: string
+          presentation_number?: number
+          review_status?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+          waiver_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_credit_presentations_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "erp_documentary_credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       erp_customers: {
         Row: {
           address: string | null
@@ -11580,6 +11704,176 @@ export type Database = {
           {
             foreignKeyName: "erp_discount_remittances_entity_id_fkey"
             columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_documentary_credits: {
+        Row: {
+          advising_bank_id: string | null
+          amount: number
+          applicant_id: string | null
+          beneficiary_id: string | null
+          commission_amount: number | null
+          commission_rate: number | null
+          company_id: string | null
+          confirming_bank_id: string | null
+          created_at: string
+          created_by: string | null
+          credit_number: string
+          credit_type: string
+          currency: string
+          expenses: Json | null
+          expiry_date: string
+          id: string
+          incoterm: string | null
+          issue_date: string
+          issuing_bank_id: string | null
+          latest_shipment_date: string | null
+          max_amount: number | null
+          negotiating_bank_id: string | null
+          notes: string | null
+          operation_type: string
+          partial_shipments_allowed: boolean | null
+          place_of_delivery: string | null
+          port_of_discharge: string | null
+          port_of_loading: string | null
+          presentation_period_days: number | null
+          required_documents: Json | null
+          special_conditions: string | null
+          status: string
+          swift_reference: string | null
+          tolerance_percentage: number | null
+          transshipment_allowed: boolean | null
+          updated_at: string
+          utilized_amount: number | null
+        }
+        Insert: {
+          advising_bank_id?: string | null
+          amount: number
+          applicant_id?: string | null
+          beneficiary_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id?: string | null
+          confirming_bank_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_number: string
+          credit_type: string
+          currency?: string
+          expenses?: Json | null
+          expiry_date: string
+          id?: string
+          incoterm?: string | null
+          issue_date: string
+          issuing_bank_id?: string | null
+          latest_shipment_date?: string | null
+          max_amount?: number | null
+          negotiating_bank_id?: string | null
+          notes?: string | null
+          operation_type: string
+          partial_shipments_allowed?: boolean | null
+          place_of_delivery?: string | null
+          port_of_discharge?: string | null
+          port_of_loading?: string | null
+          presentation_period_days?: number | null
+          required_documents?: Json | null
+          special_conditions?: string | null
+          status?: string
+          swift_reference?: string | null
+          tolerance_percentage?: number | null
+          transshipment_allowed?: boolean | null
+          updated_at?: string
+          utilized_amount?: number | null
+        }
+        Update: {
+          advising_bank_id?: string | null
+          amount?: number
+          applicant_id?: string | null
+          beneficiary_id?: string | null
+          commission_amount?: number | null
+          commission_rate?: number | null
+          company_id?: string | null
+          confirming_bank_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_number?: string
+          credit_type?: string
+          currency?: string
+          expenses?: Json | null
+          expiry_date?: string
+          id?: string
+          incoterm?: string | null
+          issue_date?: string
+          issuing_bank_id?: string | null
+          latest_shipment_date?: string | null
+          max_amount?: number | null
+          negotiating_bank_id?: string | null
+          notes?: string | null
+          operation_type?: string
+          partial_shipments_allowed?: boolean | null
+          place_of_delivery?: string | null
+          port_of_discharge?: string | null
+          port_of_loading?: string | null
+          presentation_period_days?: number | null
+          required_documents?: Json | null
+          special_conditions?: string | null
+          status?: string
+          swift_reference?: string | null
+          tolerance_percentage?: number | null
+          transshipment_allowed?: boolean | null
+          updated_at?: string
+          utilized_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_documentary_credits_advising_bank_id_fkey"
+            columns: ["advising_bank_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_beneficiary_id_fkey"
+            columns: ["beneficiary_id"]
+            isOneToOne: false
+            referencedRelation: "erp_trade_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_confirming_bank_id_fkey"
+            columns: ["confirming_bank_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_issuing_bank_id_fkey"
+            columns: ["issuing_bank_id"]
+            isOneToOne: false
+            referencedRelation: "erp_financial_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "erp_documentary_credits_negotiating_bank_id_fkey"
+            columns: ["negotiating_bank_id"]
             isOneToOne: false
             referencedRelation: "erp_financial_entities"
             referencedColumns: ["id"]
@@ -15381,6 +15675,92 @@ export type Database = {
             columns: ["fiscal_year_id"]
             isOneToOne: false
             referencedRelation: "erp_fiscal_years"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      erp_trade_partners: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string | null
+          country: string
+          created_at: string
+          credit_limit: number | null
+          default_currency: string | null
+          default_incoterm: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          is_international: boolean | null
+          legal_name: string
+          notes: string | null
+          partner_code: string
+          partner_type: string
+          payment_terms_days: number | null
+          phone: string | null
+          postal_code: string | null
+          tax_id: string | null
+          trade_name: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id?: string | null
+          country?: string
+          created_at?: string
+          credit_limit?: number | null
+          default_currency?: string | null
+          default_incoterm?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_international?: boolean | null
+          legal_name: string
+          notes?: string | null
+          partner_code: string
+          partner_type: string
+          payment_terms_days?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string | null
+          country?: string
+          created_at?: string
+          credit_limit?: number | null
+          default_currency?: string | null
+          default_incoterm?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_international?: boolean | null
+          legal_name?: string
+          notes?: string | null
+          partner_code?: string
+          partner_type?: string
+          payment_terms_days?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          tax_id?: string | null
+          trade_name?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "erp_trade_partners_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "erp_companies"
             referencedColumns: ["id"]
           },
         ]
