@@ -15,6 +15,7 @@ import { useSupportedLanguages } from '@/hooks/cms/useSupportedLanguages';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logAuditEvent } from '@/lib/security/auditLogger';
 
 interface LanguagePackModuleProps {
   onLanguageChange?: (locale: string) => void;
@@ -213,6 +214,21 @@ export function LanguagePackModule({ onLanguageChange, installationId }: Languag
       }
       setAudioUrl(url);
       
+      // Audit log TTS request
+      await logAuditEvent({
+        action: 'voice_tts_generated',
+        tableName: 'voice_operations',
+        category: 'data_access',
+        severity: 'info',
+        newData: {
+          text: ttsText,
+          language: selectedLocale,
+          voiceId: voiceConfig.voiceId,
+          textLength: ttsText.length,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
       toast.success(`Audio generado en ${languages.find(l => l.locale === selectedLocale)?.name || selectedLocale}`);
     } catch (error) {
       console.error('TTS Error:', error);
@@ -331,6 +347,21 @@ export function LanguagePackModule({ onLanguageChange, installationId }: Languag
 
       if (data?.text) {
         setTranscribedText(data.text);
+        
+        // Audit log STT transcription
+        await logAuditEvent({
+          action: 'voice_stt_transcribed',
+          tableName: 'voice_operations',
+          category: 'data_access',
+          severity: 'info',
+          newData: {
+            transcription: data.text,
+            language: selectedLocale,
+            transcriptionLength: data.text.length,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
         toast.success('Audio transcrito correctamente');
       } else {
         toast.warning('No se pudo transcribir el audio');
