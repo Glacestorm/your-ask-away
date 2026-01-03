@@ -23,6 +23,7 @@ import {
 import { Building2 } from 'lucide-react';
 import { useERPFactoring } from '@/hooks/erp/useERPFactoring';
 import { useERPTradePartners } from '@/hooks/erp/useERPTradePartners';
+import { TradePartnerSearchSelect } from '../TradePartnerSearchSelect';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -137,25 +138,17 @@ export function NewContractForm({ open, onOpenChange }: NewContractFormProps) {
               <Building2 className="h-4 w-4" />
               Cliente *
             </Label>
-            <Select
+            <TradePartnerSearchSelect
+              partners={activePartners}
               value={formData.customer_id}
               onValueChange={(value) => setFormData(prev => ({ ...prev, customer_id: value }))}
-            >
-              <SelectTrigger className={!formData.customer_id ? 'border-destructive' : ''}>
-                <SelectValue placeholder="Seleccionar cliente (obligatorio)" />
-              </SelectTrigger>
-              <SelectContent>
-                {activePartners.map((partner) => (
-                  <SelectItem key={partner.id} value={partner.id}>
-                    {partner.legal_name} {partner.tax_id ? `(${partner.tax_id})` : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {selectedCustomer && (
-              <p className="text-xs text-muted-foreground">
-                {selectedCustomer.city && `${selectedCustomer.city}, `}{selectedCustomer.country}
-                {selectedCustomer.email && ` • ${selectedCustomer.email}`}
+              placeholder="Buscar cliente por nombre, código, NIF o email..."
+              required
+              partnerTypeFilter="customer"
+            />
+            {!formData.customer_id && (
+              <p className="text-xs text-destructive">
+                Debe seleccionar un cliente
               </p>
             )}
           </div>
