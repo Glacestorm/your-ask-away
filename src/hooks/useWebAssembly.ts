@@ -168,6 +168,11 @@ export function useWebAssembly(): UseWebAssemblyResult {
 
 /**
  * useFinancialCalculation - Hook simplificado para cálculos específicos
+ * 
+ * IMPORTANT: This hook intentionally does NOT include calculationFn in the dependency array
+ * to prevent infinite loops. The calculationFn is typically defined inline by callers and
+ * would change on every render, causing the callback to be recreated infinitely.
+ * The throttling mechanism and dependencies array provide the necessary control.
  */
 export function useFinancialCalculation<T, R>(
   calculationFn: (input: T) => R,
@@ -224,11 +229,17 @@ export function useFinancialCalculation<T, R>(
       setError(err instanceof Error ? err : new Error('Calculation failed'));
       setIsCalculating(false);
     }
+    // NOTE: calculationFn is intentionally excluded from deps to prevent infinite loops
+    // as it's typically defined inline and changes on every render. The dependencies 
+    // parameter gives callers explicit control over when to recalculate.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, ...dependencies]);
 
   useEffect(() => {
     calculate();
+    // NOTE: calculate is intentionally excluded here as it's already controlled by input
+    // and dependencies. Including it would cause unnecessary re-renders. The throttling
+    // mechanism provides additional protection against rapid recalculations.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input, ...dependencies]);
 
