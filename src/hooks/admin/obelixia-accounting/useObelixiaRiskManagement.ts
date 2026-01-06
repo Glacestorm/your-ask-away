@@ -78,8 +78,20 @@ export function useObelixiaRiskManagement() {
   const [overallExposure, setOverallExposure] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef<number>(0);
+  const MAX_RETRIES = 3;
+  const MAX_AUTO_REFRESH_DURATION = 3600000; // 1 hour max auto-refresh
+  const autoRefreshStartTime = useRef<number | null>(null);
 
   const fetchRisks = useCallback(async (context?: RiskContext) => {
+    // Check retry limit
+    if (retryCountRef.current >= MAX_RETRIES) {
+      const errorMsg = `Maximum retry limit (${MAX_RETRIES}) reached for fetchRisks`;
+      setError(errorMsg);
+      console.error('[useObelixiaRiskManagement] fetchRisks:', errorMsg);
+      return null;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -93,6 +105,7 @@ export function useObelixiaRiskManagement() {
       if (data?.success && data?.data) {
         setRisks(data.data.risks || []);
         setOverallExposure(data.data.summary?.overallExposure || 0);
+        retryCountRef.current = 0; // Reset on success
         return data.data;
       }
 
@@ -100,6 +113,7 @@ export function useObelixiaRiskManagement() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       setError(message);
+      retryCountRef.current += 1;
       console.error('[useObelixiaRiskManagement] fetchRisks error:', err);
       return null;
     } finally {
@@ -191,12 +205,35 @@ export function useObelixiaRiskManagement() {
   }, []);
 
   const startAutoRefresh = useCallback((context: RiskContext, intervalMs = 60000) => {
+    // Stop any existing refresh
     if (autoRefreshInterval.current) {
       clearInterval(autoRefreshInterval.current);
     }
+    
+    // Set start time for timeout check
+    autoRefreshStartTime.current = Date.now();
+    retryCountRef.current = 0; // Reset retry count on new auto-refresh
+    
+    // Initial fetch
     fetchRisks(context);
     monitorKRIs(context);
+    
     autoRefreshInterval.current = setInterval(() => {
+      // Check if max duration exceeded
+      if (autoRefreshStartTime.current && 
+          Date.now() - autoRefreshStartTime.current > MAX_AUTO_REFRESH_DURATION) {
+        console.warn('[useObelixiaRiskManagement] Max auto-refresh duration reached, stopping');
+        stopAutoRefresh();
+        return;
+      }
+      
+      // Check retry count before making calls
+      if (retryCountRef.current >= MAX_RETRIES) {
+        console.warn('[useObelixiaRiskManagement] Max retries reached in auto-refresh, stopping');
+        stopAutoRefresh();
+        return;
+      }
+      
       fetchRisks(context);
       monitorKRIs(context);
     }, intervalMs);
@@ -207,6 +244,8 @@ export function useObelixiaRiskManagement() {
       clearInterval(autoRefreshInterval.current);
       autoRefreshInterval.current = null;
     }
+    autoRefreshStartTime.current = null;
+    retryCountRef.current = 0;
   }, []);
 
   useEffect(() => {

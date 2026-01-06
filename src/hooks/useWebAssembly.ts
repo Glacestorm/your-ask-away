@@ -64,6 +64,7 @@ interface UseWebAssemblyResult {
 export function useWebAssembly(): UseWebAssemblyResult {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isUsingWasm, setIsUsingWasm] = useState(false);
+  const initializationAttempted = useRef(false);
   
   // === KB 2.0 STATE ===
   const [status, setStatus] = useState<KBStatus>('idle');
@@ -71,6 +72,7 @@ export function useWebAssembly(): UseWebAssemblyResult {
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const MAX_INIT_RETRIES = 3;
 
   // === KB 2.0 COMPUTED STATES ===
   const isIdle = status === 'idle';
@@ -85,6 +87,15 @@ export function useWebAssembly(): UseWebAssemblyResult {
   }, [status]);
 
   const initialize = useCallback(async () => {
+    // Prevent infinite loops by checking retry count
+    if (retryCount >= MAX_INIT_RETRIES) {
+      console.warn(`[useWebAssembly] Max initialization retries (${MAX_INIT_RETRIES}) reached`);
+      const kbError = createKBError('WASM_MAX_RETRIES', `Failed to initialize after ${MAX_INIT_RETRIES} attempts`);
+      setError(kbError);
+      setStatus('error');
+      return;
+    }
+
     const startTime = Date.now();
     setStatus('loading');
     setError(null);
@@ -108,11 +119,15 @@ export function useWebAssembly(): UseWebAssemblyResult {
       setRetryCount(prev => prev + 1);
       collectTelemetry('useWebAssembly', 'initialize', 'error', Date.now() - startTime, kbError);
     }
-  }, []);
+  }, [retryCount]);
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    // Only initialize once to prevent dependency loops
+    if (!initializationAttempted.current) {
+      initializationAttempted.current = true;
+      initialize();
+    }
+  }, []); // Empty dependency array - initialize only on mount
 
   const benchmark = useCallback(async () => {
     return benchmarkCalculations(10000);
@@ -167,12 +182,22 @@ export function useFinancialCalculation<T, R>(
   const [result, setResult] = useState<R | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const lastCalculationTime = useRef<number>(0);
+  const THROTTLE_MS = 100; // Minimum time between calculations
 
   const calculate = useCallback(() => {
     if (input === null) {
       setResult(null);
       return;
     }
+
+    // Throttle calculations to prevent infinite loops
+    const now = Date.now();
+    if (now - lastCalculationTime.current < THROTTLE_MS) {
+      console.debug('[useFinancialCalculation] Throttling calculation');
+      return;
+    }
+    lastCalculationTime.current = now;
 
     setIsCalculating(true);
     setError(null);
@@ -199,11 +224,13 @@ export function useFinancialCalculation<T, R>(
       setError(err instanceof Error ? err : new Error('Calculation failed'));
       setIsCalculating(false);
     }
-  }, [calculationFn, input, ...dependencies]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input, ...dependencies]);
 
   useEffect(() => {
     calculate();
-  }, [calculate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input, ...dependencies]);
 
   return {
     result,

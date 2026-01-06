@@ -11,12 +11,68 @@ interface RiskRequest {
   params?: Record<string, unknown>;
 }
 
+// Circuit breaker state
+const circuitBreaker = {
+  failures: 0,
+  lastFailureTime: 0,
+  state: 'closed' as 'closed' | 'open' | 'half-open',
+  MAX_FAILURES: 5,
+  RESET_TIMEOUT: 60000, // 1 minute
+  RETRY_TIMEOUT: 30000, // 30 seconds for AI API
+};
+
+function checkCircuitBreaker(): boolean {
+  const now = Date.now();
+  
+  if (circuitBreaker.state === 'open') {
+    if (now - circuitBreaker.lastFailureTime > circuitBreaker.RESET_TIMEOUT) {
+      circuitBreaker.state = 'half-open';
+      console.log('[obelixia-risk-management] Circuit breaker: OPEN -> HALF-OPEN');
+      return true;
+    }
+    return false;
+  }
+  
+  return true;
+}
+
+function recordSuccess() {
+  circuitBreaker.failures = 0;
+  if (circuitBreaker.state === 'half-open') {
+    circuitBreaker.state = 'closed';
+    console.log('[obelixia-risk-management] Circuit breaker: HALF-OPEN -> CLOSED');
+  }
+}
+
+function recordFailure() {
+  circuitBreaker.failures++;
+  circuitBreaker.lastFailureTime = Date.now();
+  
+  if (circuitBreaker.failures >= circuitBreaker.MAX_FAILURES) {
+    circuitBreaker.state = 'open';
+    console.error('[obelixia-risk-management] Circuit breaker OPENED after', circuitBreaker.failures, 'failures');
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Check circuit breaker
+    if (!checkCircuitBreaker()) {
+      console.warn('[obelixia-risk-management] Circuit breaker is OPEN, rejecting request');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'Service temporarily unavailable. Please try again later.',
+        circuitBreakerOpen: true
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -217,6 +273,10 @@ FORMATO DE RESPUESTA (JSON estricto):
 
     console.log(`[obelixia-risk-management] Processing action: ${action}`);
 
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), circuitBreaker.RETRY_TIMEOUT);
+
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -232,7 +292,8 @@ FORMATO DE RESPUESTA (JSON estricto):
         temperature: 0.7,
         max_tokens: 3000,
       }),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -262,10 +323,20 @@ FORMATO DE RESPUESTA (JSON estricto):
       }
     } catch (parseError) {
       console.error('[obelixia-risk-management] JSON parse error:', parseError);
-      result = { rawContent: content, parseError: true };
+      // Limit recursion by returning error instead of retrying
+      recordFailure();
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Failed to parse AI response',
+        rawContent: content?.substring(0, 200), // Truncate for safety
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log(`[obelixia-risk-management] Success: ${action}`);
+    recordSuccess(); // Record successful completion
 
     return new Response(JSON.stringify({
       success: true,
@@ -278,6 +349,8 @@ FORMATO DE RESPUESTA (JSON estricto):
 
   } catch (error) {
     console.error('[obelixia-risk-management] Error:', error);
+    recordFailure(); // Record failure for circuit breaker
+    
     return new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
