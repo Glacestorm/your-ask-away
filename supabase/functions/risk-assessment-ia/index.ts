@@ -17,6 +17,49 @@ interface RiskRequest {
   mitigations?: string[];
 }
 
+// Circuit breaker for AI calls
+const aiCircuitBreaker = {
+  failures: 0,
+  lastFailureTime: 0,
+  state: 'closed' as 'closed' | 'open' | 'half-open',
+  MAX_FAILURES: 5,
+  RESET_TIMEOUT: 60000,
+  REQUEST_TIMEOUT: 30000,
+};
+
+function checkAICircuitBreaker(): boolean {
+  const now = Date.now();
+  
+  if (aiCircuitBreaker.state === 'open') {
+    if (now - aiCircuitBreaker.lastFailureTime > aiCircuitBreaker.RESET_TIMEOUT) {
+      aiCircuitBreaker.state = 'half-open';
+      console.log('[risk-assessment-ia] Circuit breaker: OPEN -> HALF-OPEN');
+      return true;
+    }
+    return false;
+  }
+  
+  return true;
+}
+
+function recordAISuccess() {
+  aiCircuitBreaker.failures = 0;
+  if (aiCircuitBreaker.state === 'half-open') {
+    aiCircuitBreaker.state = 'closed';
+    console.log('[risk-assessment-ia] Circuit breaker: HALF-OPEN -> CLOSED');
+  }
+}
+
+function recordAIFailure() {
+  aiCircuitBreaker.failures++;
+  aiCircuitBreaker.lastFailureTime = Date.now();
+  
+  if (aiCircuitBreaker.failures >= aiCircuitBreaker.MAX_FAILURES) {
+    aiCircuitBreaker.state = 'open';
+    console.error('[risk-assessment-ia] Circuit breaker OPENED after', aiCircuitBreaker.failures, 'failures');
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -140,6 +183,19 @@ serve(async (req) => {
     }
 
     // === LEGACY AI-BASED ACTIONS ===
+    // Check circuit breaker before making AI calls
+    if (!checkAICircuitBreaker()) {
+      console.warn('[risk-assessment-ia] AI circuit breaker is OPEN, rejecting request');
+      return new Response(JSON.stringify({ 
+        success: false,
+        error: 'AI service temporarily unavailable. Please try again later.',
+        circuitBreakerOpen: true
+      }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -269,53 +325,78 @@ RESPONDE EN JSON ESTRICTO:
         });
     }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.5,
-        max_tokens: 3000,
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), aiCircuitBreaker.REQUEST_TIMEOUT);
 
-    if (!response.ok) {
-      throw new Error(`AI API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    let result;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.5,
+          max_tokens: 3000,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`AI API error: ${response.status}`);
       }
-    } catch {
-      result = { rawContent: content, parseError: true };
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      let result;
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found in response');
+        }
+      } catch (parseError) {
+        console.error('[risk-assessment-ia] JSON parse error:', parseError);
+        recordAIFailure();
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to parse AI response',
+          rawContent: content?.substring(0, 200),
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`[risk-assessment-ia] Success: ${action}`);
+      recordAISuccess();
+
+      return new Response(JSON.stringify({
+        success: true,
+        action,
+        data: result,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
     }
-
-    console.log(`[risk-assessment-ia] Success: ${action}`);
-
-    return new Response(JSON.stringify({
-      success: true,
-      action,
-      data: result,
-      timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
   } catch (error) {
     console.error('[risk-assessment-ia] Error:', error);
+    recordAIFailure();
+    
     return new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -124,14 +124,35 @@ export const useRevenueRiskAlerts = () => {
         if (fetchError) throw fetchError;
         
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
         setError(null);
+        setRetryCount(0);
         return data as RevenueRiskAlert[];
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error desconocido';
         setError(createKBError('FETCH_ALERTS_ERROR', message, { retryable: true, details: { originalError: String(err) } }));
+        setRetryCount(prev => prev + 1);
         throw err;
       }
-    }
+    },
+    retry: (failureCount, error) => {
+      // Limit retries to prevent infinite loops
+      const MAX_RETRIES = 3;
+      if (failureCount >= MAX_RETRIES) {
+        console.warn(`[useRevenueRiskAlerts] Max retries (${MAX_RETRIES}) reached, stopping retries`);
+        return false;
+      }
+      // Only retry on network errors or specific error codes
+      const shouldRetry = error instanceof Error && 
+        (error.message.includes('network') || error.message.includes('timeout'));
+      return shouldRetry;
+    },
+    retryDelay: (attemptIndex) => {
+      // Exponential backoff: 1s, 2s, 4s
+      return Math.min(1000 * Math.pow(2, attemptIndex), 10000);
+    },
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 300000, // Keep unused data in cache for 5 minutes
   });
 
   // Fetch simulations
@@ -146,7 +167,10 @@ export const useRevenueRiskAlerts = () => {
       
       if (error) throw error;
       return data as unknown as RetentionSimulation[];
-    }
+    },
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 5000),
+    staleTime: 60000,
   });
 
   // Fetch industry benchmarks
@@ -161,7 +185,10 @@ export const useRevenueRiskAlerts = () => {
       
       if (error) throw error;
       return data as IndustryBenchmark[];
-    }
+    },
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * Math.pow(2, attemptIndex), 5000),
+    staleTime: 300000, // Benchmarks are stable, cache for 5 minutes
   });
 
   // Calculate risk summary
