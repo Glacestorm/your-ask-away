@@ -277,75 +277,82 @@ FORMATO DE RESPUESTA (JSON estricto):
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), circuitBreaker.RETRY_TIMEOUT);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 3000,
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
+    try {
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 3000,
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded', 
-          message: 'Demasiadas solicitudes. Intenta más tarde.' 
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ 
+            error: 'Rate limit exceeded', 
+            message: 'Demasiadas solicitudes. Intenta más tarde.' 
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        throw new Error(`AI API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (!content) throw new Error('No content in AI response');
+
+      let result;
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found');
+        }
+      } catch (parseError) {
+        console.error('[obelixia-risk-management] JSON parse error:', parseError);
+        // Limit recursion by returning error instead of retrying
+        recordFailure();
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to parse AI response',
+          rawContent: content?.substring(0, 200), // Truncate for safety
         }), {
-          status: 429,
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      throw new Error(`AI API error: ${response.status}`);
-    }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+      console.log(`[obelixia-risk-management] Success: ${action}`);
+      recordSuccess(); // Record successful completion
 
-    if (!content) throw new Error('No content in AI response');
-
-    let result;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found');
-      }
-    } catch (parseError) {
-      console.error('[obelixia-risk-management] JSON parse error:', parseError);
-      // Limit recursion by returning error instead of retrying
-      recordFailure();
       return new Response(JSON.stringify({
-        success: false,
-        error: 'Failed to parse AI response',
-        rawContent: content?.substring(0, 200), // Truncate for safety
+        success: true,
+        action,
+        data: result,
+        timestamp: new Date().toISOString()
       }), {
-        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
     }
-
-    console.log(`[obelixia-risk-management] Success: ${action}`);
-    recordSuccess(); // Record successful completion
-
-    return new Response(JSON.stringify({
-      success: true,
-      action,
-      data: result,
-      timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
   } catch (error) {
     console.error('[obelixia-risk-management] Error:', error);
