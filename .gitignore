@@ -27,3 +27,6 @@ dist-ssr
 .env.local
 .env.*.local
 .env
+
+# package managers we don't use
+bun.lockb
